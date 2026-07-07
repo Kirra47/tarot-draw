@@ -1,0 +1,1746 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>塔罗抽卡 · Tarot Draw</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{overflow:hidden;background:#020208 url('./tarot-bg.png') center center/cover no-repeat fixed;font-family:'Segoe UI',system-ui,sans-serif;color:#c8d8f0;}
+#c{display:block;width:100vw;height:100vh;position:relative;z-index:1;}
+#camWrap{position:fixed;bottom:12px;left:12px;width:180px;height:135px;border-radius:10px;overflow:hidden;border:1px solid rgba(100,140,255,.3);z-index:20;display:none;box-shadow:0 4px 20px rgba(0,0,40,.5);}
+#camWrap video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);}
+#ui{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;}
+#ui *{pointer-events:auto;}
+#topBar{display:flex;justify-content:space-between;align-items:center;padding:14px 22px;background:linear-gradient(180deg,rgba(5,5,16,.85),transparent);}
+#topBar h1{font-size:20px;letter-spacing:4px;color:#8ab4ff;text-shadow:0 0 15px rgba(100,160,255,.4);}
+#deckCount{font-size:13px;color:#6a80a8;}
+#gestureInfo{position:fixed;top:60px;left:22px;font-size:12px;color:#5a70a0;z-index:10;}
+.uiBtn{background:rgba(15,20,40,.8);border:1px solid rgba(100,140,255,.25);color:#8ab4ff;padding:7px 16px;border-radius:8px;font-size:13px;cursor:pointer;transition:all .25s;backdrop-filter:blur(4px);}
+.uiBtn:hover{background:rgba(30,50,100,.6);border-color:rgba(100,160,255,.5);box-shadow:0 0 12px rgba(80,130,255,.2);}
+#modeBtn{position:fixed;top:12px;right:22px;z-index:30;}
+#cardInfo{position:fixed;bottom:24px;right:24px;width:320px;max-height:55vh;background:rgba(8,12,30,.92);border:1px solid rgba(100,140,255,.2);border-radius:14px;padding:18px 20px;z-index:20;display:none;backdrop-filter:blur(10px);box-shadow:0 8px 40px rgba(0,0,40,.6);}
+#cardInfo h2{font-size:22px;color:#8ab4ff;margin-bottom:8px;text-shadow:0 0 8px rgba(100,160,255,.3);}
+#cardInfo .orient{font-size:17px;margin-bottom:10px;}
+#cardInfo .meaning{font-size:16px;line-height:1.7;color:#9aadcc;}
+#histPanel{position:fixed;top:56px;right:22px;width:270px;max-height:72vh;overflow-y:auto;background:rgba(8,12,30,.92);border:1px solid rgba(100,140,255,.2);border-radius:12px;z-index:20;display:none;backdrop-filter:blur(10px);box-shadow:0 8px 32px rgba(0,0,40,.4);}
+#histPanel::-webkit-scrollbar{width:4px;}
+#histPanel::-webkit-scrollbar-thumb{background:rgba(100,140,255,.3);border-radius:2px;}
+#histToggle{position:fixed;top:12px;right:155px;z-index:30;}
+.histItem{padding:12px 16px;border-bottom:1px solid rgba(100,140,255,.1);font-size:12px;transition:background .2s;}
+.histItem:hover{background:rgba(60,100,200,.08);}
+.histItem .hname{color:#8ab4ff;font-weight:600;font-size:13px;}
+#stateHint{position:fixed;top:18%;left:50%;transform:translate(-50%,-50%);font-size:22px;color:#8ab4ff;text-shadow:0 0 20px rgba(100,160,255,.5);z-index:15;opacity:0;transition:opacity .6s;pointer-events:none;letter-spacing:2px;}
+#stateHint.show{opacity:1;}
+#instrPanel{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);text-align:center;font-size:13px;color:#4a6090;z-index:10;pointer-events:none;line-height:2;opacity:.7;}
+#vCursor{position:fixed;z-index:25;pointer-events:none;display:none;transform:translate(-50%,-50%);}
+#vCursorInner{width:36px;height:36px;border-radius:50%;border:2.5px solid rgba(100,180,255,.7);background:rgba(60,130,255,.15);box-shadow:0 0 18px rgba(80,160,255,.5),inset 0 0 8px rgba(100,180,255,.2);transition:all .2s;}
+#vCursor.hover #vCursorInner{border-color:rgba(100,255,180,.9);background:rgba(60,255,150,.25);box-shadow:0 0 24px rgba(80,255,160,.6),inset 0 0 10px rgba(100,255,180,.3);transform:scale(1.3);}
+#vCursor.grab #vCursorInner{border-color:rgba(255,180,60,.9);background:rgba(255,160,40,.35);box-shadow:0 0 24px rgba(255,180,60,.7),inset 0 0 10px rgba(255,180,60,.3);transform:scale(0.7);}
+#vCursorLabel{position:absolute;top:42px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:11px;color:rgba(140,180,255,.8);text-shadow:0 0 6px rgba(80,140,255,.5);}
+/* ── Settlement UI ── */
+#settleBtn{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:20;font-size:15px;padding:10px 28px;background:rgba(80,50,20,.85);border-color:rgba(255,180,60,.4);color:#ffd080;box-shadow:0 0 20px rgba(255,160,40,.2);animation:settlePulse 2s ease-in-out infinite;}
+@keyframes settlePulse{0%,100%{box-shadow:0 0 20px rgba(255,160,40,.2);}50%{box-shadow:0 0 30px rgba(255,160,40,.5);}}
+#drawCount{position:fixed;bottom:68px;left:50%;transform:translateX(-50%);z-index:20;font-size:12px;color:#8a90b0;text-align:center;}
+#settleOverlay{position:fixed;inset:0;z-index:100;background:rgba(2,2,8,.92);backdrop-filter:blur(12px);display:none;overflow-y:auto;padding:20px;}
+#settleOverlay.show{display:flex;justify-content:center;align-items:flex-start;}
+#settlePanel{max-width:720px;width:100%;padding:30px 24px;margin:20px auto;}
+#settlePanel h2{text-align:center;font-size:24px;color:#8ab4ff;margin-bottom:24px;letter-spacing:4px;text-shadow:0 0 15px rgba(100,160,255,.4);}
+#settleCards{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;margin-bottom:24px;}
+.settleCard{width:200px;background:rgba(10,15,30,.85);border:1px solid rgba(100,140,255,.2);border-radius:12px;padding:14px;text-align:center;transition:all .3s;}
+.settleCard:hover{border-color:rgba(100,160,255,.5);box-shadow:0 0 20px rgba(80,130,255,.2);transform:translateY(-4px);}
+.settleCard .scNum{font-size:11px;color:#5a6a8a;margin-bottom:6px;}
+.settleCard .scName{font-size:16px;color:#8ab4ff;font-weight:600;margin-bottom:4px;}
+.settleCard .scOrient{font-size:13px;margin-bottom:8px;}
+.settleCard .scMeaning{font-size:13px;color:#9aadcc;line-height:1.6;}
+.settleCard .scElem{font-size:12px;color:#6a80a8;margin-top:6px;}
+#settleSummary{background:rgba(15,20,40,.6);border:1px solid rgba(100,140,255,.15);border-radius:12px;padding:18px 20px;margin-bottom:20px;font-size:14px;color:#9aadcc;line-height:1.8;}
+#settleClose{display:block;margin:0 auto;font-size:15px;padding:10px 32px;}
+/* ── Mobile responsive ── */
+@media(max-width:768px){
+  #cardInfo{left:8px;right:8px;bottom:8px;width:auto;max-height:38vh;padding:14px 16px;border-radius:12px;overflow-y:auto;}
+  #cardInfo h2{font-size:18px;margin-bottom:4px;}
+  #cardInfo .orient{font-size:14px;margin-bottom:6px;}
+  #cardInfo .meaning{font-size:13px;line-height:1.6;}
+  #camWrap{width:100px;height:75px;bottom:8px;left:8px;}
+  #cardInfo~#camWrap,#camWrap{display:none!important;}
+  #topBar{padding:10px 14px;}
+  #topBar h1{font-size:16px;letter-spacing:2px;}
+  .uiBtn{font-size:11px;padding:5px 10px;}
+  #histToggle{right:auto;left:50%;transform:translateX(calc(-50% - 60px));top:8px;}
+  #modeBtn{top:8px;right:14px;}
+  #histPanel{right:8px;left:8px;width:auto;top:50px;max-height:60vh;}
+  #stateHint{font-size:17px;top:14%;}
+  #instrPanel{font-size:11px;bottom:12px;}
+  #gestureInfo{font-size:11px;top:50px;left:14px;}
+  #settleBtn{font-size:13px;padding:8px 20px;bottom:16px;}
+  #drawCount{bottom:56px;}
+  #settlePanel{padding:16px 12px;}
+  #settlePanel h2{font-size:18px;margin-bottom:16px;}
+  .settleCard{width:100%;max-width:320px;}
+  #settleSummary{font-size:13px;padding:14px;}
+}
+/* ── Question Input Overlay ── */
+#questionOverlay{position:fixed;inset:0;z-index:200;background:rgba(2,2,8,.95);display:flex;justify-content:center;align-items:center;transition:opacity .8s ease;}
+#questionOverlay.hidden{opacity:0;pointer-events:none;}
+.qCard{width:500px;max-width:90vw;padding:48px 40px;background:rgba(8,12,30,.95);border:1px solid rgba(100,140,255,.3);border-radius:16px;text-align:center;backdrop-filter:blur(20px);box-shadow:0 8px 40px rgba(0,0,40,.6);}
+.qCard h2{font-size:24px;letter-spacing:6px;margin-bottom:8px;color:#8ab4ff;text-shadow:0 0 15px rgba(100,160,255,.4);}
+.qCard .qSub{font-size:13px;color:#6a80a8;margin-bottom:28px;letter-spacing:1px;}
+#questionInput{width:100%;min-height:100px;padding:16px;border-radius:10px;border:1px solid rgba(100,140,255,.25);background:rgba(2,2,8,.8);color:#c8d8f0;font-size:16px;font-family:inherit;resize:none;outline:none;transition:border-color .3s;}
+#questionInput:focus{border-color:rgba(100,160,255,.6);}
+#questionInput::placeholder{color:#4a5878;font-style:italic;}
+#questionConfirm{margin-top:24px;padding:12px 44px;border:1px solid rgba(100,140,255,.35);border-radius:10px;background:rgba(20,30,60,.8);color:#8ab4ff;font-size:15px;letter-spacing:3px;cursor:pointer;transition:all .3s;font-family:inherit;}
+#questionConfirm:hover{background:rgba(30,50,100,.7);border-color:rgba(100,160,255,.6);box-shadow:0 0 20px rgba(80,130,255,.2);}
+/* ── AI Streaming Reading ── */
+#aiReading{margin-top:20px;min-height:40px;}
+#aiContent{font-size:14px;line-height:1.9;color:#9aadcc;}
+#aiContent h3{color:#8ab4ff;font-size:17px;margin:18px 0 8px 0;letter-spacing:2px;}
+#aiContent strong{color:#8ab4ff;}
+#aiCursor{display:inline-block;width:2px;height:16px;background:#8ab4ff;margin-left:2px;vertical-align:text-bottom;animation:cBlink .8s infinite;}
+@keyframes cBlink{0%,50%{opacity:1;}51%,100%{opacity:0;}}
+.aiThinking{display:flex;align-items:center;gap:12px;padding:16px 0;color:#6a80a8;font-size:13px;letter-spacing:2px;}
+.aiThinking .dots span{display:inline-block;width:6px;height:6px;background:#8ab4ff;border-radius:50%;margin:0 2px;animation:dPulse 1.4s infinite ease-in-out;}
+.aiThinking .dots span:nth-child(2){animation-delay:.2s;}
+.aiThinking .dots span:nth-child(3){animation-delay:.4s;}
+@keyframes dPulse{0%,80%,100%{opacity:.2;transform:scale(.8);}40%{opacity:1;transform:scale(1.2);}}
+#aiProgressBar{width:100%;height:3px;background:rgba(100,140,255,.1);border-radius:2px;margin-top:12px;overflow:hidden;}
+#aiProgressFill{height:100%;width:0%;background:linear-gradient(90deg,rgba(100,140,255,.6),rgba(100,180,255,.9));transition:width .3s;border-radius:2px;}
+#aiRetryBtn{margin-top:16px;padding:8px 24px;border:1px solid rgba(100,140,255,.25);border-radius:8px;background:transparent;color:#6a80a8;cursor:pointer;font-size:12px;letter-spacing:2px;transition:all .3s;font-family:inherit;display:none;}
+#aiRetryBtn:hover{border-color:rgba(100,160,255,.5);color:#8ab4ff;}
+/* ── AI Reading active state ── */
+#aiReading.active{border:1px solid rgba(100,140,255,.15);border-radius:12px;padding:16px;animation:readingGlow 3s ease-in-out infinite;}
+@keyframes readingGlow{
+  0%,100%{box-shadow:0 0 8px rgba(100,140,255,.08);border-color:rgba(100,140,255,.12);}
+  50%{box-shadow:0 0 24px rgba(100,160,255,.18);border-color:rgba(100,160,255,.3);}
+}
+#aiReadingHeader{display:none;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid rgba(100,140,255,.1);}
+#aiReadingHeader.show{display:flex;}
+#aiReadingHeader .readingLabel{font-size:13px;color:#8ab4ff;letter-spacing:3px;animation:labelPulse 2.5s ease-in-out infinite;}
+@keyframes labelPulse{0%,100%{opacity:.6;}50%{opacity:1;}}
+.readingOrb{width:22px;height:22px;border-radius:50%;position:relative;}
+.readingOrb::before{content:'';position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,rgba(100,160,255,.5),transparent 70%);animation:orbPulse 2s ease-in-out infinite;}
+.readingOrb::after{content:'';position:absolute;inset:4px;border-radius:50%;background:radial-gradient(circle,rgba(140,190,255,.8),rgba(80,130,255,.3) 60%,transparent);animation:orbInner 1.5s ease-in-out infinite alternate;}
+@keyframes orbPulse{0%,100%{transform:scale(1);opacity:.7;}50%{transform:scale(1.3);opacity:1;}}
+@keyframes orbInner{0%{transform:scale(.8);}100%{transform:scale(1.1);}}
+.readingDots{display:flex;gap:4px;align-items:center;}
+.readingDots span{width:4px;height:4px;background:#8ab4ff;border-radius:50%;animation:dotBounce 1.4s ease-in-out infinite;}
+.readingDots span:nth-child(2){animation-delay:.15s;}
+.readingDots span:nth-child(3){animation-delay:.3s;}
+.readingDots span:nth-child(4){animation-delay:.45s;}
+.readingDots span:nth-child(5){animation-delay:.6s;}
+@keyframes dotBounce{0%,80%,100%{opacity:.2;transform:translateY(0);}40%{opacity:1;transform:translateY(-3px);}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="ui">
+  <div id="topBar">
+    <h1>✦ TAROT ✦</h1>
+    <span id="deckCount">剩余: 78</span>
+  </div>
+</div>
+<div id="gestureInfo">模式: 鼠标</div>
+<button id="modeBtn" class="uiBtn">切换手势模式</button>
+<button id="histToggle" class="uiBtn">历史记录</button>
+<div id="histPanel"><div id="histEmpty" style="padding:20px;text-align:center;color:#4a5878;font-size:13px;">暂无抽牌记录</div></div>
+<div id="cardInfo">
+  <h2 id="ciName"></h2>
+  <div class="orient" id="ciOrient"></div>
+  <div class="meaning" id="ciMeaning"></div>
+</div>
+<div id="camWrap"><video id="camVid" autoplay playsinline></video></div>
+<div id="stateHint"></div>
+<div id="vCursor"><div id="vCursorInner"></div><div id="vCursorLabel"></div></div>
+<div id="instrPanel"></div>
+<!-- Question Input Overlay -->
+<div id="questionOverlay">
+  <div class="qCard">
+    <h2>心中所想</h2>
+    <p class="qSub">请在心中默念你的问题，然后写下来</p>
+    <textarea id="questionInput" placeholder="写下你心中所想的事情...&#10;例如：我的感情方向如何？近期的事业该怎么选择？" rows="4"></textarea>
+    <button id="questionConfirm">开始占卜</button>
+  </div>
+</div>
+<button id="settleBtn" class="uiBtn" style="display:none;">✦ 结算解读</button>
+<div id="drawCount" style="display:none;"></div>
+<div id="settleOverlay">
+  <div id="settlePanel">
+    <h2 id="settleTitle">✦ 塔罗解读总结 ✦</h2>
+    <div id="settleCards"></div>
+    <div id="settleSummary"></div>
+    <div id="aiReading">
+      <div id="aiReadingHeader">
+        <div class="readingOrb"></div>
+        <span class="readingLabel">正在解读中</span>
+        <div class="readingDots"><span></span><span></span><span></span><span></span><span></span></div>
+      </div>
+      <div id="aiContent"></div>
+      <div id="aiProgressBar" style="display:none"><div id="aiProgressFill"></div></div>
+      <button id="aiRetryBtn">重新解读</button>
+    </div>
+    <button id="settleClose" class="uiBtn">✦ 开始新的解读</button>
+  </div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+
+// ═══════════════════════════════════════════════════════════════
+// TAROT DECK DATA
+// ═══════════════════════════════════════════════════════════════
+const MAJOR=[
+  {id:0,name:"The Fool 愚者",up:"新的开始、自由、冒险精神、无限可能",rev:"鲁莽、不计后果、迷失方向"},
+  {id:1,name:"The Magician 魔术师",up:"创造力、意志力、技巧、自信",rev:"欺骗、操纵、才华浪费"},
+  {id:2,name:"The High Priestess 女祭司",up:"直觉、潜意识、内在智慧、神秘",rev:"隐藏的动机、表面化、忽视直觉"},
+  {id:3,name:"The Empress 女皇",up:"丰饶、母性、自然、感官愉悦",rev:"依赖、空虚、创造力受阻"},
+  {id:4,name:"The Emperor 皇帝",up:"权威、结构、控制、父性力量",rev:"专制、僵化、控制欲过强"},
+  {id:5,name:"The Hierophant 教皇",up:"传统、精神指引、教育、信仰",rev:"打破常规、挑战权威、教条主义"},
+  {id:6,name:"The Lovers 恋人",up:"爱情、和谐、关系、价值观选择",rev:"不和谐、失衡、价值观冲突"},
+  {id:7,name:"The Chariot 战车",up:"意志力、胜利、决心、自律",rev:"失控、攻击性、缺乏方向"},
+  {id:8,name:"Strength 力量",up:"内在力量、勇气、耐心、慈悲",rev:"自我怀疑、软弱、缺乏自信"},
+  {id:9,name:"The Hermit 隐者",up:"内省、独处、寻找真理、智慧",rev:"孤立、逃避、固执己见"},
+  {id:10,name:"Wheel of Fortune 命运之轮",up:"命运转折、好运、周期、关键时刻",rev:"坏运气、抗拒变化、失控"},
+  {id:11,name:"Justice 正义",up:"公正、真理、因果、法律",rev:"不公正、不诚实、逃避责任"},
+  {id:12,name:"The Hanged Man 倒吊人",up:"牺牲、新视角、等待、放下",rev:"拖延、抗拒牺牲、自私"},
+  {id:13,name:"Death 死神",up:"结束、转变、过渡、放下过去",rev:"抗拒改变、停滞、恐惧"},
+  {id:14,name:"Temperance 节制",up:"平衡、耐心、适度、和谐",rev:"失衡、过度、缺乏耐心"},
+  {id:15,name:"The Devil 恶魔",up:"束缚、诱惑、物质主义、阴暗面",rev:"释放、打破束缚、重获自由"},
+  {id:16,name:"The Tower 塔",up:"突变、崩塌、启示、解放",rev:"逃避灾难、恐惧改变、延迟"},
+  {id:17,name:"The Star 星星",up:"希望、灵感、宁静、信念",rev:"绝望、失去信心、断开连接"},
+  {id:18,name:"The Moon 月亮",up:"幻觉、直觉、潜意识、不确定",rev:"释放恐惧、真相浮出、清晰"},
+  {id:19,name:"The Sun 太阳",up:"快乐、成功、活力、光明",rev:"短暂快乐、过度乐观、延迟"},
+  {id:20,name:"Judgement 审判",up:"觉醒、重生、反思、召唤",rev:"自我怀疑、拒绝成长、逃避"},
+  {id:21,name:"The World 世界",up:"完成、整合、成就、旅程终点",rev:"未完成、缺乏结束、拖延"}
+];
+const SUITS=['Wands','Cups','Swords','Pentacles'];
+const SUIT_CN={Wands:'权杖',Cups:'圣杯',Swords:'宝剑',Pentacles:'星币'};
+const RANKS=['Ace','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Page','Knight','Queen','King'];
+const RANK_CN=['A','二','三','四','五','六','七','八','九','十','侍从','骑士','皇后','国王'];
+const MINOR_MEANINGS={
+  Wands:{up:["灵感与新开始","未来规划与方向","远见与合作","家庭庆祝与和谐","竞争与冲突","公众认可与胜利","勇气与坚持","迅速行动与进展","坚韧与警惕","重压与负担","探索新可能","充满热情地行动","独立自信与魅力","远见卓识与领导"],rev:["延迟与挫折","犹豫不决","计划受阻","家庭不安","内部争斗","骄傲自负","畏难放弃","方向混乱","偏执多疑","过度劳累","缺乏方向","鲁莽冲动","嫉妒猜忌","独裁专制"]},
+  Cups:{up:["新的爱与情感","伙伴关系与联结","友谊与喜悦","情感冷漠与退缩","失落与悲伤","怀旧与童年记忆","幻想与白日梦","转变与放下旧物","心满意足","情感圆满与幸福","创意灵感信息","浪漫邀约","直觉与共情力","情感慷慨与智慧"],rev:["情感空虚","关系分离","过度放纵","错失机会","接受与释然","沉溺执念","选择迷惑","勇敢放下","物质贪婪","家庭破裂","情感不成熟","情绪化善变","脱离直觉","情感操控"]},
+  Swords:{up:["思维清晰与真相","艰难抉择与平衡","心碎与悲痛","休养与恢复精力","冲突与失败","过渡与前进","策略与巧妙","自我困境与限制","焦虑与噩梦","痛苦结束与释放","好奇探索与调查","果断行动与直接","独自悲伤","智慧权威与公正"],rev:["思维混乱","优柔寡断","伤痛恢复","不安觉醒","和解可能","困境停滞","不诚实欺骗","自我解脱","光明希望","无法放下","散漫无纪律","冷酷无情","悲伤释然","滥用权力"]},
+  Pentacles:{up:["物质新机遇","灵活平衡与适应","团队合作与技艺","财务稳定与安全","经济困难与孤立","慷慨分享与施予","耐心等待与投资","勤勉努力与专注","物质富足与独立","家族传承与富裕","勤奋学习与钻研","可靠踏实与耐心","物质丰裕与安逸","财务成功与权威"],rev:["错失良机","财务失衡","团队孤立","过度贪婪","经济恢复","附条件的施舍","焦躁与投资失误","缺乏热情","物质损失","遗产争端","学业懈怠","工作停顿","物质依赖","财务腐败"]}
+};
+
+function buildDeck(){
+  const d=[];
+  MAJOR.forEach(c=>d.push({...c,type:'major'}));
+  SUITS.forEach(s=>{
+    RANKS.forEach((r,i)=>{
+      d.push({
+        id:22+SUITS.indexOf(s)*14+i,
+        name:`${r} of ${s} · ${SUIT_CN[s]}${RANK_CN[i]}`,
+        up:MINOR_MEANINGS[s].up[i], rev:MINOR_MEANINGS[s].rev[i],
+        type:'minor', suit:s, rank:i
+      });
+    });
+  });
+  return d;
+}
+let deck=buildDeck();
+let historyList=[];
+// Session draw tracking (3 min, 5 max)
+const MIN_DRAWS=3, MAX_DRAWS=5;
+let sessionDraws=[]; // {card, reversed} for current reading session
+let userQuestion='';
+
+// ═══════════════════════════════════════════════════════════════
+// RWS IMAGE SOURCE
+// ═══════════════════════════════════════════════════════════════
+// Use image proxy for CORS support (sacred-texts.com blocks cross-origin)
+const RWS_RAW='https://www.sacred-texts.com/tarot/pkt/img/';
+const RWS_PROXIES=[
+  (f)=>'https://wsrv.nl/?url='+encodeURIComponent(RWS_RAW+f),
+  (f)=>'https://images.weserv.nl/?url='+encodeURIComponent(RWS_RAW+f),
+  (f)=>'https://corsproxy.io/?url='+encodeURIComponent(RWS_RAW+f),
+];
+function rwsFilename(card){
+  if(card.type==='major') return 'ar'+String(card.id).padStart(2,'0')+'.jpg';
+  const sm={Wands:'wa',Cups:'cu',Swords:'sw',Pentacles:'pe'};
+  const rn=['ac','02','03','04','05','06','07','08','09','10','pa','kn','qu','ki'];
+  return sm[card.suit]+rn[card.rank]+'.jpg';
+}
+// Load image with retry across multiple proxies
+function loadCardImage(card){
+  const fname=rwsFilename(card);
+  return new Promise(resolve=>{
+    let attempt=0;
+    function tryNext(){
+      if(attempt>=RWS_PROXIES.length){resolve(null);return;}
+      const url=RWS_PROXIES[attempt](fname);
+      attempt++;
+      const img=new Image();img.crossOrigin='anonymous';
+      const timer=setTimeout(()=>{img.src='';console.warn('Timeout proxy',attempt-1,url);tryNext();},8000);
+      img.onload=()=>{clearTimeout(timer);console.log('Loaded:',card.name,'via proxy',attempt-1);resolve(img);};
+      img.onerror=()=>{clearTimeout(timer);console.warn('Error proxy',attempt-1,url);tryNext();};
+      img.src=url;
+    }
+    tryNext();
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// THREE.JS SETUP — GALAXY THEME
+// ═══════════════════════════════════════════════════════════════
+const canvas=document.getElementById('c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.setSize(window.innerWidth,window.innerHeight);
+renderer.setClearColor(0x000000,0);
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.2;
+
+const scene=new THREE.Scene();
+
+const camera=new THREE.PerspectiveCamera(45,window.innerWidth/window.innerHeight,0.1,200);
+camera.position.set(0,3.2,7);
+camera.lookAt(0,1.4,0);
+
+// Lights — cool blue/purple tones
+scene.add(new THREE.AmbientLight(0x405880,1.0));
+const mainLight=new THREE.SpotLight(0x99aadd,1.5,30,Math.PI/3,0.6,0.8);
+mainLight.position.set(0,8,5);mainLight.target.position.set(0,1.4,0);
+scene.add(mainLight,mainLight.target);
+const rimLight=new THREE.PointLight(0x5060c0,0.5,15);
+rimLight.position.set(-4,4,-2);scene.add(rimLight);
+const fillLight=new THREE.PointLight(0x4060a0,0.4,14);
+fillLight.position.set(3,3,3);scene.add(fillLight);
+const cardLight=new THREE.PointLight(0x7090dd,1.2,8);
+cardLight.position.set(0,3.5,0);scene.add(cardLight);
+
+
+
+
+
+// ═══════════════════════════════════════════════════════════════
+// CARD DIMENSIONS (declared early — used by textures and geometry)
+// ═══════════════════════════════════════════════════════════════
+const CARD_W=0.95,CARD_H=1.45,CARD_D=0.018;
+const CARD_R=0.045; // corner radius
+
+// ═══════════════════════════════════════════════════════════════
+// CARD TEXTURES
+// ═══════════════════════════════════════════════════════════════
+function createCardBackTexture(){
+  const cv=document.createElement('canvas');cv.width=512;cv.height=768;
+  const ctx=cv.getContext('2d');
+  // rounded corner clip to match card geometry
+  const cr=512*(CARD_R/CARD_W); // corner radius in pixels
+  ctx.beginPath();ctx.roundRect(0,0,512,768,cr);ctx.clip();
+  // deep dark base
+  const g=ctx.createRadialGradient(256,384,30,256,384,450);
+  g.addColorStop(0,'#0e1228');g.addColorStop(0.5,'#0a0e20');g.addColorStop(1,'#060810');
+  ctx.fillStyle=g;ctx.fillRect(0,0,512,768);
+
+  // helper: draw a neon stroke (inner bright + outer glow)
+  function neon(drawFn,color,bright,width=2,blur=18){
+    // outer glow layer
+    ctx.save();ctx.shadowColor=color;ctx.shadowBlur=blur;
+    ctx.strokeStyle=color;ctx.lineWidth=width+3;ctx.globalAlpha=0.4;
+    drawFn();ctx.stroke();ctx.restore();
+    // mid glow
+    ctx.save();ctx.shadowColor=color;ctx.shadowBlur=blur*0.5;
+    ctx.strokeStyle=color;ctx.lineWidth=width+1;ctx.globalAlpha=0.6;
+    drawFn();ctx.stroke();ctx.restore();
+    // bright core
+    ctx.save();ctx.shadowColor=bright;ctx.shadowBlur=6;
+    ctx.strokeStyle=bright;ctx.lineWidth=width;ctx.globalAlpha=1;
+    drawFn();ctx.stroke();ctx.restore();
+  }
+
+  // OUTER BORDER — cyan neon (corners match card geometry)
+  neon(()=>{ctx.beginPath();ctx.roundRect(14,14,484,740,cr-2);},
+    'rgba(0,220,255,0.8)','rgba(180,255,255,1)',2.5,22);
+
+  // INNER BORDER — magenta/pink neon
+  neon(()=>{ctx.beginPath();ctx.roundRect(30,30,452,708,cr-6);},
+    'rgba(255,50,180,0.7)','rgba(255,180,220,1)',1.5,16);
+
+  // DIAMOND shape in center — cyan neon
+  neon(()=>{
+    ctx.beginPath();
+    ctx.moveTo(256,180);ctx.lineTo(390,384);ctx.lineTo(256,588);ctx.lineTo(122,384);ctx.closePath();
+  },'rgba(0,200,255,0.6)','rgba(160,240,255,1)',1.5,14);
+
+  // concentric circles — purple neon
+  [70,120,170].forEach(r=>{
+    neon(()=>{ctx.beginPath();ctx.arc(256,384,r,0,Math.PI*2);},
+      'rgba(140,60,255,0.5)','rgba(200,160,255,0.9)',1,12);
+  });
+
+  // center star — bright cyan neon filled
+  ctx.save();
+  ctx.shadowColor='rgba(0,255,240,0.9)';ctx.shadowBlur=25;
+  ctx.fillStyle='rgba(0,255,240,0.15)';
+  ctx.beginPath();
+  for(let i=0;i<10;i++){
+    const a=Math.PI*2*i/10-Math.PI/2;
+    const r=i%2===0?38:16;
+    const x=256+Math.cos(a)*r,y=384+Math.sin(a)*r;
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.closePath();ctx.fill();
+  // bright star outline
+  ctx.strokeStyle='rgba(0,255,240,1)';ctx.lineWidth=2;ctx.stroke();
+  ctx.shadowBlur=8;ctx.strokeStyle='rgba(180,255,250,1)';ctx.lineWidth=1;ctx.stroke();
+  ctx.restore();
+
+  // corner dots — magenta neon
+  [[36,36],[476,36],[36,732],[476,732]].forEach(([x,y])=>{
+    ctx.save();ctx.shadowColor='rgba(255,50,180,0.9)';ctx.shadowBlur=12;
+    ctx.fillStyle='rgba(255,120,200,1)';
+    ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fill();ctx.restore();
+  });
+
+  // header — neon text
+  ctx.save();ctx.shadowColor='rgba(0,220,255,0.9)';ctx.shadowBlur=15;
+  ctx.fillStyle='rgba(0,240,255,0.9)';ctx.font='bold 20px sans-serif';ctx.textAlign='center';
+  ctx.fillText('☽  ★  ☾',256,56);ctx.restore();
+
+  // footer — TAROT neon text
+  ctx.save();ctx.shadowColor='rgba(255,50,180,0.9)';ctx.shadowBlur=15;
+  ctx.fillStyle='rgba(255,140,210,1)';ctx.font='bold 18px sans-serif';ctx.textAlign='center';
+  ctx.fillText('✦  T A R O T  ✦',256,728);ctx.restore();
+
+  // paper grain / cardboard texture overlay
+  const imgData=ctx.getImageData(0,0,512,768);
+  const d=imgData.data;
+  for(let px=0;px<d.length;px+=4){
+    const noise=(Math.random()-0.5)*14; // subtle grain
+    d[px]  =Math.min(255,Math.max(0,d[px]+noise));
+    d[px+1]=Math.min(255,Math.max(0,d[px+1]+noise));
+    d[px+2]=Math.min(255,Math.max(0,d[px+2]+noise));
+  }
+  ctx.putImageData(imgData,0,0);
+
+  // slight worn edges — darken corners
+  const vg=ctx.createRadialGradient(256,384,200,256,384,420);
+  vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,0.25)');
+  ctx.fillStyle=vg;ctx.fillRect(0,0,512,768);
+
+  const t=new THREE.CanvasTexture(cv);t.colorSpace=THREE.SRGBColorSpace;
+  return t;
+}
+const backTex=createCardBackTexture();
+
+async function createCardFaceTexture(card,reversed){
+  const cv=document.createElement('canvas');cv.width=512;cv.height=768;
+  const ctx=cv.getContext('2d');
+  const img=await loadCardImage(card);
+  drawFace(ctx,cv,card,reversed,img);
+  const t=new THREE.CanvasTexture(cv);t.colorSpace=THREE.SRGBColorSpace;
+  return t;
+}
+
+const SUIT_SYM={Wands:'🪄',Cups:'🏆',Swords:'⚔',Pentacles:'⭐'};
+function drawFace(ctx,cv,card,reversed,img){
+  // clip to rounded corners matching card geometry
+  const fcr=512*(CARD_R/CARD_W);
+  ctx.save();ctx.beginPath();ctx.roundRect(0,0,512,768,fcr);ctx.clip();
+  if(img){
+    // image fills entire card — cover mode
+    const iw=img.width,ih=img.height;
+    const scale=Math.max(512/iw,768/ih);
+    const dw=iw*scale,dh=ih*scale;
+    ctx.drawImage(img,(512-dw)/2,(768-dh)/2,dw,dh);
+    if(!reversed){
+      // normal: name bar at bottom
+      ctx.fillStyle='rgba(10,15,30,0.75)';ctx.fillRect(0,700,512,68);
+      ctx.fillStyle='#d0daf0';ctx.font='bold 28px serif';ctx.textAlign='center';
+      ctx.fillText(card.name,256,744);
+    } else {
+      // reversed: card rotated 180° in 3D — draw all text pre-rotated
+      // subtle red border glow instead of heavy tint
+      ctx.fillStyle='rgba(120,30,20,0.08)';ctx.fillRect(0,0,512,768);
+      // combined name + reversed badge at viewed bottom (canvas top, y=0)
+      ctx.fillStyle='rgba(10,15,30,0.82)';ctx.fillRect(0,0,512,68);
+      // reversed tag (small, top line)
+      ctx.save();ctx.translate(256,18);ctx.rotate(Math.PI);
+      ctx.fillStyle='#e06050';ctx.font='bold 16px sans-serif';ctx.textAlign='center';
+      ctx.fillText('⟲ 逆位 Reversed',0,0);
+      ctx.restore();
+      // card name
+      ctx.save();ctx.translate(256,48);ctx.rotate(Math.PI);
+      ctx.fillStyle='#d0daf0';ctx.font='bold 26px serif';ctx.textAlign='center';
+      ctx.fillText(card.name,0,0);
+      ctx.restore();
+    }
+  } else {
+    // placeholder — decorative fallback
+    const g=ctx.createLinearGradient(0,0,0,768);
+    g.addColorStop(0,'#faf5e8');g.addColorStop(0.5,'#f5eed8');g.addColorStop(1,'#ede4d0');
+    ctx.fillStyle=g;ctx.fillRect(0,0,512,768);
+    ctx.strokeStyle='#a0b0d0';ctx.lineWidth=3;ctx.strokeRect(8,8,496,752);
+    ctx.fillStyle='#6a7a9a';ctx.textAlign='center';
+    if(card.type==='major'){
+      ctx.font='bold 80px serif';ctx.fillText(toRoman(card.id),256,350);
+      ctx.font='36px serif';ctx.fillText('✦',256,420);
+    } else {
+      ctx.font='52px sans-serif';ctx.fillText(SUIT_SYM[card.suit]||'✦',256,310);
+      ctx.font='bold 64px serif';
+      const rk=['A','II','III','IV','V','VI','VII','VIII','IX','X','Pg','Kn','Qu','Ki'];
+      ctx.fillText(rk[card.rank],256,400);
+    }
+    if(!reversed){
+      ctx.font='italic 14px serif';ctx.fillStyle='#8a90a8';
+      ctx.fillText('Rider-Waite-Smith',256,490);
+      ctx.fillStyle='#1a2040';ctx.font='bold 17px serif';
+      wrapText(ctx,card.name,256,700,460,20);
+    } else {
+      // reversed: draw text rotated 180° to compensate for 3D rotation.z=PI
+      ctx.fillStyle='rgba(100,40,30,0.08)';ctx.fillRect(0,0,512,768);
+      ctx.save();ctx.translate(256,490);ctx.rotate(Math.PI);
+      ctx.font='italic 14px serif';ctx.fillStyle='#8a90a8';ctx.textAlign='center';
+      ctx.fillText('Rider-Waite-Smith',0,0);
+      ctx.restore();
+      // combined name + reversed badge (same style as image cards)
+      ctx.fillStyle='rgba(10,15,30,0.82)';ctx.fillRect(0,680,512,88);
+      ctx.save();ctx.translate(256,714);ctx.rotate(Math.PI);
+      ctx.fillStyle='#1a2040';ctx.font='bold 17px serif';ctx.textAlign='center';
+      ctx.fillText(card.name,0,0);
+      ctx.restore();
+      ctx.save();ctx.translate(256,746);ctx.rotate(Math.PI);
+      ctx.fillStyle='#e06050';ctx.font='bold 16px sans-serif';ctx.textAlign='center';
+      ctx.fillText('⟲ 逆位 Reversed',0,0);
+      ctx.restore();
+    }
+  }
+  ctx.restore(); // end rounded corner clip
+}
+function wrapText(ctx,text,x,y,maxW,lineH){
+  if(ctx.measureText(text).width<=maxW){ctx.fillText(text,x,y);return;}
+  const mid=Math.ceil(text.length/2);
+  ctx.fillText(text.slice(0,mid),x,y);
+  ctx.fillText(text.slice(mid),x,y+lineH);
+}
+function toRoman(n){
+  const r=['0','I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI','XVII','XVIII','XIX','XX','XXI'];
+  return r[n]||String(n);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CARD GEOMETRY — rounded rectangle for realistic look
+// ═══════════════════════════════════════════════════════════════
+function createRoundedCardGeo(){
+  const hw=CARD_W/2, hh=CARD_H/2, r=CARD_R;
+  const shape=new THREE.Shape();
+  shape.moveTo(-hw+r,-hh);
+  shape.lineTo(hw-r,-hh);
+  shape.quadraticCurveTo(hw,-hh,hw,-hh+r);
+  shape.lineTo(hw,hh-r);
+  shape.quadraticCurveTo(hw,hh,hw-r,hh);
+  shape.lineTo(-hw+r,hh);
+  shape.quadraticCurveTo(-hw,hh,-hw,hh-r);
+  shape.lineTo(-hw,-hh+r);
+  shape.quadraticCurveTo(-hw,-hh,-hw+r,-hh);
+
+  const geo=new THREE.ExtrudeGeometry(shape,{
+    depth:CARD_D, bevelEnabled:false
+  });
+  geo.translate(0,0,-CARD_D/2); // center on Z like BoxGeometry
+
+  // Normalize UVs for texture mapping on cap faces
+  const pos=geo.attributes.position, uv=geo.attributes.uv;
+  for(let i=0;i<pos.count;i++){
+    const u=(pos.getX(i)+hw)/CARD_W, v=(pos.getY(i)+hh)/CARD_H;
+    // Flip U on front cap — viewed after rotation.y=PI which mirrors X
+    if(pos.getZ(i)<-CARD_D*0.25) uv.setXY(i,1-u,v);
+    else uv.setXY(i,u,v);
+  }
+  uv.needsUpdate=true;
+
+  // Split groups: front cap (z<0) → mat 0, back cap (z≥0) → mat 1, sides → mat 2
+  const capGrp=geo.groups.find(g=>g.materialIndex===0);
+  const sideGrp=geo.groups.find(g=>g.materialIndex===1);
+  if(capGrp&&sideGrp&&geo.index){
+    const idx=geo.index;
+    let splitAt=-1;
+    for(let i=capGrp.start;i<capGrp.start+capGrp.count;i+=3){
+      if(pos.getZ(idx.getX(i))>-CARD_D*0.25){splitAt=i;break;}
+    }
+    if(splitAt===-1)splitAt=capGrp.start+capGrp.count;
+    geo.clearGroups();
+    geo.addGroup(capGrp.start,splitAt-capGrp.start,0);               // front cap (card face)
+    geo.addGroup(splitAt,capGrp.start+capGrp.count-splitAt,1);       // back cap (card back)
+    geo.addGroup(sideGrp.start,sideGrp.count,2);                     // sides (edge)
+  }
+  return geo;
+}
+const _cardGeoTpl=createRoundedCardGeo();
+
+// ═══════════════════════════════════════════════════════════════
+// CARD PILE — face-down cards in a fan
+// ═══════════════════════════════════════════════════════════════
+const PILE_COUNT=13;
+let pileMeshes=[];
+let pileCardData=[]; // which actual card each pile slot maps to
+let selectedIndex=-1;
+let revealedCard=null;
+let revealedReversed=false;
+let revealedMesh=null;
+let gameState='pile'; // pile -> rising -> flipping -> revealed -> dissolving -> spawning
+
+// Fan arc parameters — cards rotate around a pivot below
+const FAN_RADIUS=5.5;      // distance from pivot to card center
+const FAN_PIVOT_Y=1.4-FAN_RADIUS; // pivot point Y (below table)
+const FAN_CENTER_Y=1.4;    // where cards sit
+const FAN_ARC_DEG=4;       // degrees between each card
+
+// Neon glow ring — vibrant marquee chasing lights
+const _glowMargin=0.3;
+const glowRingGeo=new THREE.PlaneGeometry(CARD_W+_glowMargin,CARD_H+_glowMargin);
+function makeGlowMat(){
+  return new THREE.ShaderMaterial({
+    transparent:true, depthWrite:false, blending:THREE.AdditiveBlending, side:THREE.DoubleSide,
+    uniforms:{
+      uTime:{value:0},uOpacity:{value:0},
+      uPlane:{value:new THREE.Vector2(CARD_W+_glowMargin,CARD_H+_glowMargin)},
+      uCard:{value:new THREE.Vector2(CARD_W/2,CARD_H/2)},
+      uR:{value:CARD_R}
+    },
+    vertexShader:`
+      varying vec2 vUv;
+      void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}
+    `,
+    fragmentShader:`
+      varying vec2 vUv;
+      uniform float uTime;
+      uniform float uOpacity;
+      uniform vec2 uPlane;
+      uniform vec2 uCard;
+      uniform float uR;
+      float rrSDF(vec2 p,vec2 b,float r){
+        vec2 d=abs(p)-b+r;
+        return length(max(d,vec2(0)))+min(max(d.x,d.y),0.0)-r;
+      }
+      vec3 hsv2rgb(vec3 c){
+        vec3 p=abs(fract(c.xxx+vec3(1.0,2.0/3.0,1.0/3.0))*6.0-3.0);
+        return c.z*mix(vec3(1.0),clamp(p-1.0,0.0,1.0),c.y);
+      }
+      void main(){
+        vec2 c=(vUv-0.5)*uPlane; // world-space coords
+        float dist=rrSDF(c,uCard,uR);
+        // tight neon tube right at card edge
+        float tube=smoothstep(0.03,0.005,dist)*smoothstep(-0.025,-0.005,dist);
+        // outer bloom glow
+        float bloom=smoothstep(0.1,0.0,dist)*smoothstep(-0.08,0.0,dist)*0.4;
+        float border=tube+bloom;
+        // === MARQUEE CHASING LIGHTS ===
+        // perimeter angle for traveling effect
+        float angle=atan(c.y,c.x);
+        float perim=angle/6.2832+0.5; // 0-1 around perimeter
+        // multiple chasing light waves at different speeds
+        float chase1=sin(perim*40.0-uTime*8.0)*0.5+0.5;
+        float chase2=sin(-perim*30.0-uTime*6.0)*0.5+0.5;
+        float chase3=sin(perim*20.0+uTime*10.0)*0.5+0.5;
+        float marquee=max(chase1,max(chase2,chase3));
+        // sparkle flicker
+        float flicker=sin(perim*80.0+uTime*15.0)*0.3+0.7;
+        marquee*=flicker;
+        border*=0.4+0.6*marquee;
+        // === VIBRANT RAINBOW COLOR ===
+        // hue cycles around perimeter + shifts with time (hot magenta dominant)
+        float hue=fract(perim*2.0-uTime*0.8+0.85); // offset so magenta is prominent
+        vec3 col=hsv2rgb(vec3(hue,0.85,1.0));
+        // boost hot magenta/pink tones
+        col=mix(col,vec3(1.0,0.0,0.5),0.15);
+        // bright white core on tube
+        col=mix(col,vec3(1.0),tube*0.5);
+        float a=border*uOpacity;
+        if(a<0.003)discard;
+        gl_FragColor=vec4(col,a);
+      }
+    `
+  });
+}
+
+function spawnPile(){
+  clearPile();
+  if(deck.length===0){showHint('牌库已空');return;}
+  gameState='pile';
+  selectedIndex=-1;
+  pileOffset=0;pileOffsetTarget=0;
+  hideCardInfo();
+  const count=Math.min(PILE_COUNT,deck.length);
+  pileCardData=[];
+  const shuffled=[...deck].sort(()=>Math.random()-0.5);
+  for(let i=0;i<count;i++) pileCardData.push(shuffled[i]);
+
+  for(let i=0;i<count;i++){
+    const geo=_cardGeoTpl.clone();
+    // slight per-card variation for realism
+    const wear=0.92+Math.random()*0.08;
+    const edgeCol=new THREE.Color(0x1a2848).multiplyScalar(wear);
+    const backMat=new THREE.MeshStandardMaterial({map:backTex,roughness:0.5+Math.random()*0.15,emissive:0x081828,emissiveIntensity:0.4+Math.random()*0.1});
+    const edgeMat=new THREE.MeshStandardMaterial({color:edgeCol,roughness:0.55+Math.random()*0.15,emissive:0x041820,emissiveIntensity:0.35});
+    // [front cap, back cap, sides]
+    const mats=[backMat, backMat, edgeMat];
+    const mesh=new THREE.Mesh(geo,mats);
+    // fan angle: centered, evenly spaced
+    const mid=(count-1)/2;
+    const angleDeg=(i-mid)*FAN_ARC_DEG;
+    const angleRad=angleDeg*Math.PI/180;
+    // position on arc
+    const x=Math.sin(angleRad)*FAN_RADIUS;
+    const y=FAN_PIVOT_Y+Math.cos(angleRad)*FAN_RADIUS;
+    // realistic imperfections: slight jitter
+    const jitterZ=(Math.random()-0.5)*0.003; // tiny rotation jitter
+    const jitterY=(Math.random()-0.5)*0.01;  // tiny Y offset
+    mesh.position.set(x,y+jitterY,i*0.004);
+    mesh.rotation.set(-0.08,0,-angleRad+jitterZ);
+    // create glow ring behind card
+    const ring=new THREE.Mesh(glowRingGeo,makeGlowMat());
+    ring.visible=false;
+    ring.position.copy(mesh.position);ring.position.z-=0.02;
+    ring.rotation.copy(mesh.rotation);
+    scene.add(ring);
+    mesh.userData={
+      pileIndex:i, angleDeg, angleRad,
+      basePos:mesh.position.clone(), baseRot:mesh.rotation.clone(),
+      hovered:false, hoverT:0, glowPhase:Math.random()*Math.PI*2,
+      glowRing:ring
+    };
+    scene.add(mesh);
+    pileMeshes.push(mesh);
+  }
+  document.getElementById('deckCount').textContent=`剩余: ${deck.length}`;
+  showHint('选择一张牌');
+}
+
+function clearPile(){
+  pileMeshes.forEach(m=>{
+    if(m.userData.glowRing){scene.remove(m.userData.glowRing);m.userData.glowRing.material.dispose();}
+    scene.remove(m);m.geometry.dispose();
+  });
+  pileMeshes=[];
+  if(revealedMesh){scene.remove(revealedMesh);revealedMesh.geometry.dispose();revealedMesh=null;}
+  // NOTE: retiredMeshes are NOT cleared — they persist in the corner
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ANIMATION STATE MACHINE
+// ═══════════════════════════════════════════════════════════════
+let animProgress=0;
+let animMesh=null;
+let animStartPos=new THREE.Vector3();
+let animStartRot=new THREE.Euler();
+const RISE_POS=new THREE.Vector3(0,2.2,1.5);
+const REVEAL_POS=new THREE.Vector3(0,2.0,2.5);
+// spotlight to illuminate revealed card face
+const revealLight=new THREE.SpotLight(0xddeeff,0,10,Math.PI/5,0.8,0.5);
+revealLight.position.set(0,4,5);revealLight.target.position.set(0,2,2.5);
+scene.add(revealLight,revealLight.target);
+
+function selectCard(index){
+  if(gameState!=='pile')return;
+  playTick(500,0.15);playWhoosh(300,0.3,0.08);
+  selectedIndex=index;
+  const cardData=pileCardData[index];
+  revealedCard=cardData;
+  revealedReversed=Math.random()<0.5;
+  // hide other cards with fade
+  pileMeshes.forEach((m,i)=>{
+    if(i!==index) m.userData.fading=true;
+  });
+  animMesh=pileMeshes[index];
+  animStartPos.copy(animMesh.position);
+  animStartRot.copy(animMesh.rotation);
+  animProgress=0;
+  gameState='rising';
+  showHint('');
+}
+
+let flipStarted=false; // guard against re-entry
+async function startFlip(){
+  if(flipStarted)return; // prevent multiple calls during await
+  flipStarted=true;
+  gameState='loading'; // block animation loop from re-calling
+  // clean up pile meshes + glow rings
+  const selectedMesh=animMesh;
+  pileMeshes.forEach(m=>{
+    if(m.userData.glowRing){scene.remove(m.userData.glowRing);m.userData.glowRing.material.dispose();}
+    if(m!==selectedMesh){scene.remove(m);m.geometry.dispose();}
+  });
+  pileMeshes=[];
+  // load face texture
+  const faceTex=await createCardFaceTexture(revealedCard,revealedReversed);
+  const geo=_cardGeoTpl.clone();
+  const edgeMat2=new THREE.MeshStandardMaterial({color:0x2a3560,roughness:0.7});
+  // [front cap = card face, back cap = card back, sides = edge]
+  const mats=[
+    new THREE.MeshStandardMaterial({map:faceTex,roughness:0.85,metalness:0}),
+    new THREE.MeshStandardMaterial({map:backTex,roughness:0.7,emissive:0x101830,emissiveIntensity:0.3}),
+    edgeMat2
+  ];
+  revealedMesh=new THREE.Mesh(geo,mats);
+  revealedMesh.position.copy(RISE_POS);
+  revealedMesh.rotation.set(0,0,0);
+  scene.add(revealedMesh);
+  // remove the selected pile mesh
+  if(selectedMesh){scene.remove(selectedMesh);selectedMesh.geometry.dispose();}
+  animMesh=null;
+  animProgress=0;
+  gameState='flipping';
+  flipStarted=false;
+  playWhoosh(500,0.4,0.1);
+}
+
+function finishReveal(){
+  gameState='revealed';
+  revealLight.intensity=3.0; // turn on bright face light
+  showCardInfo(revealedCard,revealedReversed);
+  showHint('点击确认抽牌',3000);
+  playRevealChime();
+}
+
+// Retired cards — centered at top, larger display
+const CORNER_SCALE=0.55;
+const CORNER_Y=3.2, CORNER_Z=1.0;
+const CORNER_SPACING=CARD_W*CORNER_SCALE+0.08;
+let retiredMeshes=[]; // all drawn cards kept at the top
+
+function reposRetiredCards(){
+  // re-center all retired cards horizontally at the top, uniform alignment
+  const n=retiredMeshes.length;
+  const totalW=(n-1)*CORNER_SPACING;
+  const startX=-totalW/2;
+  retiredMeshes.forEach((m,i)=>{
+    m.position.set(startX+i*CORNER_SPACING, CORNER_Y, CORNER_Z);
+    m.rotation.set(0, Math.PI, 0); // all upright, face showing
+    m.scale.setScalar(CORNER_SCALE);
+  });
+}
+
+function updateDrawUI(){
+  const n=sessionDraws.length;
+  const dc=document.getElementById('drawCount');
+  const sb=document.getElementById('settleBtn');
+  if(n>0){
+    dc.style.display='block';
+    dc.textContent=`已抽 ${n}/${MAX_DRAWS} 张`;
+  } else {
+    dc.style.display='none';
+  }
+  sb.style.display=(n>=MIN_DRAWS&&n<MAX_DRAWS)?'block':'none';
+}
+function confirmDraw(){
+  if(gameState!=='revealed')return;
+  sessionDraws.push({card:revealedCard,reversed:revealedReversed});
+  addToHistory(revealedCard,revealedReversed);
+  deck=deck.filter(c=>c.id!==revealedCard.id);
+  document.getElementById('deckCount').textContent=`剩余: ${deck.length}`;
+  showHint(`✦ ${revealedCard.name} (${sessionDraws.length}/${MAX_DRAWS})`);
+  // compute target position: centered at top
+  const idx=retiredMeshes.length;
+  const totalW=idx*CORNER_SPACING; // after adding this one
+  const startX=-totalW/2;
+  const tx=startX+idx*CORNER_SPACING;
+  const ty=CORNER_Y;
+  const tz=CORNER_Z;
+  revealedMesh.userData.cornerTarget=new THREE.Vector3(tx,ty,tz);
+  // start retiring animation
+  gameState='retiring';
+  revealLight.intensity=0;
+  playRetire();
+  animProgress=0;
+  animStartPos.copy(revealedMesh.position);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ANIMATION UPDATE
+// ═══════════════════════════════════════════════════════════════
+function updateAnimations(dt){
+  // Fade out non-selected pile cards
+  pileMeshes.forEach(m=>{
+    if(m.userData.fading){
+      // hide glow ring immediately
+      if(m.userData.glowRing) m.userData.glowRing.visible=false;
+      m.material.forEach(mat=>{
+        if(!mat.transparent){mat.transparent=true;mat.needsUpdate=true;}
+        mat.opacity=Math.max(0,mat.opacity-dt*2.5);
+      });
+      if(m.material[0].opacity<=0){
+        if(m.userData.glowRing){scene.remove(m.userData.glowRing);m.userData.glowRing.material.dispose();}
+        scene.remove(m);m.geometry.dispose();
+        m.userData.fading=false;
+      }
+    }
+  });
+
+  // Pile follow mouse + hover animation
+  if(gameState==='pile'){
+    pileOffset+=(pileOffsetTarget-pileOffset)*dt*4;
+    const scrollAngle=pileOffset*3*Math.PI/180;
+    const now=performance.now()*0.001;
+    pileMeshes.forEach((m,idx)=>{
+      if(!m.userData.fading){
+        const target=m.userData.hovered?1:0;
+        m.userData.hoverT+=(target-m.userData.hoverT)*dt*8;
+        const h=m.userData.hoverT;
+        const baseAngle=m.userData.angleRad+scrollAngle;
+        const x=Math.sin(baseAngle)*FAN_RADIUS;
+        const y=FAN_PIVOT_Y+Math.cos(baseAngle)*FAN_RADIUS;
+        m.position.x=x;
+        m.position.y=y+h*0.4;
+        m.position.z=m.userData.basePos.z+h*0.5;
+        m.rotation.x=m.userData.baseRot.x+h*(-0.1);
+        m.rotation.y=0;
+        m.rotation.z=-baseAngle+h*(baseAngle*0.6);
+        // card emissive: subtle cyan neon tint on hover
+        m.material.forEach(mt=>{
+          if(mt.emissive){
+            mt.emissive.setRGB(0.02+h*0.03,0.06+h*0.12,0.1+h*0.14);
+            mt.emissiveIntensity=0.3+h*0.5;
+          }
+        });
+        // neon glow ring
+        const ring=m.userData.glowRing;
+        if(ring){
+          ring.visible=h>0.01;
+          if(ring.visible){
+            ring.position.copy(m.position);
+            ring.position.z-=0.015;
+            ring.rotation.copy(m.rotation);
+            const pulse=0.8+0.2*Math.sin(now*5+m.userData.glowPhase);
+            ring.material.uniforms.uOpacity.value=h*pulse;
+            ring.material.uniforms.uTime.value=now;
+          }
+        }
+      }
+    });
+  }
+
+  // Rising animation
+  if(gameState==='rising'&&animMesh){
+    animProgress=Math.min(animProgress+dt*1.2,1);
+    const e=easeInOutCubic(animProgress);
+    animMesh.position.lerpVectors(animStartPos,RISE_POS,e);
+    animMesh.rotation.x=animStartRot.x*(1-e)+0*e;
+    animMesh.rotation.z=animStartRot.z*(1-e)+0*e;
+    // glow ring follows card and fades out
+    const ring=animMesh.userData.glowRing;
+    if(ring){
+      ring.position.copy(animMesh.position);ring.position.z-=0.015;
+      ring.rotation.copy(animMesh.rotation);
+      ring.material.uniforms.uOpacity.value=1-e;
+      ring.material.uniforms.uTime.value=performance.now()*0.001;
+      if(e>=1) ring.visible=false;
+    }
+    if(animProgress>=1) startFlip();
+  }
+
+  // Flipping animation
+  if(gameState==='flipping'&&revealedMesh){
+    animProgress=Math.min(animProgress+dt*0.9,1);
+    const e=easeInOutCubic(animProgress);
+    revealedMesh.position.lerpVectors(RISE_POS,REVEAL_POS,e);
+    revealedMesh.rotation.x=-0.18*e; // tilt back to face camera
+    revealedMesh.rotation.y=Math.PI*e;
+    revealedMesh.rotation.z=revealedReversed?Math.PI*e:0;
+    revealLight.intensity=e*3.0; // gradually illuminate face
+    if(animProgress>=1) finishReveal();
+  }
+
+  // Revealed: gentle float
+  if(gameState==='revealed'&&revealedMesh){
+    revealedMesh.position.y=REVEAL_POS.y+Math.sin(performance.now()*0.001)*0.03;
+    revealedMesh.rotation.x=-0.18; // stay tilted to face camera
+  }
+
+  // Retiring: fly card to top center, shrink
+  if(gameState==='retiring'&&revealedMesh){
+    animProgress=Math.min(animProgress+dt*1.8,1);
+    const e=easeInOutCubic(animProgress);
+    const target=revealedMesh.userData.cornerTarget||new THREE.Vector3(0,CORNER_Y,CORNER_Z);
+    revealedMesh.position.lerpVectors(animStartPos,target,e);
+    const s=1-e*(1-CORNER_SCALE);
+    revealedMesh.scale.setScalar(s);
+    // rotate to face camera
+    revealedMesh.rotation.y=Math.PI*(1-e)+e*Math.PI; // keep face showing
+    revealedMesh.rotation.x=0;
+    revealedMesh.rotation.z=revealedReversed?Math.PI*(1-e):0; // smoothly upright
+    if(animProgress>=1){
+      // park card permanently
+      revealedMesh.scale.setScalar(CORNER_SCALE);
+      revealedMesh.position.copy(target);
+      revealedMesh.rotation.set(0,Math.PI,0); // uniform upright alignment
+      retiredMeshes.push(revealedMesh);
+      reposRetiredCards(); // re-center all retired cards at top
+      revealedMesh=null;
+      hideCardInfo();
+      updateDrawUI();
+      if(sessionDraws.length>=MAX_DRAWS){
+        // max draws reached — auto settle
+        gameState='idle';
+        setTimeout(()=>showSettlement(),500);
+      } else {
+        gameState='spawning';
+        setTimeout(()=>spawnPile(),300);
+      }
+    }
+  }
+}
+
+function easeInOutCubic(t){return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;}
+
+// ═══════════════════════════════════════════════════════════════
+// PARTICLE DISSOLUTION — soft blue/purple
+// ═══════════════════════════════════════════════════════════════
+let particles=null;
+let particleLife=0;
+const P_COUNT=2500;
+const P_DUR=2.8;
+
+function startDissolution(){
+  if(!revealedMesh)return;
+  gameState='dissolving';
+  revealLight.intensity=0; // turn off reveal light
+  const geo=new THREE.BufferGeometry();
+  const pos=new Float32Array(P_COUNT*3);
+  const vel=new Float32Array(P_COUNT*3);
+  const sizes=new Float32Array(P_COUNT);
+  const cp=revealedMesh.position;
+  for(let i=0;i<P_COUNT;i++){
+    pos[i*3]=cp.x+(Math.random()-0.5)*CARD_W;
+    pos[i*3+1]=cp.y+(Math.random()-0.5)*CARD_H;
+    pos[i*3+2]=cp.z+(Math.random()-0.5)*0.1;
+    vel[i*3]=(Math.random()-0.5)*0.25;
+    vel[i*3+1]=Math.random()*0.4+0.15;
+    vel[i*3+2]=(Math.random()-0.5)*0.2;
+    sizes[i]=Math.random()*3+0.8;
+  }
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  geo.setAttribute('aVel',new THREE.BufferAttribute(vel,3));
+  geo.setAttribute('aSize',new THREE.BufferAttribute(sizes,1));
+  const mat=new THREE.ShaderMaterial({
+    transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,
+    uniforms:{uTime:{value:0}},
+    vertexShader:`
+      attribute vec3 aVel;attribute float aSize;
+      uniform float uTime;varying float vAlpha;varying float vT;
+      void main(){
+        float t=uTime;vT=t;
+        vec3 p=position+aVel*t;
+        p.x+=sin(t*2.5+position.y*4.0)*0.08*t;
+        p.z+=cos(t*2.0+position.x*3.0)*0.06*t;
+        vAlpha=1.0-t/${P_DUR.toFixed(1)};
+        vec4 mv=modelViewMatrix*vec4(p,1.0);
+        gl_PointSize=aSize*(250.0/(-mv.z))*max(0.0,1.0-t*0.3);
+        gl_Position=projectionMatrix*mv;
+      }
+    `,
+    fragmentShader:`
+      varying float vAlpha;varying float vT;
+      void main(){
+        float d=length(gl_PointCoord-0.5)*2.0;
+        if(d>1.0)discard;
+        float a=smoothstep(1.0,0.2,d)*vAlpha*0.7;
+        vec3 col=mix(vec3(0.5,0.6,1.0),vec3(0.3,0.3,0.8),vT/${P_DUR.toFixed(1)});
+        gl_FragColor=vec4(col,a);
+      }
+    `
+  });
+  particles=new THREE.Points(geo,mat);
+  scene.add(particles);
+  scene.remove(revealedMesh);revealedMesh.geometry.dispose();revealedMesh=null;
+  particleLife=0;
+  setTimeout(()=>hideCardInfo(),1800);
+}
+
+function updateParticles(dt){
+  if(!particles)return;
+  particleLife+=dt;
+  particles.material.uniforms.uTime.value=particleLife;
+  if(particleLife>=P_DUR){
+    scene.remove(particles);particles.geometry.dispose();particles.material.dispose();
+    particles=null;
+    gameState='spawning';
+    setTimeout(()=>spawnPile(),500);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// HISTORY & UI
+// ═══════════════════════════════════════════════════════════════
+function addToHistory(card,reversed){
+  historyList.push({name:card.name,reversed,meaning:reversed?card.rev:card.up});
+  const panel=document.getElementById('histPanel');
+  const em=document.getElementById('histEmpty');if(em)em.remove();
+  const div=document.createElement('div');div.className='histItem';
+  div.innerHTML=`<span class="hname">${card.name}</span><br><span class="horient" style="color:${reversed?'#d06050':'#60b080'}">${reversed?'⟲ 逆位':'△ 正位'}</span><br><span style="color:#7a8aaa">${reversed?card.rev:card.up}</span>`;
+  panel.prepend(div);
+}
+document.getElementById('histToggle').onclick=()=>{
+  const p=document.getElementById('histPanel');
+  p.style.display=getComputedStyle(p).display==='none'?'block':'none';
+};
+const SUIT_ELEM={
+  Wands:{elem:'🔥 火元素',desc:'代表行动力、热情与创造，关联事业与灵感'},
+  Cups:{elem:'💧 水元素',desc:'代表情感、直觉与关系，关联爱情与内心'},
+  Swords:{elem:'🌬️ 风元素',desc:'代表思维、沟通与冲突，关联决策与真相'},
+  Pentacles:{elem:'🌍 土元素',desc:'代表物质、务实与稳定，关联财务与健康'}
+};
+const GUIDANCE=[
+  '静心感受这张牌带来的启示，它映射了你当前能量的方向。',
+  '牌面的意象是宇宙给你的暗示，用直觉去感知它与你的关联。',
+  '每张牌都是一面镜子，映照你内心深处未被察觉的力量。',
+  '塔罗不决定命运，而是照亮你已经拥有的选择与可能。',
+  '这张牌的出现并非偶然，它是你潜意识与宇宙共振的结果。',
+  '让牌面的图案在你脑海中停留，你的直觉会告诉你更多。'
+];
+function showCardInfo(card,reversed){
+  const ci=document.getElementById('cardInfo');
+  document.getElementById('ciName').textContent=card.name;
+  const o=document.getElementById('ciOrient');
+  o.textContent=reversed?'⟲ 逆位 Reversed':'△ 正位 Upright';
+  o.style.color=reversed?'#d06050':'#60b080';
+  // build rich meaning
+  let html='';
+  // current meaning (highlighted)
+  const active=reversed?card.rev:card.up;
+  html+=`<div style="margin-bottom:10px;font-size:16px;color:#c8d8f0;font-weight:600">✦ ${active}</div>`;
+  // suit/element info for minor arcana
+  if(card.suit&&SUIT_ELEM[card.suit]){
+    const se=SUIT_ELEM[card.suit];
+    html+=`<div style="margin-bottom:8px;font-size:14px;color:#7a90b8">${se.elem}｜${se.desc}</div>`;
+  }
+  // opposite orientation for reference
+  const opposite=reversed?card.up:card.rev;
+  const oppLabel=reversed?'正位参考':'逆位参考';
+  html+=`<div style="margin-bottom:8px;font-size:13px;color:#6a7a98">📖 ${oppLabel}：${opposite}</div>`;
+  // guidance
+  const g=GUIDANCE[Math.floor(Math.random()*GUIDANCE.length)];
+  html+=`<div style="margin-top:10px;font-size:13px;color:#8090a8;font-style:italic;border-top:1px solid rgba(100,140,255,.15);padding-top:8px">💫 ${g}</div>`;
+  document.getElementById('ciMeaning').innerHTML=html;
+  ci.style.display='block';
+}
+function hideCardInfo(){document.getElementById('cardInfo').style.display='none';}
+
+// ═══════════════════════════════════════════════════════════════
+// SETTLEMENT / READING SUMMARY
+// ═══════════════════════════════════════════════════════════════
+const POSITION_LABELS=['过去 / 根源','现在 / 核心','未来 / 方向','建议 / 行动','潜意识 / 隐藏'];
+const OVERALL_MSGS=[
+  '这组牌阵揭示了你内在能量的流动方向，信任你的直觉。',
+  '牌面之间的联系构成了完整的信息，整体观之会有更深的领悟。',
+  '宇宙通过这些牌面向你传递讯息，静心感受它们的共鸣。',
+  '每张牌都是拼图的一角，它们共同描绘出你当前旅程的画卷。',
+];
+function showSettlement(){
+  const overlay=document.getElementById('settleOverlay');
+  const cardsDiv=document.getElementById('settleCards');
+  const summDiv=document.getElementById('settleSummary');
+  cardsDiv.innerHTML='';
+  // build card list
+  sessionDraws.forEach((d,i)=>{
+    const c=d.card, r=d.reversed;
+    const meaning=r?c.rev:c.up;
+    const orientTxt=r?'⟲ 逆位 Reversed':'△ 正位 Upright';
+    const orientClr=r?'#d06050':'#60b080';
+    const posLabel=POSITION_LABELS[i]||`第${i+1}张`;
+    let elemHtml='';
+    if(c.suit&&SUIT_ELEM[c.suit]){
+      const se=SUIT_ELEM[c.suit];
+      elemHtml=`<div class="scElem">${se.elem}</div>`;
+    }
+    cardsDiv.innerHTML+=`
+      <div class="settleCard">
+        <div class="scNum">✦ ${posLabel}</div>
+        <div class="scName">${c.name}</div>
+        <div class="scOrient" style="color:${orientClr}">${orientTxt}</div>
+        <div class="scMeaning">✦ ${meaning}</div>
+        ${elemHtml}
+      </div>`;
+  });
+  // overall summary
+  const msg=OVERALL_MSGS[Math.floor(Math.random()*OVERALL_MSGS.length)];
+  const revCount=sessionDraws.filter(d=>d.reversed).length;
+  const upCount=sessionDraws.length-revCount;
+  let balanceNote='';
+  if(revCount>upCount) balanceNote='逆位牌较多，暗示当前需要反思与调整内在状态。';
+  else if(upCount>revCount) balanceNote='正位牌居多，整体能量积极，顺势而为即可。';
+  else balanceNote='正逆位均衡，阴阳平衡，关键在于你如何把握。';
+  summDiv.innerHTML=`
+    <div style="margin-bottom:10px;color:#8ab4ff;font-weight:600">📊 整体解读</div>
+    <div style="margin-bottom:8px">共抽 ${sessionDraws.length} 张：正位 ${upCount} 张，逆位 ${revCount} 张</div>
+    <div style="margin-bottom:10px">${balanceNote}</div>`;
+  // show overlay
+  overlay.classList.add('show');
+  // hide settle button & draw count
+  document.getElementById('settleBtn').style.display='none';
+  document.getElementById('drawCount').style.display='none';
+  // clear pile if any
+  clearPile();
+  playShimmer(0.1);
+  // trigger AI reading
+  requestAIReading();
+}
+function resetSession(){
+  document.getElementById('settleOverlay').classList.remove('show');
+  document.getElementById('aiContent').innerHTML='';
+  document.getElementById('aiProgressBar').style.display='none';
+  document.getElementById('aiRetryBtn').style.display='none';
+  document.getElementById('aiReading').classList.remove('active');
+  document.getElementById('aiReadingHeader').classList.remove('show');
+  userQuestion='';
+  document.getElementById('questionInput').value='';
+  isAIStreaming=false;
+  sessionDraws=[];
+  retiredMeshes.forEach(m=>{scene.remove(m);m.geometry.dispose();});
+  retiredMeshes=[];
+  deck=buildDeck();
+  document.getElementById('deckCount').textContent=`剩余: ${deck.length}`;
+  updateDrawUI();
+  clearPile();
+  hideCardInfo();
+  gameState='idle';
+  const overlay=document.getElementById('questionOverlay');
+  overlay.classList.remove('hidden');
+  overlay.style.display='flex';
+  showHint('');
+}
+document.getElementById('settleBtn').onclick=()=>{
+  if(sessionDraws.length>=MIN_DRAWS){
+    // stop current pile & enter settlement
+    clearPile();
+    gameState='idle';
+    showSettlement();
+  }
+};
+document.getElementById('settleClose').onclick=()=>resetSession();
+
+// ═══════════════════════════════════════════════════════════════
+// AI READING (DASHSCOPE STREAM — direct browser call, CORS OK)
+// ═══════════════════════════════════════════════════════════════
+const DASHSCOPE_KEY='sk-ws-H.RPHLPYD.dE1C.MEUCIQCAvIt6b68NA8c9gUnvGamEtljc0R92v0cEh5s_WWeCawIgX5K6XRPRjvZhZkwKi0ppirlgO41hKjz5_BRTPmiaptU';
+let isAIStreaming=false;
+
+function parseMD(t){
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^# (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^- (.+)$/gm,'<div style="padding-left:16px;color:#9aadcc">• $1</div>')
+    .replace(/^\d+\. (.+)$/gm,'<div style="padding-left:16px;color:#9aadcc">$&</div>')
+    .replace(/\n{2,}/g,'</p><p style="margin-top:12px">')
+    .replace(/\n/g,'<br>');
+}
+
+async function requestAIReading(){
+  if(isAIStreaming) return;
+  isAIStreaming=true;
+  const contentDiv=document.getElementById('aiContent');
+  const progressBar=document.getElementById('aiProgressBar');
+  const progressFill=document.getElementById('aiProgressFill');
+  const retryBtn=document.getElementById('aiRetryBtn');
+  contentDiv.innerHTML='';
+  progressBar.style.display='block';
+  progressFill.style.width='0%';
+  retryBtn.style.display='none';
+  // activate reading animation
+  document.getElementById('aiReading').classList.add('active');
+  document.getElementById('aiReadingHeader').classList.add('show');
+  // thinking animation
+  const thinkEl=document.createElement('div');
+  thinkEl.className='aiThinking';
+  thinkEl.innerHTML='<div class="dots"><span></span><span></span><span></span></div><span>正在连接星象，解读牌面...</span>';
+  contentDiv.appendChild(thinkEl);
+
+  const cardsDesc=sessionDraws.map((d,i)=>{
+    const c=d.card,r=d.reversed;
+    const meaning=r?c.rev:c.up;
+    const pos=POSITION_LABELS[i]||`第${i+1}张`;
+    return `【${pos}】${c.name} - ${r?'逆位':'正位'}\n含义：${meaning}`;
+  }).join('\n\n');
+
+  const sysPrompt=`你是一位资深塔罗牌占卜师，拥有深厚的神秘学知识和丰富的占卜经验。你的解读风格神秘、温暖、富有洞察力，善于将塔罗的象征意义与占卜者的现实生活联系起来。
+
+请根据以下规则进行解读：
+1. 结合占卜者提出的具体问题来解读牌面
+2. 启用联网搜索获取最新信息，让解读更贴合当下实际
+3. 分析每张牌在问题语境下的含义
+4. 综合分析牌与牌之间的关系和整体趋势
+5. 给出温暖而有建设性的建议
+
+解读格式：
+## 🔮 牌面总览
+简述本次抽牌的整体格局
+
+## ✦ 逐牌解读
+对每张牌进行详细解读，结合占卜者的问题
+
+## 🔗 牌面关联
+分析牌与牌之间的关系和互相的影响
+
+## 🌟 综合指引
+给出整体的建议和方向
+
+请用中文回答，保持神秘而不故弄玄虚的语气，解读要具体、深入、有针对性。`;
+
+  const userMsg=`我的问题：${userQuestion||'请为占卜者做一次综合解读'}\n\n我抽到的牌：\n${cardsDesc}\n\n请为我详细解读这些牌面的含义。`;
+
+  try{
+    const resp=await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${DASHSCOPE_KEY}`},
+      body:JSON.stringify({
+        model:'qwen3.6-flash',
+        messages:[{role:'system',content:sysPrompt},{role:'user',content:userMsg}],
+        stream:true, enable_search:true
+      })
+    });
+    if(!resp.ok){const e=await resp.text();throw new Error(`API错误(${resp.status}): ${e}`);}
+    thinkEl.remove();
+    const textDiv=document.createElement('div');
+    textDiv.style.cssText='margin-top:4px;';
+    contentDiv.appendChild(textDiv);
+    const cursor=document.createElement('span');
+    cursor.id='aiCursor';
+    textDiv.appendChild(cursor);
+
+    const reader=resp.body.getReader();
+    const decoder=new TextDecoder();
+    let buffer='',fullText='';
+    while(true){
+      const{done,value}=await reader.read();
+      if(done) break;
+      buffer+=decoder.decode(value,{stream:true});
+      const lines=buffer.split('\n');
+      buffer=lines.pop()||'';
+      for(const line of lines){
+        if(line.startsWith('data: ')){
+          const data=line.slice(6);
+          if(data==='[DONE]')continue;
+          try{
+            const json=JSON.parse(data);
+            if(json.error)throw new Error(json.error.message||JSON.stringify(json.error));
+            const c=json.choices?.[0]?.delta?.content;
+            if(c){
+              fullText+=c;
+              textDiv.innerHTML='<p>'+parseMD(fullText)+'</p>';
+              textDiv.appendChild(cursor);
+              contentDiv.scrollTop=contentDiv.scrollHeight;
+              progressFill.style.width=Math.min(95,fullText.length/8)+'%';
+            }
+          }catch(e){if(e.message&&!e.message.includes('JSON'))throw e;}
+        }
+      }
+    }
+    if(!fullText){textDiv.innerHTML='<p style="color:#6a80a8;text-align:center">解读未能返回内容，请检查网络或 API Key 后重试。</p>';}
+    progressFill.style.width='100%';
+  }catch(err){
+    console.error('AI reading error:',err);
+    contentDiv.innerHTML=`
+      <div style="text-align:center;padding:30px 0;">
+        <p style="color:#d06050;font-size:15px;margin-bottom:10px;">解读连接出现了问题</p>
+        <p style="color:#5a6a8a;font-size:12px;">${err.message}</p>
+      </div>`;
+  }finally{
+    isAIStreaming=false;
+    retryBtn.style.display='inline-block';
+    progressBar.style.display='none';
+    // stop reading animation
+    document.getElementById('aiReading').classList.remove('active');
+    document.getElementById('aiReadingHeader').classList.remove('show');
+    const c=document.getElementById('aiCursor');if(c)c.remove();
+  }
+}
+document.getElementById('aiRetryBtn').onclick=requestAIReading;
+
+// ── Question overlay handlers ──
+document.getElementById('questionConfirm').onclick=()=>{
+  userQuestion=document.getElementById('questionInput').value.trim();
+  document.getElementById('questionOverlay').classList.add('hidden');
+  spawnPile();
+};
+document.getElementById('questionInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();document.getElementById('questionConfirm').click();}
+});
+let hintTimer=null;
+function showHint(text,dur=2500){
+  const el=document.getElementById('stateHint');el.textContent=text;
+  el.classList.add('show');clearTimeout(hintTimer);
+  if(text)hintTimer=setTimeout(()=>el.classList.remove('show'),dur);
+  else el.classList.remove('show');
+}
+function updateInstructions(){
+  const el=document.getElementById('instrPanel');
+  if(inputMode==='mouse') el.innerHTML='鼠标模式: 点击选牌 → 再次点击确认';
+  else el.innerHTML='手势模式: ✋张开=浏览 · 🤏捏合=选牌/确认';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SOUND EFFECTS (Web Audio API)
+// ═══════════════════════════════════════════════════════════════
+let audioCtx=null;
+function ensureAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();}
+function playTick(pitch=800,vol=0.12){
+  ensureAudio();
+  const osc=audioCtx.createOscillator();
+  const gain=audioCtx.createGain();
+  osc.type='sine';
+  osc.frequency.setValueAtTime(pitch,audioCtx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(pitch*0.6,audioCtx.currentTime+0.06);
+  gain.gain.setValueAtTime(vol,audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.08);
+  osc.connect(gain);gain.connect(audioCtx.destination);
+  osc.start();osc.stop(audioCtx.currentTime+0.1);
+}
+function playConfirm(){
+  ensureAudio();
+  [0,80,160].forEach((delay,i)=>{
+    setTimeout(()=>playTick(600+i*200,0.15),delay);
+  });
+}
+function playWhoosh(pitch=400,dur=0.25,vol=0.1){
+  ensureAudio();const t=audioCtx.currentTime;
+  const osc=audioCtx.createOscillator();const g=audioCtx.createGain();
+  const filter=audioCtx.createBiquadFilter();
+  filter.type='bandpass';filter.frequency.setValueAtTime(pitch,t);filter.Q.value=0.5;
+  osc.type='sawtooth';
+  osc.frequency.setValueAtTime(pitch,t);osc.frequency.exponentialRampToValueAtTime(pitch*2.5,t+dur*0.6);
+  osc.frequency.exponentialRampToValueAtTime(pitch*0.3,t+dur);
+  g.gain.setValueAtTime(vol,t);g.gain.linearRampToValueAtTime(vol*1.5,t+dur*0.3);g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+  osc.connect(filter);filter.connect(g);g.connect(audioCtx.destination);
+  osc.start(t);osc.stop(t+dur);
+}
+function playShimmer(vol=0.08){
+  ensureAudio();const t=audioCtx.currentTime;
+  const freqs=[1200,1500,1800,2200];
+  freqs.forEach((f,i)=>{
+    const osc=audioCtx.createOscillator();const g=audioCtx.createGain();
+    osc.type='sine';osc.frequency.setValueAtTime(f,t+i*0.08);
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+i*0.08+0.05);
+    g.gain.exponentialRampToValueAtTime(0.001,t+i*0.08+0.4);
+    osc.connect(g);g.connect(audioCtx.destination);
+    osc.start(t+i*0.08);osc.stop(t+i*0.08+0.5);
+  });
+}
+function playRevealChime(){
+  ensureAudio();const t=audioCtx.currentTime;
+  const notes=[523,659,784,1047]; // C5 E5 G5 C6 major chord arpeggio
+  notes.forEach((f,i)=>{
+    const osc=audioCtx.createOscillator();const g=audioCtx.createGain();
+    osc.type='triangle';osc.frequency.setValueAtTime(f,t);
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.1,t+i*0.12+0.02);
+    g.gain.exponentialRampToValueAtTime(0.001,t+i*0.12+0.6);
+    osc.connect(g);g.connect(audioCtx.destination);
+    osc.start(t+i*0.12);osc.stop(t+i*0.12+0.7);
+  });
+}
+function playRetire(){
+  ensureAudio();const t=audioCtx.currentTime;
+  const osc=audioCtx.createOscillator();const g=audioCtx.createGain();
+  osc.type='sine';osc.frequency.setValueAtTime(800,t);osc.frequency.exponentialRampToValueAtTime(300,t+0.3);
+  g.gain.setValueAtTime(0.08,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.3);
+  osc.connect(g);g.connect(audioCtx.destination);osc.start(t);osc.stop(t+0.35);
+}
+let lastHoveredIndex=-1; // track which card is hovered for sound
+
+// ═══════════════════════════════════════════════════════════════
+// INPUT
+// ═══════════════════════════════════════════════════════════════
+let inputMode='mouse';
+let handsReady=false;
+let handResults=null;
+const mouse=new THREE.Vector2();
+const raycaster=new THREE.Raycaster();
+let pileOffsetTarget=0; // target X offset from mouse
+let pileOffset=0;       // smoothed current offset
+
+canvas.addEventListener('mousemove',e=>{
+  mouse.x=(e.clientX/window.innerWidth)*2-1;
+  mouse.y=-(e.clientY/window.innerHeight)*2+1;
+  if(gameState==='pile') pileOffsetTarget=mouse.x*-1.8; // mouse left → cards shift right
+});
+canvas.addEventListener('click',()=>{
+  if(inputMode!=='mouse')return;
+  if(gameState==='pile'){
+    // check which pile card is hit
+    raycaster.setFromCamera(mouse,camera);
+    const hits=raycaster.intersectObjects(pileMeshes);
+    if(hits.length>0) selectCard(hits[0].object.userData.pileIndex);
+  } else if(gameState==='revealed'){
+    playConfirm();
+    confirmDraw();
+  }
+});
+
+// Hover detection for pile
+function updateHover(){
+  if(gameState!=='pile')return;
+  if(inputMode==='gesture')return;
+  raycaster.setFromCamera(mouse,camera);
+  const hits=raycaster.intersectObjects(pileMeshes);
+  let anyHit=false;
+  let hovIdx=-1;
+  pileMeshes.forEach(m=>{ m.userData.hovered=false; });
+  if(hits.length>0){
+    const hm=hits[0].object;
+    hm.userData.hovered=true;
+    hovIdx=hm.userData.pileIndex;
+    anyHit=true;
+  }
+  // play tick sound when hovering a different card
+  if(hovIdx!==-1&&hovIdx!==lastHoveredIndex){
+    const pitch=650+hovIdx*40;
+    playTick(pitch,0.08);
+  }
+  lastHoveredIndex=hovIdx;
+  canvas.style.cursor=anyHit?'pointer':'default';
+}
+
+// ── Touch support for mobile ──
+let touchStartX=0, touchMoved=false;
+canvas.addEventListener('touchstart',e=>{
+  if(inputMode==='gesture')return;
+  const t=e.touches[0];
+  touchStartX=t.clientX;
+  touchMoved=false;
+  // update mouse position for raycasting
+  mouse.x=(t.clientX/window.innerWidth)*2-1;
+  mouse.y=-(t.clientY/window.innerHeight)*2+1;
+},{passive:true});
+canvas.addEventListener('touchmove',e=>{
+  if(inputMode==='gesture')return;
+  const t=e.touches[0];
+  touchMoved=true;
+  mouse.x=(t.clientX/window.innerWidth)*2-1;
+  mouse.y=-(t.clientY/window.innerHeight)*2+1;
+  if(gameState==='pile'){
+    pileOffsetTarget=mouse.x*-1.8;
+    // update hover while swiping
+    raycaster.setFromCamera(mouse,camera);
+    const hits=raycaster.intersectObjects(pileMeshes);
+    pileMeshes.forEach(m=>{ m.userData.hovered=false; });
+    if(hits.length>0){
+      const hm=hits[0].object;
+      hm.userData.hovered=true;
+      const hovIdx=hm.userData.pileIndex;
+      if(hovIdx!==lastHoveredIndex){
+        playTick(650+hovIdx*40,0.08);
+        lastHoveredIndex=hovIdx;
+      }
+    }
+  }
+},{passive:true});
+canvas.addEventListener('touchend',e=>{
+  if(inputMode==='gesture')return;
+  if(gameState==='pile'){
+    raycaster.setFromCamera(mouse,camera);
+    const hits=raycaster.intersectObjects(pileMeshes);
+    if(hits.length>0){
+      selectCard(hits[0].object.userData.pileIndex);
+    }
+    // reset hover
+    pileMeshes.forEach(m=>{ m.userData.hovered=false; });
+  } else if(gameState==='revealed'){
+    playConfirm();
+    confirmDraw();
+  }
+},{passive:true});
+
+// ═══════════════════════════════════════════════════════════════
+// MEDIAPIPE HANDS
+// ═══════════════════════════════════════════════════════════════
+document.getElementById('modeBtn').onclick=()=>{
+  if(inputMode==='mouse') initHands();
+  else {
+    inputMode='mouse';
+    document.getElementById('camWrap').style.display='none';
+    document.getElementById('vCursor').style.display='none';
+    document.getElementById('gestureInfo').textContent='模式: 鼠标';
+    document.getElementById('modeBtn').textContent='切换手势模式';
+    updateInstructions();
+  }
+};
+function loadScript(src){
+  return new Promise((res,rej)=>{
+    if(document.querySelector(`script[src="${src}"]`))return res();
+    const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;
+    document.head.appendChild(s);
+  });
+}
+async function initHands(){
+  showHint('正在加载手势识别…',5000);
+  try{
+    const video=document.getElementById('camVid');
+    const stream=await navigator.mediaDevices.getUserMedia({video:{width:320,height:240,facingMode:'user'}});
+    video.srcObject=stream;await video.play();
+    document.getElementById('camWrap').style.display='block';
+    await loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js');
+    const hands=new window.Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}`});
+    hands.setOptions({maxNumHands:1,modelComplexity:1,minDetectionConfidence:0.6,minTrackingConfidence:0.5});
+    hands.onResults(r=>{handResults=r;});
+    async function detect(){
+      if(inputMode!=='gesture')return;
+      try{await hands.send({image:video});}catch(e){}
+      requestAnimationFrame(detect);
+    }
+    inputMode='gesture';handsReady=true;
+    document.getElementById('gestureInfo').textContent='模式: 手势 ✋';
+    document.getElementById('modeBtn').textContent='切换鼠标模式';
+    showHint('手势模式已启用');updateInstructions();detect();
+  }catch(e){
+    console.warn('MediaPipe failed:',e);inputMode='mouse';
+    document.getElementById('camWrap').style.display='none';
+    document.getElementById('gestureInfo').textContent='模式: 鼠标 (摄像头不可用)';
+    showHint('摄像头权限失败，已降级鼠标模式',3000);updateInstructions();
+  }
+}
+function classifyGesture(lms){
+  if(!lms||!lms.length)return'NONE';
+  const lm=lms[0];
+  const dist=(a,b)=>Math.sqrt((lm[a].x-lm[b].x)**2+(lm[a].y-lm[b].y)**2+(lm[a].z-lm[b].z)**2);
+  const tips=[4,8,12,16,20],pips=[3,6,10,14,18];
+  const ext=tips.map((t,i)=>i===0?dist(4,9)>dist(3,9):lm[t].y<lm[pips[i]].y);
+  const cnt=ext.filter(Boolean).length;
+  if(dist(4,8)<0.07)return'PINCH';
+  if(cnt<=1&&!ext[1]&&!ext[2]&&!ext[3]&&!ext[4])return'FIST';
+  if(ext[1]&&!ext[2]&&!ext[3]&&!ext[4])return'POINT';
+  if(cnt>=4)return'OPEN';
+  return'NONE';
+}
+let lastGesture='NONE',gestureStable=0;
+const vCursor=document.getElementById('vCursor');
+const vCursorLabel=document.getElementById('vCursorLabel');
+let vCursorHovIdx=-1;
+let gestureSelectCooldown=0;
+let vCursorX=0,vCursorY=0; // smoothed cursor position
+
+function processGesture(){
+  if(inputMode!=='gesture'||!handResults)return;
+  const lms=handResults.multiHandLandmarks;
+  const g=classifyGesture(lms);
+  document.getElementById('gestureInfo').textContent=`手势: ${g} · 模式: 手势`;
+
+  if(gestureSelectCooldown>0) gestureSelectCooldown--;
+
+  if(!lms||!lms.length){
+    vCursor.style.display='none';
+    // clear hover when hand disappears
+    pileMeshes.forEach(m=>{ m.userData.hovered=false; });
+    return;
+  }
+
+  // Palm center from landmark 9 (middle finger base)
+  const palm=lms[0][9];
+  // MediaPipe x is mirrored (0=right, 1=left), flip it
+  const targetX=(1-palm.x)*window.innerWidth;
+  const targetY=palm.y*window.innerHeight;
+
+  // Smooth interpolation (lerp) — fast tracking with slight smoothing
+  const lerp=0.35;
+  if(vCursor.style.display==='none'){vCursorX=targetX;vCursorY=targetY;} // snap on first show
+  vCursorX+=(targetX-vCursorX)*lerp;
+  vCursorY+=(targetY-vCursorY)*lerp;
+
+  // Show and position virtual cursor
+  vCursor.style.display='block';
+  vCursor.style.left=vCursorX+'px';
+  vCursor.style.top=vCursorY+'px';
+  const screenX=vCursorX,screenY=vCursorY;
+
+  // Update cursor visual state
+  vCursor.className='';
+  if(g==='PINCH') vCursor.className='grab';
+
+  // Convert to normalized device coords for raycasting
+  mouse.x=(screenX/window.innerWidth)*2-1;
+  mouse.y=-(screenY/window.innerHeight)*2+1;
+
+  // Drive pile scroll
+  if(gameState==='pile'){
+    pileOffsetTarget=mouse.x*-1.8;
+
+    // Raycast for hover
+    raycaster.setFromCamera(mouse,camera);
+    const hits=raycaster.intersectObjects(pileMeshes);
+    pileMeshes.forEach(m=>{ m.userData.hovered=false; });
+    vCursorHovIdx=-1;
+
+    if(hits.length>0){
+      const hm=hits[0].object;
+      hm.userData.hovered=true;
+      vCursorHovIdx=hm.userData.pileIndex;
+      if(!vCursor.classList.contains('grab')) vCursor.className='hover';
+      vCursorLabel.textContent='🤏 捏合选牌';
+      // tick sound
+      if(vCursorHovIdx!==lastHoveredIndex){
+        playTick(650+vCursorHovIdx*40,0.08);
+        lastHoveredIndex=vCursorHovIdx;
+      }
+    } else {
+      vCursorLabel.textContent='';
+      lastHoveredIndex=-1;
+    }
+  } else if(gameState==='revealed'){
+    vCursorLabel.textContent='🤏 捏合确认';
+  } else {
+    vCursorLabel.textContent='';
+  }
+
+  // Gesture actions with stability + cooldown
+  if(g===lastGesture) gestureStable++; else gestureStable=0;
+  lastGesture=g;
+  if(gestureStable<4||gestureSelectCooldown>0) return;
+
+  if(gameState==='pile'&&g==='PINCH'){
+    if(vCursorHovIdx>=0){
+      selectCard(vCursorHovIdx);
+      gestureSelectCooldown=30;
+      vCursor.className='grab';
+    }
+  }
+  if(gameState==='revealed'&&g==='PINCH'){
+    confirmDraw();
+    gestureSelectCooldown=30;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RESIZE & MAIN LOOP
+// ═══════════════════════════════════════════════════════════════
+window.addEventListener('resize',()=>{
+  camera.aspect=window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth,window.innerHeight);
+});
+
+const clock=new THREE.Clock();
+function animate(){
+  requestAnimationFrame(animate);
+  const dt=Math.min(clock.getDelta(),0.05);
+  const t=clock.getElapsedTime();
+  // Subtle camera drift for spatial depth
+  camera.position.x=Math.sin(t*0.08)*0.15;
+  camera.position.y=3.2+Math.sin(t*0.06)*0.08;
+  camera.lookAt(0,1.4,0);
+  // glow ring uTime is set in updateAnimations
+  processGesture();
+  updateHover();
+  updateAnimations(dt);
+  updateParticles(dt);
+  renderer.render(scene,camera);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+// Show question overlay on load; spawn pile after user confirms
+document.getElementById('questionOverlay').style.display='flex';
+updateInstructions();
+animate();
+</script>
+</body>
+</html>
