@@ -1,5 +1,18 @@
 [build]
   publish = "."
+  functions = "netlify/functions"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(self), microphone=()"
+
+[[redirects]]
+  from = "/api/tarot-reading"
+  to = "/.netlify/functions/tarot-reading"
+  status = 200
 
 [[redirects]]
   from = "/*"

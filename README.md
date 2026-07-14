@@ -41,6 +41,16 @@ python3 -m http.server 8080
 3. Build command 留空，Publish directory 设为 `.`
 4. `netlify.toml` 已配置根路径重定向到 `tarot.html`
 
+### 配置智能解读
+
+在 Netlify 的 **Site configuration → Environment variables** 中添加：
+
+```text
+DASHSCOPE_API_KEY=你的通义千问 API Key
+```
+
+API Key 只由 Netlify Function 读取，不会发送到浏览器。若旧版本曾把 Key 写进前端源码，请先在阿里云控制台撤销旧 Key 并创建新 Key。
+
 ## 技术栈
 
 - 原生 HTML / CSS / JavaScript

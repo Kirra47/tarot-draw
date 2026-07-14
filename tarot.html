@@ -3,11 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="沉浸式塔罗抽卡体验：支持触摸、鼠标与摄像头手势，生成三至五张牌的个性化解读。">
+<meta name="theme-color" content="#050510">
 <title>塔罗抽卡 · Tarot Draw</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-body{overflow:hidden;background:#020208 url('./tarot-bg.png') center center/cover no-repeat fixed;font-family:'Segoe UI',system-ui,sans-serif;color:#c8d8f0;}
-#c{display:block;width:100vw;height:100vh;position:relative;z-index:1;}
+body{overflow:hidden;min-height:100dvh;overscroll-behavior:none;background:#020208 url('./tarot-bg.png') center center/cover no-repeat fixed;font-family:'Segoe UI',system-ui,sans-serif;color:#c8d8f0;}
+#c{display:block;width:100vw;height:100dvh;position:relative;z-index:1;touch-action:none;}
 #camWrap{position:fixed;bottom:12px;left:12px;width:180px;height:135px;border-radius:10px;overflow:hidden;border:1px solid rgba(100,140,255,.3);z-index:20;display:none;box-shadow:0 4px 20px rgba(0,0,40,.5);}
 #camWrap video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);}
 #ui{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;}
@@ -18,12 +20,16 @@ body{overflow:hidden;background:#020208 url('./tarot-bg.png') center center/cove
 #gestureInfo{position:fixed;top:60px;left:22px;font-size:12px;color:#5a70a0;z-index:10;}
 .uiBtn{background:rgba(15,20,40,.8);border:1px solid rgba(100,140,255,.25);color:#8ab4ff;padding:7px 16px;border-radius:8px;font-size:13px;cursor:pointer;transition:all .25s;backdrop-filter:blur(4px);}
 .uiBtn:hover{background:rgba(30,50,100,.6);border-color:rgba(100,160,255,.5);box-shadow:0 0 12px rgba(80,130,255,.2);}
+button:focus-visible,textarea:focus-visible{outline:2px solid #8ab4ff;outline-offset:3px;}
 #modeBtn{position:fixed;top:12px;right:22px;z-index:30;}
 #cardInfo{position:fixed;bottom:24px;right:24px;width:320px;max-height:55vh;background:rgba(8,12,30,.92);border:1px solid rgba(100,140,255,.2);border-radius:14px;padding:18px 20px;z-index:20;display:none;backdrop-filter:blur(10px);box-shadow:0 8px 40px rgba(0,0,40,.6);}
 #cardInfo h2{font-size:22px;color:#8ab4ff;margin-bottom:8px;text-shadow:0 0 8px rgba(100,160,255,.3);}
 #cardInfo .orient{font-size:17px;margin-bottom:10px;}
 #cardInfo .meaning{font-size:16px;line-height:1.7;color:#9aadcc;}
 #histPanel{position:fixed;top:56px;right:22px;width:270px;max-height:72vh;overflow-y:auto;background:rgba(8,12,30,.92);border:1px solid rgba(100,140,255,.2);border-radius:12px;z-index:20;display:none;backdrop-filter:blur(10px);box-shadow:0 8px 32px rgba(0,0,40,.4);}
+#histHeader{position:sticky;top:0;display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(8,12,30,.97);border-bottom:1px solid rgba(100,140,255,.12);z-index:1;font-size:12px;color:#8ab4ff;}
+#histClear{border:0;background:transparent;color:#64789e;cursor:pointer;font:inherit;}
+#histClear:hover{color:#d08080;}
 #histPanel::-webkit-scrollbar{width:4px;}
 #histPanel::-webkit-scrollbar-thumb{background:rgba(100,140,255,.3);border-radius:2px;}
 #histToggle{position:fixed;top:12px;right:155px;z-index:30;}
@@ -56,6 +62,10 @@ body{overflow:hidden;background:#020208 url('./tarot-bg.png') center center/cove
 .settleCard .scElem{font-size:12px;color:#6a80a8;margin-top:6px;}
 #settleSummary{background:rgba(15,20,40,.6);border:1px solid rgba(100,140,255,.15);border-radius:12px;padding:18px 20px;margin-bottom:20px;font-size:14px;color:#9aadcc;line-height:1.8;}
 #settleClose{display:block;margin:0 auto;font-size:15px;padding:10px 32px;}
+#readingActions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:18px;}
+#readingActions #settleClose{margin:0;}
+#copyReadingBtn.copied{color:#70d0a0;border-color:rgba(80,220,150,.45);}
+#readingDisclaimer{text-align:center;margin:16px auto 0;max-width:560px;color:#566580;font-size:11px;line-height:1.6;}
 /* ── Mobile responsive ── */
 @media(max-width:768px){
   #cardInfo{left:8px;right:8px;bottom:8px;width:auto;max-height:38vh;padding:14px 16px;border-radius:12px;overflow-y:auto;}
@@ -91,6 +101,7 @@ body{overflow:hidden;background:#020208 url('./tarot-bg.png') center center/cove
 #questionInput::placeholder{color:#4a5878;font-style:italic;}
 #questionConfirm{margin-top:24px;padding:12px 44px;border:1px solid rgba(100,140,255,.35);border-radius:10px;background:rgba(20,30,60,.8);color:#8ab4ff;font-size:15px;letter-spacing:3px;cursor:pointer;transition:all .3s;font-family:inherit;}
 #questionConfirm:hover{background:rgba(30,50,100,.7);border-color:rgba(100,160,255,.6);box-shadow:0 0 20px rgba(80,130,255,.2);}
+.qHint{margin-top:14px;color:#4f6080;font-size:11px;line-height:1.6;}
 /* ── AI Streaming Reading ── */
 #aiReading{margin-top:20px;min-height:40px;}
 #aiContent{font-size:14px;line-height:1.9;color:#9aadcc;}
@@ -129,6 +140,9 @@ body{overflow:hidden;background:#020208 url('./tarot-bg.png') center center/cove
 .readingDots span:nth-child(4){animation-delay:.45s;}
 .readingDots span:nth-child(5){animation-delay:.6s;}
 @keyframes dotBounce{0%,80%,100%{opacity:.2;transform:translateY(0);}40%{opacity:1;transform:translateY(-3px);}}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important;}
+}
 </style>
 </head>
 <body>
@@ -140,9 +154,9 @@ body{overflow:hidden;background:#020208 url('./tarot-bg.png') center center/cove
   </div>
 </div>
 <div id="gestureInfo">模式: 鼠标</div>
-<button id="modeBtn" class="uiBtn">切换手势模式</button>
-<button id="histToggle" class="uiBtn">历史记录</button>
-<div id="histPanel"><div id="histEmpty" style="padding:20px;text-align:center;color:#4a5878;font-size:13px;">暂无抽牌记录</div></div>
+<button id="modeBtn" class="uiBtn" aria-label="切换鼠标或摄像头手势模式">切换手势模式</button>
+<button id="histToggle" class="uiBtn" aria-controls="histPanel" aria-expanded="false">历史记录</button>
+<div id="histPanel" aria-label="抽牌历史"><div id="histHeader"><span>抽牌历史</span><button id="histClear">清空</button></div><div id="histItems"><div id="histEmpty" style="padding:20px;text-align:center;color:#4a5878;font-size:13px;">暂无抽牌记录</div></div></div>
 <div id="cardInfo">
   <h2 id="ciName"></h2>
   <div class="orient" id="ciOrient"></div>
@@ -153,17 +167,18 @@ body{overflow:hidden;background:#020208 url('./tarot-bg.png') center center/cove
 <div id="vCursor"><div id="vCursorInner"></div><div id="vCursorLabel"></div></div>
 <div id="instrPanel"></div>
 <!-- Question Input Overlay -->
-<div id="questionOverlay">
+<div id="questionOverlay" role="dialog" aria-modal="true" aria-labelledby="questionTitle">
   <div class="qCard">
-    <h2>心中所想</h2>
+    <h2 id="questionTitle">心中所想</h2>
     <p class="qSub">请在心中默念你的问题，然后写下来</p>
-    <textarea id="questionInput" placeholder="写下你心中所想的事情...&#10;例如：我的感情方向如何？近期的事业该怎么选择？" rows="4"></textarea>
+    <textarea id="questionInput" maxlength="240" placeholder="写下你心中所想的事情...&#10;例如：我的感情方向如何？近期的事业该怎么选择？" rows="4"></textarea>
     <button id="questionConfirm">开始占卜</button>
+    <p class="qHint">可以留空进行综合解读。塔罗用于自我探索与娱乐，不替代医疗、法律或财务建议。</p>
   </div>
 </div>
 <button id="settleBtn" class="uiBtn" style="display:none;">✦ 结算解读</button>
 <div id="drawCount" style="display:none;"></div>
-<div id="settleOverlay">
+<div id="settleOverlay" role="dialog" aria-modal="true" aria-labelledby="settleTitle">
   <div id="settlePanel">
     <h2 id="settleTitle">✦ 塔罗解读总结 ✦</h2>
     <div id="settleCards"></div>
@@ -178,7 +193,11 @@ body{overflow:hidden;background:#020208 url('./tarot-bg.png') center center/cove
       <div id="aiProgressBar" style="display:none"><div id="aiProgressFill"></div></div>
       <button id="aiRetryBtn">重新解读</button>
     </div>
-    <button id="settleClose" class="uiBtn">✦ 开始新的解读</button>
+    <div id="readingActions">
+      <button id="copyReadingBtn" class="uiBtn">复制本次解读</button>
+      <button id="settleClose" class="uiBtn">✦ 开始新的解读</button>
+    </div>
+    <p id="readingDisclaimer">解读仅供娱乐与自我反思，请结合现实信息独立判断。</p>
   </div>
 </div>
 
@@ -247,7 +266,9 @@ function buildDeck(){
   return d;
 }
 let deck=buildDeck();
+const HISTORY_KEY='tarot-draw-history-v2';
 let historyList=[];
+try{historyList=JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]');}catch{historyList=[];}
 // Session draw tracking (3 min, 5 max)
 const MIN_DRAWS=3, MAX_DRAWS=5;
 let sessionDraws=[]; // {card, reversed} for current reading session
@@ -293,7 +314,9 @@ function loadCardImage(card){
 // ═══════════════════════════════════════════════════════════════
 const canvas=document.getElementById('c');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+const isMobile=matchMedia('(max-width: 768px)').matches;
+const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,isMobile?1.5:2));
 renderer.setSize(window.innerWidth,window.innerHeight);
 renderer.setClearColor(0x000000,0);
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
@@ -672,7 +695,11 @@ function spawnPile(){
   hideCardInfo();
   const count=Math.min(PILE_COUNT,deck.length);
   pileCardData=[];
-  const shuffled=[...deck].sort(()=>Math.random()-0.5);
+  const shuffled=[...deck];
+  for(let i=shuffled.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];
+  }
   for(let i=0;i<count;i++) pileCardData.push(shuffled[i]);
 
   for(let i=0;i<count;i++){
@@ -997,7 +1024,7 @@ function easeInOutCubic(t){return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;}
 // ═══════════════════════════════════════════════════════════════
 let particles=null;
 let particleLife=0;
-const P_COUNT=2500;
+const P_COUNT=reduceMotion?500:(isMobile?1400:2500);
 const P_DUR=2.8;
 
 function startDissolution(){
@@ -1072,17 +1099,38 @@ function updateParticles(dt){
 // HISTORY & UI
 // ═══════════════════════════════════════════════════════════════
 function addToHistory(card,reversed){
-  historyList.push({name:card.name,reversed,meaning:reversed?card.rev:card.up});
-  const panel=document.getElementById('histPanel');
-  const em=document.getElementById('histEmpty');if(em)em.remove();
+  historyList.push({name:card.name,reversed,meaning:reversed?card.rev:card.up,time:Date.now()});
+  historyList=historyList.slice(-60);
+  localStorage.setItem(HISTORY_KEY,JSON.stringify(historyList));
+  renderHistory();
+}
+function historyItem(item){
   const div=document.createElement('div');div.className='histItem';
-  div.innerHTML=`<span class="hname">${card.name}</span><br><span class="horient" style="color:${reversed?'#d06050':'#60b080'}">${reversed?'⟲ 逆位':'△ 正位'}</span><br><span style="color:#7a8aaa">${reversed?card.rev:card.up}</span>`;
-  panel.prepend(div);
+  div.innerHTML=`<span class="hname"></span><br><span class="horient" style="color:${item.reversed?'#d06050':'#60b080'}">${item.reversed?'⟲ 逆位':'△ 正位'}</span><br><span class="hmeaning" style="color:#7a8aaa"></span>`;
+  div.querySelector('.hname').textContent=item.name;
+  div.querySelector('.hmeaning').textContent=item.meaning;
+  return div;
+}
+function renderHistory(){
+  const items=document.getElementById('histItems');
+  items.replaceChildren();
+  if(!historyList.length){
+    const empty=document.createElement('div');empty.id='histEmpty';
+    empty.style.cssText='padding:20px;text-align:center;color:#4a5878;font-size:13px;';
+    empty.textContent='暂无抽牌记录';items.appendChild(empty);return;
+  }
+  [...historyList].reverse().forEach(item=>items.appendChild(historyItem(item)));
 }
 document.getElementById('histToggle').onclick=()=>{
   const p=document.getElementById('histPanel');
-  p.style.display=getComputedStyle(p).display==='none'?'block':'none';
+  const open=getComputedStyle(p).display==='none';
+  p.style.display=open?'block':'none';
+  document.getElementById('histToggle').setAttribute('aria-expanded',String(open));
 };
+document.getElementById('histClear').onclick=()=>{
+  historyList=[];localStorage.removeItem(HISTORY_KEY);renderHistory();
+};
+renderHistory();
 const SUIT_ELEM={
   Wands:{elem:'🔥 火元素',desc:'代表行动力、热情与创造，关联事业与灵感'},
   Cups:{elem:'💧 水元素',desc:'代表情感、直觉与关系，关联爱情与内心'},
@@ -1219,9 +1267,8 @@ document.getElementById('settleBtn').onclick=()=>{
 document.getElementById('settleClose').onclick=()=>resetSession();
 
 // ═══════════════════════════════════════════════════════════════
-// AI READING (DASHSCOPE STREAM — direct browser call, CORS OK)
+// AI READING (via Netlify Function so the API key never reaches the browser)
 // ═══════════════════════════════════════════════════════════════
-const DASHSCOPE_KEY='sk-ws-H.RPHLPYD.dE1C.MEUCIQCAvIt6b68NA8c9gUnvGamEtljc0R92v0cEh5s_WWeCawIgX5K6XRPRjvZhZkwKi0ppirlgO41hKjz5_BRTPmiaptU';
 let isAIStreaming=false;
 
 function parseMD(t){
@@ -1263,41 +1310,11 @@ async function requestAIReading(){
     return `【${pos}】${c.name} - ${r?'逆位':'正位'}\n含义：${meaning}`;
   }).join('\n\n');
 
-  const sysPrompt=`你是一位资深塔罗牌占卜师，拥有深厚的神秘学知识和丰富的占卜经验。你的解读风格神秘、温暖、富有洞察力，善于将塔罗的象征意义与占卜者的现实生活联系起来。
-
-请根据以下规则进行解读：
-1. 结合占卜者提出的具体问题来解读牌面
-2. 启用联网搜索获取最新信息，让解读更贴合当下实际
-3. 分析每张牌在问题语境下的含义
-4. 综合分析牌与牌之间的关系和整体趋势
-5. 给出温暖而有建设性的建议
-
-解读格式：
-## 🔮 牌面总览
-简述本次抽牌的整体格局
-
-## ✦ 逐牌解读
-对每张牌进行详细解读，结合占卜者的问题
-
-## 🔗 牌面关联
-分析牌与牌之间的关系和互相的影响
-
-## 🌟 综合指引
-给出整体的建议和方向
-
-请用中文回答，保持神秘而不故弄玄虚的语气，解读要具体、深入、有针对性。`;
-
-  const userMsg=`我的问题：${userQuestion||'请为占卜者做一次综合解读'}\n\n我抽到的牌：\n${cardsDesc}\n\n请为我详细解读这些牌面的含义。`;
-
   try{
-    const resp=await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',{
+    const resp=await fetch('/.netlify/functions/tarot-reading',{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':`Bearer ${DASHSCOPE_KEY}`},
-      body:JSON.stringify({
-        model:'qwen3.6-flash',
-        messages:[{role:'system',content:sysPrompt},{role:'user',content:userMsg}],
-        stream:true, enable_search:true
-      })
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({question:userQuestion,cards:cardsDesc})
     });
     if(!resp.ok){const e=await resp.text();throw new Error(`API错误(${resp.status}): ${e}`);}
     thinkEl.remove();
@@ -1356,6 +1373,18 @@ async function requestAIReading(){
   }
 }
 document.getElementById('aiRetryBtn').onclick=requestAIReading;
+document.getElementById('copyReadingBtn').onclick=async()=>{
+  const btn=document.getElementById('copyReadingBtn');
+  const question=userQuestion?`问题：${userQuestion}\n\n`:'';
+  const cards=sessionDraws.map((d,i)=>`${POSITION_LABELS[i]||`第${i+1}张`}：${d.card.name}（${d.reversed?'逆位':'正位'}）— ${d.reversed?d.card.rev:d.card.up}`).join('\n');
+  const ai=document.getElementById('aiContent').innerText.trim();
+  const text=`塔罗解读\n\n${question}${cards}${ai?`\n\n${ai}`:''}\n\n仅供娱乐与自我反思。`;
+  try{
+    await navigator.clipboard.writeText(text);
+    btn.textContent='已复制';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='复制本次解读';btn.classList.remove('copied');},1800);
+  }catch{showHint('复制失败，请长按选择文本');}
+};
 
 // ── Question overlay handlers ──
 document.getElementById('questionConfirm').onclick=()=>{
@@ -1723,8 +1752,8 @@ function animate(){
   const dt=Math.min(clock.getDelta(),0.05);
   const t=clock.getElapsedTime();
   // Subtle camera drift for spatial depth
-  camera.position.x=Math.sin(t*0.08)*0.15;
-  camera.position.y=3.2+Math.sin(t*0.06)*0.08;
+  camera.position.x=reduceMotion?0:Math.sin(t*0.08)*0.15;
+  camera.position.y=reduceMotion?3.2:3.2+Math.sin(t*0.06)*0.08;
   camera.lookAt(0,1.4,0);
   // glow ring uTime is set in updateAnimations
   processGesture();
