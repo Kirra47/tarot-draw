@@ -8,7 +8,7 @@ const baseUrl = process.env.TAROT_URL || "http://127.0.0.1:8766";
     headless: true,
     executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe",
   });
-  const context = await browser.newContext({ viewport: { width: 1280, height: 800 }, acceptDownloads: true });
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, acceptDownloads: true });
   const page = await context.newPage();
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
@@ -48,6 +48,13 @@ const baseUrl = process.env.TAROT_URL || "http://127.0.0.1:8766";
   await page.goto(`${baseUrl}/tarot.html`, { waitUntil: "networkidle", timeout: 30_000 });
   await page.locator("#questionArchive").click();
   await page.locator("#histPanel").waitFor({ state: "visible" });
+  const modalEntry = await page.evaluate(() => ({
+    modal: document.querySelector("#histPanel").classList.contains("modalArchive"),
+    obscured: document.querySelector("#questionOverlay").classList.contains("archiveObscured"),
+    expanded: document.querySelector("#questionArchive").getAttribute("aria-expanded"),
+  }));
+  await page.screenshot({ path: "D:/codex/outputs/tarot-archive-entry-mobile.png", fullPage: true });
+  await page.setViewportSize({ width: 1280, height: 800 });
 
   const overview = {
     readings: await page.locator("#archiveReadingCount").textContent(),
@@ -87,6 +94,7 @@ const baseUrl = process.env.TAROT_URL || "http://127.0.0.1:8766";
     starMatches,
     export: { format: exported.format, readings: exported.readings?.length, filename: download.suggestedFilename() },
     clearGuard: { afterFirstClear, afterConfirmedClear },
+    modalEntry,
     errors,
   };
   console.log(JSON.stringify(result, null, 2));
@@ -97,7 +105,8 @@ const baseUrl = process.env.TAROT_URL || "http://127.0.0.1:8766";
     !overview.topCard.includes("星星 · 4次") || !overview.element.includes("火") ||
     overview.activeDays !== 4 || !result.transcriptSaved || starMatches !== 4 ||
     result.export.format !== "astral-tarot-archive" || result.export.readings !== 5 ||
-    afterFirstClear !== 5 || afterConfirmedClear !== null || errors.length
+    afterFirstClear !== 5 || afterConfirmedClear !== null ||
+    !modalEntry.modal || !modalEntry.obscured || modalEntry.expanded !== "true" || errors.length
   ) process.exitCode = 1;
 })().catch((error) => {
   console.error(error);
