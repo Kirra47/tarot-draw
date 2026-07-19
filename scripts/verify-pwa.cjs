@@ -39,13 +39,13 @@ const baseUrl = process.env.TAROT_URL || "http://127.0.0.1:8766";
   await page.goto(`${baseUrl}/tarot.html`, { waitUntil: "domcontentloaded", timeout: 30_000 });
   await page.waitForFunction(() => navigator.serviceWorker?.controller, null, { timeout: 15_000 });
   await page.waitForFunction(async () => {
-    const key = (await caches.keys()).find((name) => name.includes("astral-tarot-v5") && name.endsWith("-assets"));
+    const key = (await caches.keys()).find((name) => name.includes("astral-tarot-v6") && name.endsWith("-assets"));
     if (!key) return false;
     const requests = await (await caches.open(key)).keys();
     return requests.filter((request) => new URL(request.url).pathname.includes("/assets/cards/")).length === 78;
   }, null, { timeout: 30_000 });
   const offlineCardCount = await page.evaluate(async () => {
-    const key = (await caches.keys()).find((name) => name.includes("astral-tarot-v5") && name.endsWith("-assets"));
+    const key = (await caches.keys()).find((name) => name.includes("astral-tarot-v6") && name.endsWith("-assets"));
     const requests = await (await caches.open(key)).keys();
     return requests.filter((request) => new URL(request.url).pathname.includes("/assets/cards/")).length;
   });
@@ -65,7 +65,7 @@ const baseUrl = process.env.TAROT_URL || "http://127.0.0.1:8766";
     Object.defineProperty(event, "userChoice", { value: Promise.resolve({ outcome: "accepted" }) });
     window.dispatchEvent(event);
   });
-  await page.waitForFunction(() => document.querySelector("#appNoticeTitle")?.textContent.includes("安装 Astral Tarot"));
+  await page.waitForFunction(() => document.querySelector("#appNoticeTitle")?.textContent.includes("安装星象塔罗"));
   await page.screenshot({ path: "D:/codex/outputs/tarot-pwa-install.png", fullPage: true });
   await page.locator("#appNoticeAction").click();
   const installPromptCalled = await page.evaluate(() => window.__installPromptCalled === true);
@@ -103,7 +103,7 @@ const baseUrl = process.env.TAROT_URL || "http://127.0.0.1:8766";
   await browser.close();
 
   if (
-    offlineCardCount !== 78 || offlineReloadTitle !== "塔罗抽卡 · Tarot Draw" ||
+    offlineCardCount !== 78 || offlineReloadTitle !== "星象塔罗 · 牌面观测" ||
     !installPromptCalled || !iosInstallDetail.includes("Safari 分享按钮") || !shortcutOpenedArchive ||
     !result.updateMessageSupported || !result.progressMessagesSupported || errors.length
   ) process.exitCode = 1;

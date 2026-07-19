@@ -1,6 +1,6 @@
 {
-  "name": "Astral Tarot Archive",
-  "short_name": "Astral Tarot",
+  "name": "星象塔罗 · 个人观测",
+  "short_name": "星象塔罗",
   "id": "./",
   "description": "支持鼠标、触摸与摄像头手势的沉浸式塔罗观测。",
   "lang": "zh-CN",

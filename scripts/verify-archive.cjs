@@ -94,7 +94,7 @@ const baseUrl = process.env.TAROT_URL || "http://127.0.0.1:8766";
 
   if (
     overview.readings !== "5" || overview.cards !== "15" || overview.upright !== "73%" ||
-    !overview.topCard.includes("The Star 星星 · 4次") || !overview.element.includes("火") ||
+    !overview.topCard.includes("星星 · 4次") || !overview.element.includes("火") ||
     overview.activeDays !== 4 || !result.transcriptSaved || starMatches !== 4 ||
     result.export.format !== "astral-tarot-archive" || result.export.readings !== 5 ||
     afterFirstClear !== 5 || afterConfirmedClear !== null || errors.length

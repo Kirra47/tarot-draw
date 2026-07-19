@@ -8,11 +8,11 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Astral Tarot">
+<meta name="apple-mobile-web-app-title" content="星象塔罗">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./assets/icons/tarot-icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/apple-touch-icon.png">
-<title>塔罗抽卡 · Tarot Draw</title>
+<title>星象塔罗 · 牌面观测</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{overflow:hidden;min-height:100dvh;overscroll-behavior:none;background:#020208 url('./tarot-bg.png') center center/cover no-repeat fixed;font-family:'Segoe UI',system-ui,sans-serif;color:#c8d8f0;}
@@ -500,7 +500,7 @@ body::after{
   margin:10px 0 34px;color:var(--ivory);font-family:"Songti SC","STSong",Georgia,serif;
   font-size:28px;font-weight:500;letter-spacing:3px;text-shadow:none;
 }
-#settlePanel>h2::before{content:"OBSERVATION  /  ";display:block;margin-bottom:8px;color:var(--gold);font:9px Georgia,serif;letter-spacing:3px;}
+#settlePanel>h2::before{content:"牌阵解读";display:block;margin-bottom:8px;color:var(--gold);font:11px "PingFang SC","Microsoft YaHei",sans-serif;letter-spacing:2px;}
 #settleCards{gap:12px;margin-bottom:20px;align-items:stretch;}
 .settleCard{
   flex:1 1 170px;width:auto;min-width:0;max-width:230px;padding:18px 16px;
@@ -550,23 +550,24 @@ body::after{
 #readingDisclaimer{color:var(--faint);font-size:9px;}
 
 /* Share poster */
-#posterOverlay{position:fixed;inset:0;z-index:290;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(5,4,7,.96);backdrop-filter:blur(18px);overflow:auto;}
+#posterOverlay{position:fixed;inset:0;z-index:290;display:none;align-items:center;justify-content:center;padding:32px 40px;background:rgba(5,4,7,.96);backdrop-filter:blur(18px);overflow:auto;}
 #posterOverlay.show{display:flex;}
-#posterPanel{width:min(900px,100%);display:grid;grid-template-columns:minmax(280px,430px) minmax(260px,1fr);gap:26px;align-items:center;}
-#posterPreviewShell{position:relative;display:grid;place-items:center;min-height:420px;border:1px solid var(--line);border-radius:22px;padding:14px;background:rgba(201,163,109,.025);box-shadow:0 25px 70px rgba(0,0,0,.4);}
-#posterPreview{display:block;width:100%;max-height:76vh;object-fit:contain;border-radius:12px;background:#09070b;box-shadow:0 14px 45px rgba(0,0,0,.45);}
+#posterPanel{width:min(1240px,100%);display:grid;grid-template-columns:minmax(420px,560px) minmax(360px,1fr);gap:56px;align-items:center;}
+#posterPreviewShell{position:relative;display:grid;place-items:center;min-height:620px;border:1px solid var(--line);border-radius:24px;padding:18px;background:rgba(201,163,109,.025);box-shadow:0 25px 70px rgba(0,0,0,.4);}
+#posterPreview{display:block;width:min(100%,540px);max-height:82vh;object-fit:contain;border-radius:14px;background:#09070b;box-shadow:0 14px 45px rgba(0,0,0,.45);}
 #posterLoading{position:absolute;inset:0;display:none;place-items:center;border-radius:22px;background:rgba(8,6,10,.82);color:var(--gold);font-size:10px;letter-spacing:2px;}
 #posterLoading.show{display:grid;}
-.posterKicker{color:var(--gold);font:9px Georgia,serif;letter-spacing:3px;}
-#posterControls h2{margin:10px 0 12px;color:var(--ivory);font-family:"Songti SC","STSong",serif;font-size:28px;font-weight:400;}
-#posterControls>p{color:var(--muted);font-size:11px;line-height:1.8;}
-.posterPrivacy{display:flex;align-items:flex-start;gap:9px;margin:20px 0;padding:12px;border:1px solid var(--line);border-radius:11px;color:var(--muted);font-size:10px;line-height:1.5;cursor:pointer;}
+.posterKicker{color:var(--gold);font:13px "PingFang SC","Microsoft YaHei",sans-serif;letter-spacing:2px;}
+#posterControls h2{margin:14px 0 18px;color:var(--ivory);font-family:"Songti SC","STSong",serif;font-size:38px;font-weight:400;}
+#posterControls>p{max-width:520px;color:var(--muted);font-size:15px;line-height:1.9;}
+.posterPrivacy{display:flex;align-items:flex-start;gap:11px;margin:26px 0;padding:16px;border:1px solid var(--line);border-radius:13px;color:var(--muted);font-size:14px;line-height:1.65;cursor:pointer;}
+.posterPrivacy small{font-size:12px;color:var(--faint);}
 .posterPrivacy input{margin-top:2px;accent-color:var(--gold);}
-.posterButtons{display:grid;gap:9px;}
-.posterButtons button{min-height:44px;border:1px solid var(--line-strong);border-radius:11px;background:rgba(201,163,109,.06);color:var(--gold-bright);font:10px inherit;cursor:pointer;}
+.posterButtons{display:grid;gap:11px;}
+.posterButtons button{min-height:54px;border:1px solid var(--line-strong);border-radius:13px;background:rgba(201,163,109,.06);color:var(--gold-bright);font:15px inherit;cursor:pointer;}
 .posterButtons #posterShare{background:var(--gold-bright);border-color:var(--gold-bright);color:#160f12;font-weight:600;}
 .posterButtons button:disabled{opacity:.42;cursor:wait;}
-#posterClose{margin-top:14px;border:0;background:transparent;color:var(--faint);font:10px inherit;cursor:pointer;}
+#posterClose{margin-top:18px;border:0;background:transparent;color:var(--faint);font:14px inherit;cursor:pointer;}
 
 @media(max-width:900px){
   .sessionStatus{display:none;}
@@ -639,9 +640,15 @@ body::after{
   #posterOverlay{align-items:flex-start;padding:12px;}
   #posterPanel{grid-template-columns:1fr;gap:17px;}
   #posterPreviewShell{min-height:280px;padding:9px;}
-  #posterPreview{max-height:62vh;}
+  #posterPreview{width:100%;max-height:58vh;}
   #posterControls{padding:0 6px 16px;}
-  #posterControls h2{font-size:22px;}
+  .posterKicker{font-size:11px;}
+  #posterControls h2{font-size:28px;margin:9px 0 12px;}
+  #posterControls>p{font-size:14px;line-height:1.75;}
+  .posterPrivacy{margin:16px 0;padding:13px;font-size:13px;}
+  .posterPrivacy small{font-size:11px;}
+  .posterButtons button{min-height:50px;font-size:15px;}
+  #posterClose{font-size:13px;}
 }
 @media(max-width:380px), (max-height:620px) and (max-width:720px){
   .qIntro{padding:20px 21px;}
@@ -657,9 +664,9 @@ body::after{
 <canvas id="c"></canvas>
 <div id="ui">
   <header id="topBar">
-    <div class="brandLockup" aria-label="Astral Tarot">
+    <div class="brandLockup" aria-label="星象塔罗">
       <span class="brandSigil" aria-hidden="true">◐</span>
-      <span><strong>ASTRAL</strong><small>TAROT ARCHIVE</small></span>
+      <span><strong>星象塔罗</strong><small>个人牌面观测</small></span>
     </div>
     <div class="sessionStatus">
       <span class="liveDot" aria-hidden="true"></span>
@@ -674,9 +681,9 @@ body::after{
   </nav>
 </div>
 <div id="histPanel" aria-label="观测记录">
-  <div id="histHeader"><span><small>ARCHIVE</small>个人观测档案</span><div id="histTools"><button id="histExport">导出</button><button id="histClear">清空</button><button id="histClose" aria-label="关闭个人观测档案">×</button></div></div>
+  <div id="histHeader"><span><small>观测存档</small>个人观测档案</span><div id="histTools"><button id="histExport">导出</button><button id="histClear">清空</button><button id="histClose" aria-label="关闭个人观测档案">×</button></div></div>
   <section id="archiveInsights" aria-label="长期观测概览">
-    <div class="archivePrivacy"><b>LOCAL MEMORY</b><span>仅保存在此浏览器</span></div>
+    <div class="archivePrivacy"><b>本机保存</b><span>仅保存在此浏览器</span></div>
     <div class="archiveStats">
       <div class="archiveStat"><b id="archiveReadingCount">0</b><span>观测次数</span></div>
       <div class="archiveStat"><b id="archiveCardCount">0</b><span>累计牌面</span></div>
@@ -703,7 +710,7 @@ body::after{
 <div id="instrPanel"></div>
 <div id="appNotice" role="status" aria-live="polite" aria-atomic="true">
   <div class="appNoticeIcon" aria-hidden="true">◐</div>
-  <div class="appNoticeCopy"><strong id="appNoticeTitle">Astral Tarot</strong><span id="appNoticeDetail"></span><div id="appNoticeProgress"></div></div>
+  <div class="appNoticeCopy"><strong id="appNoticeTitle">星象塔罗</strong><span id="appNoticeDetail"></span><div id="appNoticeProgress"></div></div>
   <button id="appNoticeAction" type="button"></button>
   <button id="appNoticeDismiss" type="button" aria-label="关闭提示">×</button>
 </div>
@@ -712,15 +719,15 @@ body::after{
   <div class="qCard">
     <section class="qIntro">
       <div class="qOrb" aria-hidden="true"><span>◐</span></div>
-      <p class="qKicker">BEGIN THE READING</p>
+      <p class="qKicker">开始本次观测</p>
       <h2 id="questionTitle">为今夜设下一个问题</h2>
       <p class="qSub">不必寻找完美措辞。说出此刻真正困扰你的事，牌面会给你一种新的观察角度。</p>
       <div class="ritualLegend"><span><i>01</i> 设问</span><span><i>02</i> 触牌</span><span><i>03</i> 观照</span></div>
     </section>
     <section class="qForm">
-      <label class="fieldLabel" for="questionInput"><span>你想观察什么？</span><small>OPTIONAL</small></label>
+      <label class="fieldLabel" for="questionInput"><span>你想观察什么？</span><small>可以留空</small></label>
       <textarea id="questionInput" maxlength="240" placeholder="例如：接下来一个月，我最值得投入精力的方向是什么？" rows="4"></textarea>
-      <div class="spreadLabel"><span>选择观测深度</span><small>SPREAD</small></div>
+      <div class="spreadLabel"><span>选择观测深度</span><small>牌阵选择</small></div>
       <div class="spreadPicker" role="radiogroup" aria-label="选择牌阵">
         <button class="spreadOption active" type="button" role="radio" aria-checked="true" data-count="3"><b>03</b><span><strong>三牌·当下路径</strong><em>过去 · 现在 · 未来</em></span></button>
         <button class="spreadOption" type="button" role="radio" aria-checked="false" data-count="5"><b>05</b><span><strong>五牌·深层观照</strong><em>路径 · 行动 · 潜在影响</em></span></button>
@@ -748,7 +755,7 @@ body::after{
       <div id="aiProgressBar" style="display:none"><div id="aiProgressFill"></div></div>
       <button id="aiRetryBtn">重新解读</button>
       <section id="followupPanel" aria-label="继续追问当前牌阵">
-        <div class="followupKicker"><span>CONTINUE · 沿着牌阵继续问</span><span id="followupCount">0 / 4</span></div>
+        <div class="followupKicker"><span>沿着这组牌继续追问</span><span id="followupCount">0 / 4</span></div>
         <div id="followupThread" role="log" aria-live="polite"></div>
         <div id="followupSuggestions">
           <button class="followupChip" type="button">我现在最值得做的一件事是什么？</button>
@@ -774,9 +781,9 @@ body::after{
   <div id="posterPanel">
     <div id="posterPreviewShell"><img id="posterPreview" alt="本次塔罗观测分享海报预览"><div id="posterLoading">正在绘制牌面海报…</div></div>
     <section id="posterControls">
-      <div class="posterKicker">SHARE THE OBSERVATION</div>
+      <div class="posterKicker">分享本次牌面观测</div>
       <h2 id="posterTitle">把这次观测带走</h2>
-      <p>海报由浏览器在当前设备生成，牌面、问题与解读不会上传。Android 会优先打开系统分享面板。</p>
+      <p>海报直接在当前设备生成，牌面、问题与解读不会上传。安卓手机会优先打开系统分享面板。</p>
       <label class="posterPrivacy"><input id="posterQuestionToggle" type="checkbox" checked><span>在海报中显示我的问题<br><small>关闭后只显示“本次牌面观测”</small></span></label>
       <div class="posterButtons"><button id="posterShare" type="button">分享图片</button><button id="posterSave" type="button">保存高清 PNG</button></div>
       <button id="posterClose" type="button">返回解读</button>
@@ -846,6 +853,11 @@ function buildDeck(){
     });
   });
   return d;
+}
+function displayCardName(value){
+  const name=typeof value==='string'?value:String(value?.name||'');
+  if(name.includes(' · '))return name.split(' · ').at(-1).trim();
+  return name.match(/[\u3400-\u9fff].*$/)?.[0]||name;
 }
 let deck=buildDeck();
 const HISTORY_KEY='tarot-reading-history-v3';
@@ -1003,10 +1015,10 @@ function createCardBackTexture(){
   ctx.fillStyle='rgba(0,240,255,0.9)';ctx.font='bold 20px sans-serif';ctx.textAlign='center';
   ctx.fillText('☽  ★  ☾',256,56);ctx.restore();
 
-  // footer — TAROT neon text
+  // footer — localized tarot title
   ctx.save();ctx.shadowColor='rgba(255,50,180,0.9)';ctx.shadowBlur=15;
   ctx.fillStyle='rgba(255,140,210,1)';ctx.font='bold 18px sans-serif';ctx.textAlign='center';
-  ctx.fillText('✦  T A R O T  ✦',256,728);ctx.restore();
+  ctx.fillText('✦  塔 罗  ✦',256,728);ctx.restore();
 
   // paper grain / cardboard texture overlay
   const imgData=ctx.getImageData(0,0,512,768);
@@ -1053,7 +1065,7 @@ function drawFace(ctx,cv,card,reversed,img){
       // normal: name bar at bottom
       ctx.fillStyle='rgba(10,15,30,0.75)';ctx.fillRect(0,700,512,68);
       ctx.fillStyle='#d0daf0';ctx.font='bold 28px serif';ctx.textAlign='center';
-      ctx.fillText(card.name,256,744);
+      ctx.fillText(displayCardName(card),256,744);
     } else {
       // reversed: card rotated 180° in 3D — draw all text pre-rotated
       // subtle red border glow instead of heavy tint
@@ -1063,12 +1075,12 @@ function drawFace(ctx,cv,card,reversed,img){
       // reversed tag (small, top line)
       ctx.save();ctx.translate(256,18);ctx.rotate(Math.PI);
       ctx.fillStyle='#e06050';ctx.font='bold 16px sans-serif';ctx.textAlign='center';
-      ctx.fillText('⟲ 逆位 Reversed',0,0);
+      ctx.fillText('⟲ 逆位',0,0);
       ctx.restore();
       // card name
       ctx.save();ctx.translate(256,48);ctx.rotate(Math.PI);
       ctx.fillStyle='#d0daf0';ctx.font='bold 26px serif';ctx.textAlign='center';
-      ctx.fillText(card.name,0,0);
+      ctx.fillText(displayCardName(card),0,0);
       ctx.restore();
     }
   } else {
@@ -1089,25 +1101,25 @@ function drawFace(ctx,cv,card,reversed,img){
     }
     if(!reversed){
       ctx.font='italic 14px serif';ctx.fillStyle='#8a90a8';
-      ctx.fillText('Rider-Waite-Smith',256,490);
+      ctx.fillText('经典塔罗牌面',256,490);
       ctx.fillStyle='#1a2040';ctx.font='bold 17px serif';
-      wrapText(ctx,card.name,256,700,460,20);
+      wrapText(ctx,displayCardName(card),256,700,460,20);
     } else {
       // reversed: draw text rotated 180° to compensate for 3D rotation.z=PI
       ctx.fillStyle='rgba(100,40,30,0.08)';ctx.fillRect(0,0,512,768);
       ctx.save();ctx.translate(256,490);ctx.rotate(Math.PI);
       ctx.font='italic 14px serif';ctx.fillStyle='#8a90a8';ctx.textAlign='center';
-      ctx.fillText('Rider-Waite-Smith',0,0);
+      ctx.fillText('经典塔罗牌面',0,0);
       ctx.restore();
       // combined name + reversed badge (same style as image cards)
       ctx.fillStyle='rgba(10,15,30,0.82)';ctx.fillRect(0,680,512,88);
       ctx.save();ctx.translate(256,714);ctx.rotate(Math.PI);
       ctx.fillStyle='#1a2040';ctx.font='bold 17px serif';ctx.textAlign='center';
-      ctx.fillText(card.name,0,0);
+      ctx.fillText(displayCardName(card),0,0);
       ctx.restore();
       ctx.save();ctx.translate(256,746);ctx.rotate(Math.PI);
       ctx.fillStyle='#e06050';ctx.font='bold 16px sans-serif';ctx.textAlign='center';
-      ctx.fillText('⟲ 逆位 Reversed',0,0);
+      ctx.fillText('⟲ 逆位',0,0);
       ctx.restore();
     }
   }
@@ -1692,7 +1704,7 @@ function saveReadingToHistory(){
 function historyItem(item){
   const details=document.createElement('details');details.className='histItem';
   const summary=document.createElement('summary');
-  const name=document.createElement('div');name.className='hname';name.textContent=`${item.spread||3}张牌 · ${item.cards?.[0]?.name||'塔罗解读'}`;
+  const name=document.createElement('div');name.className='hname';name.textContent=`${item.spread||3}张牌 · ${displayCardName(item.cards?.[0]?.name)||'塔罗解读'}`;
   const meta=document.createElement('div');meta.className='histMeta';
   meta.textContent=new Intl.DateTimeFormat('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(item.time||Date.now()));
   const question=document.createElement('div');question.className='histQuestion';question.textContent=item.question||'综合解读';
@@ -1700,7 +1712,7 @@ function historyItem(item){
   const cards=document.createElement('div');cards.className='histCards';
   (item.cards||[]).forEach((card,i)=>{
     const row=document.createElement('div');
-    row.textContent=`${POSITION_LABELS[i]||`第${i+1}张`}：${card.name} · ${card.reversed?'逆位':'正位'}`;
+    row.textContent=`${POSITION_LABELS[i]||`第${i+1}张`}：${displayCardName(card.name)} · ${card.reversed?'逆位':'正位'}`;
     cards.appendChild(row);
   });
   details.appendChild(cards);
@@ -1744,7 +1756,7 @@ function renderArchiveInsights(){
   });
   const topCard=[...cardCounts].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]))[0];
   const topSuit=[...suitCounts].sort((a,b)=>b[1]-a[1])[0];
-  document.getElementById('archiveTopCard').textContent=topCard?`${topCard[0]} · ${topCard[1]}次`:'等待积累';
+  document.getElementById('archiveTopCard').textContent=topCard?`${displayCardName(topCard[0])} · ${topCard[1]}次`:'等待积累';
   document.getElementById('archiveElement').textContent=topSuit?ARCHIVE_ELEMENTS[topSuit[0]]:(majorCount?'✦ 大阿卡纳':'等待积累');
 
   const week=document.getElementById('archiveWeek');week.replaceChildren();
@@ -1839,9 +1851,9 @@ const GUIDANCE=[
 ];
 function showCardInfo(card,reversed){
   const ci=document.getElementById('cardInfo');
-  document.getElementById('ciName').textContent=card.name;
+  document.getElementById('ciName').textContent=displayCardName(card);
   const o=document.getElementById('ciOrient');
-  o.textContent=reversed?'⟲ 逆位 Reversed':'△ 正位 Upright';
+  o.textContent=reversed?'⟲ 逆位':'△ 正位';
   o.style.color=reversed?'#d47f70':'#85a99b';
   // build rich meaning
   let html='';
@@ -1915,7 +1927,7 @@ function showSettlement(){
   sessionDraws.forEach((d,i)=>{
     const c=d.card, r=d.reversed;
     const meaning=r?c.rev:c.up;
-    const orientTxt=r?'⟲ 逆位 Reversed':'△ 正位 Upright';
+    const orientTxt=r?'⟲ 逆位':'△ 正位';
     const orientClr=r?'#d47f70':'#85a99b';
     const posLabel=POSITION_LABELS[i]||`第${i+1}张`;
     let elemHtml='';
@@ -1926,14 +1938,14 @@ function showSettlement(){
     cardsDiv.innerHTML+=`
       <div class="settleCard">
         <div class="scNum">✦ ${posLabel}</div>
-        <div class="scName">${c.name}</div>
+        <div class="scName">${displayCardName(c)}</div>
         <div class="scOrient" style="color:${orientClr}">${orientTxt}</div>
         <div class="scMeaning">✦ ${meaning}</div>
         ${elemHtml}
       </div>`;
   });
   summDiv.innerHTML=`
-    <div style="margin-bottom:12px;color:#f0dab1;font-family:Georgia,serif;font-size:11px;letter-spacing:2px">◇ LOCAL SYNTHESIS · 整体观照</div>
+    <div style="margin-bottom:12px;color:#f0dab1;font-family:'Songti SC','STSong',serif;font-size:13px;letter-spacing:2px">◇ 牌阵整体观照</div>
     ${buildLocalSynthesis()}`;
   saveReadingToHistory();
   // show overlay
@@ -2203,8 +2215,7 @@ function drawWrappedText(ctx,text,x,y,maxWidth,lineHeight,maxLines=2){
   return y+lines.length*lineHeight;
 }
 function posterCardTitle(card){
-  if(card.name.includes(' · '))return card.name.split(' · ').at(-1);
-  const chinese=card.name.match(/[\u3400-\u9fff].*$/);return chinese?.[0]||card.name;
+  return displayCardName(card);
 }
 function posterSummary(){
   const first=sessionDraws[0],last=sessionDraws.at(-1);
@@ -2227,14 +2238,14 @@ async function createReadingPoster(showQuestion=true){
     ctx.fillStyle=`rgba(240,218,177,${.08+random()*.3})`;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
   }
   const gold='#d5b07a',bright='#f0dab1',ivory='#eee7dc',muted='#a79ca9',faint='#716673';
-  ctx.textAlign='left';ctx.fillStyle=gold;ctx.font='22px Georgia,serif';ctx.fillText('◐  ASTRAL TAROT ARCHIVE',72,78);
-  ctx.textAlign='right';ctx.fillStyle=faint;ctx.font='17px system-ui,sans-serif';ctx.fillText(`${sessionDraws.length===3?'THREE':'FIVE'} CARD OBSERVATION`,1008,78);
+  ctx.textAlign='left';ctx.fillStyle=gold;ctx.font='30px "Songti SC","STSong",serif';ctx.fillText('◐  星象塔罗 · 个人观测',72,78);
+  ctx.textAlign='right';ctx.fillStyle=faint;ctx.font='23px "PingFang SC","Microsoft YaHei",sans-serif';ctx.fillText(sessionDraws.length===3?'三牌阵':'五牌阵',1008,78);
   ctx.strokeStyle='rgba(213,176,122,.28)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(72,108);ctx.lineTo(1008,108);ctx.stroke();
 
-  ctx.textAlign='center';ctx.fillStyle=bright;ctx.font='38px "Songti SC","STSong",serif';
+  ctx.textAlign='center';ctx.fillStyle=bright;ctx.font='48px "Songti SC","STSong",serif';
   const question=showQuestion&&userQuestion?userQuestion:'本次牌面观测';
-  drawWrappedText(ctx,question,width/2,170,890,52,2);
-  ctx.fillStyle=faint;ctx.font='17px system-ui,sans-serif';ctx.fillText('THE CARDS HAVE SPOKEN',width/2,275);
+  drawWrappedText(ctx,question,width/2,170,890,62,2);
+  ctx.fillStyle=faint;ctx.font='24px "PingFang SC","Microsoft YaHei",sans-serif';ctx.fillText('牌面已经显现',width/2,285);
 
   const images=await Promise.all(sessionDraws.map(draw=>loadCardImage(draw.card)));
   const five=sessionDraws.length>3;
@@ -2252,7 +2263,7 @@ async function createReadingPoster(showQuestion=true){
   }
   sessionDraws.forEach((draw,index)=>{
     const{x,y}=positions[index],image=images[index];
-    ctx.textAlign='center';ctx.fillStyle=gold;ctx.font=`${five?16:18}px system-ui,sans-serif`;
+    ctx.textAlign='center';ctx.fillStyle=gold;ctx.font=`${five?21:23}px "PingFang SC","Microsoft YaHei",sans-serif`;
     ctx.fillText((POSITION_LABELS[index]||`第${index+1}张`).split('/')[0].trim(),x+cardWidth/2,y-18);
     ctx.save();ctx.shadowColor='rgba(0,0,0,.55)';ctx.shadowBlur=24;ctx.shadowOffsetY=12;
     posterRoundRect(ctx,x,y,cardWidth,cardHeight,12);ctx.fillStyle='#160f17';ctx.fill();ctx.clip();
@@ -2263,24 +2274,24 @@ async function createReadingPoster(showQuestion=true){
       ctx.fillStyle='#1c131d';ctx.fillRect(x,y,cardWidth,cardHeight);ctx.fillStyle=bright;ctx.font='50px Georgia,serif';ctx.fillText('◐',x+cardWidth/2,y+cardHeight/2);
     }
     ctx.restore();ctx.strokeStyle='rgba(240,218,177,.6)';ctx.lineWidth=2;posterRoundRect(ctx,x,y,cardWidth,cardHeight,12);ctx.stroke();
-    ctx.textAlign='center';ctx.fillStyle=ivory;ctx.font=`${five?17:21}px "Songti SC","STSong",serif`;
-    ctx.fillText(posterCardTitle(draw.card),x+cardWidth/2,y+cardHeight+30);
-    ctx.fillStyle=draw.reversed?'#d78d8d':'#91b6a7';ctx.font=`${five?13:15}px system-ui,sans-serif`;
-    ctx.fillText(draw.reversed?'逆位 · REVERSED':'正位 · UPRIGHT',x+cardWidth/2,y+cardHeight+53);
+    ctx.textAlign='center';ctx.fillStyle=ivory;ctx.font=`${five?22:27}px "Songti SC","STSong",serif`;
+    ctx.fillText(posterCardTitle(draw.card),x+cardWidth/2,y+cardHeight+33);
+    ctx.fillStyle=draw.reversed?'#d78d8d':'#91b6a7';ctx.font=`${five?18:20}px "PingFang SC","Microsoft YaHei",sans-serif`;
+    ctx.fillText(draw.reversed?'逆位':'正位',x+cardWidth/2,y+cardHeight+61);
   });
 
   const summaryY=five?1150:875;
   ctx.strokeStyle='rgba(213,176,122,.24)';ctx.beginPath();ctx.moveTo(110,summaryY-30);ctx.lineTo(970,summaryY-30);ctx.stroke();
-  ctx.textAlign='left';ctx.fillStyle=gold;ctx.font='18px Georgia,serif';ctx.fillText('OBSERVATION NOTE',110,summaryY);
-  ctx.fillStyle=ivory;ctx.font=`${five?25:28}px "Songti SC","STSong",serif`;
-  drawWrappedText(ctx,posterSummary(),110,summaryY+48,860,five?38:42,2);
+  ctx.textAlign='left';ctx.fillStyle=gold;ctx.font='24px "Songti SC","STSong",serif';ctx.fillText('观测提示',110,summaryY);
+  ctx.fillStyle=ivory;ctx.font=`${five?30:34}px "Songti SC","STSong",serif`;
+  drawWrappedText(ctx,posterSummary(),110,summaryY+52,860,five?44:48,2);
   const reversed=sessionDraws.filter(draw=>draw.reversed).length;
-  ctx.fillStyle=muted;ctx.font='18px system-ui,sans-serif';ctx.fillText(`正位 ${sessionDraws.length-reversed}  ·  逆位 ${reversed}  ·  仅供娱乐与自我反思`,110,summaryY+(five?145:160));
+  ctx.fillStyle=muted;ctx.font='22px "PingFang SC","Microsoft YaHei",sans-serif';ctx.fillText(`正位 ${sessionDraws.length-reversed}  ·  逆位 ${reversed}  ·  仅供娱乐与自我反思`,110,summaryY+(five?152:168));
 
   const now=new Date();const date=new Intl.DateTimeFormat('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit'}).format(now);
   ctx.strokeStyle='rgba(213,176,122,.18)';ctx.beginPath();ctx.moveTo(72,1350);ctx.lineTo(1008,1350);ctx.stroke();
-  ctx.textAlign='left';ctx.fillStyle=faint;ctx.font='16px system-ui,sans-serif';ctx.fillText(date,72,1390);
-  ctx.textAlign='right';ctx.fillStyle=gold;ctx.fillText(location.hostname||'ASTRAL TAROT',1008,1390);
+  ctx.textAlign='left';ctx.fillStyle=faint;ctx.font='20px system-ui,sans-serif';ctx.fillText(date,72,1390);
+  ctx.textAlign='right';ctx.fillStyle=gold;ctx.fillText(location.hostname||'星象塔罗',1008,1390);
   return new Promise((resolve,reject)=>poster.toBlob(blob=>blob?resolve(blob):reject(new Error('海报生成失败')),'image/png'));
 }
 function posterFilename(){
@@ -2300,7 +2311,7 @@ async function refreshPosterPreview(){
 }
 async function openPoster(){
   hideAppNotice();document.getElementById('posterOverlay').classList.add('show');
-  document.getElementById('posterShare').textContent=/android/i.test(navigator.userAgent)?'分享到 Android 应用':'分享图片';
+  document.getElementById('posterShare').textContent=/android/i.test(navigator.userAgent)?'分享到安卓应用':'分享图片';
   document.getElementById('posterQuestionToggle').checked=Boolean(userQuestion);
   document.getElementById('posterQuestionToggle').disabled=!userQuestion;
   await refreshPosterPreview();document.getElementById('posterShare').focus();
@@ -2327,7 +2338,7 @@ document.getElementById('posterShare').onclick=async()=>{
   const file=new File([posterBlob],posterFilename(),{type:'image/png'});
   try{
     if(navigator.share&&navigator.canShare?.({files:[file]})){
-      await navigator.share({title:'我的塔罗观测',text:'来自 Astral Tarot Archive',files:[file]});
+      await navigator.share({title:'我的塔罗观测',text:'来自星象塔罗',files:[file]});
     }else{
       savePoster();showHint('设备不支持图片直分享，已保存高清 PNG');
     }
@@ -2825,7 +2836,7 @@ function showInstallOffer(){
   if(isStandalone||installOfferRecentlyDismissed()||!navigator.onLine)return;
   if(deferredInstallPrompt){
     showAppNotice({
-      title:'安装 Astral Tarot',detail:'添加到桌面，获得全屏与离线体验',actionLabel:'安装',sticky:true,dismissKey:INSTALL_DISMISS_KEY,
+      title:'安装星象塔罗',detail:'添加到桌面，获得全屏与离线体验',actionLabel:'安装',sticky:true,dismissKey:INSTALL_DISMISS_KEY,
       onAction:async()=>{
         const prompt=deferredInstallPrompt;deferredInstallPrompt=null;
         await prompt.prompt();const choice=await prompt.userChoice;
@@ -2846,7 +2857,7 @@ window.addEventListener('beforeinstallprompt',event=>{
 });
 window.addEventListener('appinstalled',()=>{
   deferredInstallPrompt=null;localStorage.removeItem(INSTALL_DISMISS_KEY);
-  showAppNotice({title:'安装完成',detail:'Astral Tarot 已加入你的桌面'});
+  showAppNotice({title:'安装完成',detail:'星象塔罗已加入你的桌面'});
 });
 function showNetworkStatus(){
   if(!navigator.onLine){
