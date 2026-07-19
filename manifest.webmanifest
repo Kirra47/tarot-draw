@@ -1,0 +1,56 @@
+{
+  "name": "Astral Tarot Archive",
+  "short_name": "Astral Tarot",
+  "id": "./",
+  "description": "支持鼠标、触摸与摄像头手势的沉浸式塔罗观测。",
+  "lang": "zh-CN",
+  "start_url": "./?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#07060b",
+  "theme_color": "#0d0a12",
+  "categories": ["lifestyle", "entertainment"],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "./assets/icons/tarot-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/icons/tarot-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/icons/tarot-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/icons/tarot-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "开启新的观测",
+      "short_name": "新观测",
+      "url": "./?new=1",
+      "icons": [{ "src": "./assets/icons/tarot-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "查看个人观测档案",
+      "short_name": "观测档案",
+      "url": "./?archive=1",
+      "icons": [{ "src": "./assets/icons/tarot-icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

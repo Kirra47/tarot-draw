@@ -4,7 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="沉浸式塔罗抽卡体验：支持触摸、鼠标与摄像头手势，生成三至五张牌的个性化解读。">
-<meta name="theme-color" content="#050510">
+<meta name="theme-color" content="#0d0a12">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Astral Tarot">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./assets/icons/tarot-icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/apple-touch-icon.png">
 <title>塔罗抽卡 · Tarot Draw</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -28,19 +35,54 @@ button:focus-visible,textarea:focus-visible{outline:2px solid #8ab4ff;outline-of
 #cardInfo .meaning{font-size:16px;line-height:1.7;color:#9aadcc;}
 #histPanel{position:fixed;top:56px;right:22px;width:270px;max-height:72vh;overflow-y:auto;background:rgba(8,12,30,.92);border:1px solid rgba(100,140,255,.2);border-radius:12px;z-index:20;display:none;backdrop-filter:blur(10px);box-shadow:0 8px 32px rgba(0,0,40,.4);}
 #histHeader{position:sticky;top:0;display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(8,12,30,.97);border-bottom:1px solid rgba(100,140,255,.12);z-index:1;font-size:12px;color:#8ab4ff;}
-#histClear{border:0;background:transparent;color:#64789e;cursor:pointer;font:inherit;}
+#histTools{display:flex;align-items:center;gap:8px;}
+#histTools button{border:0;background:transparent;color:#64789e;cursor:pointer;font:inherit;}
+#histExport:hover{color:#8ab4ff;}
 #histClear:hover{color:#d08080;}
+#histTools button:disabled{opacity:.35;cursor:not-allowed;}
+#histClose{font-size:16px!important;line-height:1;}
+#histPanel.modalArchive{z-index:240;top:24px;max-height:calc(100dvh - 48px);}
 #histPanel::-webkit-scrollbar{width:4px;}
 #histPanel::-webkit-scrollbar-thumb{background:rgba(100,140,255,.3);border-radius:2px;}
 #histToggle{position:fixed;top:12px;right:155px;z-index:30;}
-.histItem{padding:12px 16px;border-bottom:1px solid rgba(100,140,255,.1);font-size:12px;transition:background .2s;}
+.histItem{display:block;padding:12px 16px;border-bottom:1px solid rgba(100,140,255,.1);font-size:12px;transition:background .2s;}
 .histItem:hover{background:rgba(60,100,200,.08);}
+.histItem summary{cursor:pointer;list-style:none;}
+.histItem summary::-webkit-details-marker{display:none;}
 .histItem .hname{color:#8ab4ff;font-weight:600;font-size:13px;}
+.histMeta{color:#566b90;font-size:10px;margin-top:3px;}
+.histQuestion{color:#9aadcc;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.histCards{margin-top:9px;padding-top:8px;border-top:1px solid rgba(100,140,255,.1);line-height:1.65;color:#778aaa;}
+.histDialogue{margin-top:9px;padding-top:8px;border-top:1px solid rgba(100,140,255,.1);color:#8799b8;line-height:1.6;}
+.histDialogue strong{color:#a9c6fa;font-weight:500;}
+.histTranscript{margin-top:7px;padding:8px 9px;border:1px solid rgba(100,140,255,.1);border-radius:8px;}
+.histTranscript summary{color:#8ca5ce;font-size:10px;}
+.histTranscriptBody{max-height:260px;overflow:auto;margin-top:9px;padding-top:8px;border-top:1px solid rgba(100,140,255,.08);white-space:pre-wrap;color:#788aa8;font-size:10px;line-height:1.7;}
+#archiveInsights{padding:15px 17px;border-bottom:1px solid rgba(100,140,255,.1);background:rgba(15,21,40,.4);}
+.archivePrivacy{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;color:#687b9d;font-size:9px;letter-spacing:1px;}
+.archivePrivacy b{color:#88a0c7;font-weight:500;}
+.archiveStats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
+.archiveStat{padding:9px 8px;border:1px solid rgba(100,140,255,.1);border-radius:9px;background:rgba(4,8,20,.42);}
+.archiveStat b{display:block;color:#a9c6fa;font-size:18px;font-weight:500;line-height:1;}
+.archiveStat span{display:block;margin-top:5px;color:#596d91;font-size:8px;letter-spacing:1px;}
+.archiveSignals{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+.archiveSignal{min-width:0;padding:8px 9px;border-left:1px solid rgba(100,140,255,.16);}
+.archiveSignal small{display:block;color:#596d91;font-size:8px;letter-spacing:1px;}
+.archiveSignal strong{display:block;margin-top:4px;overflow:hidden;color:#94acd1;font-size:10px;font-weight:500;white-space:nowrap;text-overflow:ellipsis;}
+.archiveWeek{display:grid;grid-template-columns:auto repeat(7,1fr);align-items:end;gap:5px;margin-top:11px;}
+.archiveWeekLabel{align-self:center;color:#596d91;font-size:8px;letter-spacing:1px;}
+.archiveDay{height:22px;border-radius:4px 4px 2px 2px;background:rgba(100,140,255,.07);position:relative;overflow:hidden;}
+.archiveDay::after{content:"";position:absolute;left:0;right:0;bottom:0;height:var(--activity,0%);background:linear-gradient(180deg,rgba(154,181,225,.72),rgba(90,119,174,.25));}
+#historySearch{width:100%;margin-top:12px;padding:9px 10px;border:1px solid rgba(100,140,255,.13);border-radius:9px;background:rgba(4,8,18,.5);color:#b8c7de;font:10px inherit;outline:none;}
+#historySearch:focus{border-color:rgba(100,160,255,.4);}
 #stateHint{position:fixed;top:18%;left:50%;transform:translate(-50%,-50%);font-size:22px;color:#8ab4ff;text-shadow:0 0 20px rgba(100,160,255,.5);z-index:15;opacity:0;transition:opacity .6s;pointer-events:none;letter-spacing:2px;}
 #stateHint.show{opacity:1;}
 #instrPanel{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);text-align:center;font-size:13px;color:#4a6090;z-index:10;pointer-events:none;line-height:2;opacity:.7;}
 #vCursor{position:fixed;z-index:25;pointer-events:none;display:none;transform:translate(-50%,-50%);}
-#vCursorInner{width:36px;height:36px;border-radius:50%;border:2.5px solid rgba(100,180,255,.7);background:rgba(60,130,255,.15);box-shadow:0 0 18px rgba(80,160,255,.5),inset 0 0 8px rgba(100,180,255,.2);transition:all .2s;}
+#vCursorInner{position:relative;width:36px;height:36px;border-radius:50%;border:2.5px solid rgba(100,180,255,.7);background:rgba(60,130,255,.15);box-shadow:0 0 18px rgba(80,160,255,.5),inset 0 0 8px rgba(100,180,255,.2);transition:all .2s;}
+#vCursorInner::after{content:"";position:absolute;inset:-9px;border-radius:50%;background:conic-gradient(rgba(241,205,143,.95) var(--pinch-angle,0deg),rgba(241,205,143,.08) 0);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 0);mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 0);opacity:0;transform:rotate(-90deg);transition:opacity .15s;}
+#vCursor.arming #vCursorInner::after{opacity:1;}
+#vCursor.armed #vCursorInner::after{opacity:1;filter:drop-shadow(0 0 5px rgba(241,205,143,.8));}
 #vCursor.hover #vCursorInner{border-color:rgba(100,255,180,.9);background:rgba(60,255,150,.25);box-shadow:0 0 24px rgba(80,255,160,.6),inset 0 0 10px rgba(100,255,180,.3);transform:scale(1.3);}
 #vCursor.grab #vCursorInner{border-color:rgba(255,180,60,.9);background:rgba(255,160,40,.35);box-shadow:0 0 24px rgba(255,180,60,.7),inset 0 0 10px rgba(255,180,60,.3);transform:scale(0.7);}
 #vCursorLabel{position:absolute;top:42px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:11px;color:rgba(140,180,255,.8);text-shadow:0 0 6px rgba(80,140,255,.5);}
@@ -73,7 +115,6 @@ button:focus-visible,textarea:focus-visible{outline:2px solid #8ab4ff;outline-of
   #cardInfo .orient{font-size:14px;margin-bottom:6px;}
   #cardInfo .meaning{font-size:13px;line-height:1.6;}
   #camWrap{width:100px;height:75px;bottom:8px;left:8px;}
-  #cardInfo~#camWrap,#camWrap{display:none!important;}
   #topBar{padding:10px 14px;}
   #topBar h1{font-size:16px;letter-spacing:2px;}
   .uiBtn{font-size:11px;padding:5px 10px;}
@@ -101,7 +142,15 @@ button:focus-visible,textarea:focus-visible{outline:2px solid #8ab4ff;outline-of
 #questionInput::placeholder{color:#4a5878;font-style:italic;}
 #questionConfirm{margin-top:24px;padding:12px 44px;border:1px solid rgba(100,140,255,.35);border-radius:10px;background:rgba(20,30,60,.8);color:#8ab4ff;font-size:15px;letter-spacing:3px;cursor:pointer;transition:all .3s;font-family:inherit;}
 #questionConfirm:hover{background:rgba(30,50,100,.7);border-color:rgba(100,160,255,.6);box-shadow:0 0 20px rgba(80,130,255,.2);}
+#questionArchive{display:block;margin:12px auto 0;border:0;background:transparent;color:#64789e;font:11px inherit;cursor:pointer;letter-spacing:1px;}
+#questionArchive:hover{color:#8ab4ff;}
 .qHint{margin-top:14px;color:#4f6080;font-size:11px;line-height:1.6;}
+.spreadPicker{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0 4px;text-align:left;}
+.spreadOption{padding:13px 14px;border:1px solid rgba(100,140,255,.18);border-radius:10px;background:rgba(4,7,20,.65);color:#7d91b5;cursor:pointer;font:inherit;transition:.25s;}
+.spreadOption strong{display:block;color:#a9c6fa;font-size:13px;margin-bottom:3px;}
+.spreadOption span{font-size:10px;line-height:1.4;display:block;}
+.spreadOption.active{border-color:rgba(125,170,255,.65);background:rgba(35,60,115,.4);box-shadow:0 0 18px rgba(70,120,255,.14);}
+.spreadLabel{margin-top:16px;font-size:11px;color:#62769b;letter-spacing:2px;text-align:left;}
 /* ── AI Streaming Reading ── */
 #aiReading{margin-top:20px;min-height:40px;}
 #aiContent{font-size:14px;line-height:1.9;color:#9aadcc;}
@@ -118,6 +167,24 @@ button:focus-visible,textarea:focus-visible{outline:2px solid #8ab4ff;outline-of
 #aiProgressFill{height:100%;width:0%;background:linear-gradient(90deg,rgba(100,140,255,.6),rgba(100,180,255,.9));transition:width .3s;border-radius:2px;}
 #aiRetryBtn{margin-top:16px;padding:8px 24px;border:1px solid rgba(100,140,255,.25);border-radius:8px;background:transparent;color:#6a80a8;cursor:pointer;font-size:12px;letter-spacing:2px;transition:all .3s;font-family:inherit;display:none;}
 #aiRetryBtn:hover{border-color:rgba(100,160,255,.5);color:#8ab4ff;}
+#followupPanel{display:none;margin-top:18px;padding-top:18px;border-top:1px solid rgba(100,140,255,.12);}
+#followupPanel.show{display:block;}
+.followupKicker{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;color:#8ab4ff;font-size:11px;letter-spacing:2px;}
+#followupCount{color:#596b8d;font-size:9px;letter-spacing:1px;}
+#followupThread{display:grid;gap:10px;margin-bottom:12px;}
+.followupTurn{max-width:88%;padding:11px 13px;border:1px solid rgba(100,140,255,.13);border-radius:12px;font-size:12px;line-height:1.75;}
+.followupTurn.user{justify-self:end;background:rgba(90,115,165,.12);color:#d8e2f4;border-bottom-right-radius:4px;}
+.followupTurn.assistant{justify-self:start;background:rgba(20,25,45,.56);color:#9aadcc;border-bottom-left-radius:4px;}
+.followupTurn.local{border-color:rgba(201,163,109,.22);}
+.followupTurn small{display:block;margin-bottom:4px;color:#607293;font-size:8px;letter-spacing:1.5px;}
+#followupSuggestions{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px;}
+.followupChip{border:1px solid rgba(100,140,255,.18);border-radius:999px;background:transparent;color:#7589ad;padding:7px 10px;font:10px inherit;cursor:pointer;transition:.2s;}
+.followupChip:hover{border-color:rgba(100,160,255,.45);color:#aac8fb;}
+#followupForm{display:grid;grid-template-columns:1fr auto;gap:8px;}
+#followupInput{min-width:0;border:1px solid rgba(100,140,255,.2);border-radius:10px;background:rgba(4,7,18,.72);color:#e8edf7;padding:11px 12px;font:12px inherit;outline:none;}
+#followupInput:focus{border-color:rgba(100,160,255,.52);box-shadow:0 0 0 3px rgba(80,130,255,.08);}
+#followupSubmit{border:1px solid rgba(100,160,255,.35);border-radius:10px;background:rgba(40,60,105,.4);color:#a9c6fa;padding:0 16px;font:11px inherit;cursor:pointer;}
+#followupForm :disabled,.followupChip:disabled{opacity:.4;cursor:not-allowed;}
 /* ── AI Reading active state ── */
 #aiReading.active{border:1px solid rgba(100,140,255,.15);border-radius:12px;padding:16px;animation:readingGlow 3s ease-in-out infinite;}
 @keyframes readingGlow{
@@ -143,21 +210,489 @@ button:focus-visible,textarea:focus-visible{outline:2px solid #8ab4ff;outline-of
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important;}
 }
+@media(max-width:420px){
+  .qCard{padding:30px 22px;}
+  .spreadPicker{grid-template-columns:1fr;}
+  .spreadOption{padding:10px 12px;}
+}
+
+/* ── Astral Archive UI · ritual editorial theme ── */
+:root{
+  --night:#07060b;
+  --night-soft:#0d0a12;
+  --panel:rgba(18,14,23,.84);
+  --panel-strong:rgba(13,10,17,.96);
+  --ivory:#eee7dc;
+  --muted:#9a909f;
+  --faint:#6c6372;
+  --gold:#c9a36d;
+  --gold-bright:#f0dab1;
+  --line:rgba(213,176,122,.22);
+  --line-strong:rgba(226,190,134,.46);
+  --wine:#62324f;
+  --sage:#85a99b;
+}
+body{
+  background-color:var(--night);
+  color:var(--ivory);
+  font-family:"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+}
+button:focus-visible,textarea:focus-visible{outline:2px solid var(--gold-bright);outline-offset:3px;}
+body::before,body::after{content:"";position:fixed;inset:0;pointer-events:none;}
+body::before{
+  z-index:0;
+  background:
+    radial-gradient(circle at 50% 44%,rgba(121,76,103,.16),transparent 31%),
+    radial-gradient(circle at 50% 100%,rgba(201,163,109,.08),transparent 42%),
+    linear-gradient(180deg,rgba(3,2,6,.12),rgba(7,5,10,.56));
+}
+body::after{
+  z-index:2;
+  opacity:.3;
+  background:repeating-linear-gradient(115deg,transparent 0 3px,rgba(255,255,255,.012) 3px 4px);
+  box-shadow:inset 0 0 180px 42px rgba(0,0,0,.74);
+}
+#c{filter:saturate(.7) sepia(.08) contrast(1.04);}
+#ui{z-index:40;}
+
+/* Header / controls */
+#topBar{
+  position:fixed;
+  top:16px;left:18px;right:18px;
+  width:auto;height:66px;
+  padding:0 12px 0 18px;
+  display:flex;
+  align-items:center;
+  background:linear-gradient(110deg,rgba(13,10,17,.9),rgba(22,16,26,.78));
+  border:1px solid var(--line);
+  border-radius:18px;
+  box-shadow:0 18px 55px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.035);
+  backdrop-filter:blur(18px) saturate(1.15);
+}
+.brandLockup{display:flex;align-items:center;gap:12px;min-width:0;}
+.brandSigil{
+  width:36px;height:36px;display:grid;place-items:center;
+  color:var(--gold-bright);border:1px solid var(--line-strong);border-radius:50%;
+  font-family:Georgia,serif;font-size:19px;box-shadow:inset 0 0 18px rgba(201,163,109,.08);
+}
+.brandLockup>span:last-child{display:flex;flex-direction:column;gap:1px;}
+.brandLockup strong{font-family:Georgia,"Times New Roman",serif;font-size:15px;letter-spacing:4px;color:var(--ivory);font-weight:500;}
+.brandLockup small{font-size:8px;letter-spacing:2.2px;color:var(--faint);}
+.sessionStatus{
+  position:absolute;left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:10px;
+  color:var(--muted);font-size:11px;letter-spacing:.8px;
+  padding:8px 14px;border:1px solid rgba(255,255,255,.06);border-radius:999px;
+  background:rgba(255,255,255,.022);
+}
+.liveDot{width:5px;height:5px;border-radius:50%;background:var(--sage);box-shadow:0 0 9px rgba(133,169,155,.75);}
+.statusDivider{width:1px;height:11px;background:var(--line);}
+#gestureInfo{position:static;color:var(--muted);font-size:inherit;z-index:auto;}
+#deckCount{color:var(--gold);font-variant-numeric:tabular-nums;}
+#headerActions{position:fixed;top:27px;right:30px;z-index:45;display:flex;justify-content:flex-end;gap:8px;}
+.uiBtn{
+  padding:10px 14px;border-radius:12px;
+  border:1px solid rgba(213,176,122,.16);
+  background:rgba(255,255,255,.025);color:var(--muted);
+  font-size:11px;letter-spacing:.5px;backdrop-filter:none;
+}
+.uiBtn:hover{
+  color:var(--gold-bright);border-color:var(--line-strong);background:rgba(201,163,109,.08);
+  box-shadow:none;transform:translateY(-1px);
+}
+#modeBtn,#histToggle{position:static;transform:none;top:auto;right:auto;left:auto;z-index:auto;}
+
+/* Entry ritual */
+#questionOverlay{
+  background:
+    radial-gradient(circle at 24% 43%,rgba(101,54,82,.22),transparent 30%),
+    radial-gradient(circle at 75% 60%,rgba(117,87,56,.12),transparent 34%),
+    rgba(5,4,8,.95);
+  padding:24px;overflow-y:auto;
+}
+#questionOverlay::before{
+  content:"";position:absolute;inset:18px;border:1px solid rgba(213,176,122,.08);border-radius:28px;pointer-events:none;
+}
+.qCard{
+  position:relative;
+  width:min(940px,calc(100vw - 48px));max-width:none;
+  min-height:570px;padding:0;
+  display:grid;grid-template-columns:.88fr 1.12fr;
+  text-align:left;overflow:hidden;
+  background:linear-gradient(135deg,rgba(18,13,22,.96),rgba(10,8,14,.94));
+  border:1px solid var(--line);border-radius:28px;
+  box-shadow:0 34px 110px rgba(0,0,0,.56),inset 0 1px rgba(255,255,255,.04);
+}
+.qCard::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(115deg,rgba(255,255,255,.025),transparent 28%,transparent 70%,rgba(201,163,109,.025));
+}
+.qIntro,.qForm{position:relative;z-index:1;padding:54px;}
+.qIntro{
+  display:flex;flex-direction:column;justify-content:center;
+  border-right:1px solid var(--line);
+  background:radial-gradient(circle at 50% 39%,rgba(110,63,90,.22),transparent 39%);
+}
+.qOrb{
+  position:relative;width:118px;height:118px;margin-bottom:34px;border-radius:50%;display:grid;place-items:center;
+  border:1px solid rgba(226,190,134,.42);color:var(--gold-bright);
+  background:radial-gradient(circle,rgba(201,163,109,.13),rgba(98,50,79,.08) 48%,transparent 70%);
+  box-shadow:0 0 0 15px rgba(201,163,109,.025),0 0 0 16px rgba(201,163,109,.1),0 0 70px rgba(94,48,75,.28);
+}
+.qOrb::before,.qOrb::after{content:"";position:absolute;border-radius:50%;border:1px solid rgba(213,176,122,.11);}
+.qOrb::before{width:160px;height:160px;}
+.qOrb::after{width:82px;height:82px;border-style:dashed;animation:orbOrbit 20s linear infinite;}
+.qOrb span{font:36px Georgia,serif;transform:rotate(-18deg);text-shadow:0 0 20px rgba(240,218,177,.25);}
+@keyframes orbOrbit{to{transform:rotate(360deg);}}
+.qKicker{margin-bottom:14px;color:var(--gold);font:10px Georgia,serif;letter-spacing:3.2px;}
+.qCard h2,.qCard #questionTitle{
+  margin:0 0 18px;font-family:"Songti SC","STSong",Georgia,serif;
+  color:var(--ivory);font-size:31px;line-height:1.28;letter-spacing:1px;text-shadow:none;font-weight:500;
+}
+.qCard .qSub{max-width:310px;margin:0;color:var(--muted);font-size:13px;line-height:1.85;letter-spacing:0;}
+.ritualLegend{display:flex;gap:20px;margin-top:42px;padding-top:18px;border-top:1px solid rgba(213,176,122,.12);color:var(--faint);font-size:10px;}
+.ritualLegend span{display:flex;align-items:center;gap:6px;white-space:nowrap;}
+.ritualLegend i{color:var(--gold);font:9px Georgia,serif;font-style:normal;}
+.qForm{display:flex;flex-direction:column;justify-content:center;background:rgba(2,2,4,.12);}
+.fieldLabel,.spreadLabel{display:flex;justify-content:space-between;align-items:center;margin:0 0 10px;color:var(--ivory);font-size:12px;letter-spacing:.5px;}
+.fieldLabel small,.spreadLabel small{color:var(--faint);font:8px Georgia,serif;letter-spacing:2px;}
+#questionInput{
+  min-height:126px;padding:18px 20px;margin-bottom:24px;
+  border:1px solid rgba(213,176,122,.16);border-radius:14px;
+  background:rgba(4,3,7,.52);color:var(--ivory);
+  font-family:"Songti SC","STSong","Segoe UI",serif;font-size:15px;line-height:1.75;
+  caret-color:var(--gold-bright);
+}
+#questionInput:focus{border-color:var(--line-strong);box-shadow:0 0 0 4px rgba(201,163,109,.055);}
+#questionInput::placeholder{color:#6f6673;font-style:normal;}
+.spreadLabel{margin-top:0;}
+.spreadPicker{display:flex;flex-direction:column;gap:8px;margin:0 0 22px;}
+.spreadOption{
+  width:100%;padding:12px 14px;display:grid;grid-template-columns:42px 1fr;align-items:center;gap:12px;
+  border:1px solid rgba(213,176,122,.12);border-radius:13px;background:rgba(255,255,255,.018);color:var(--muted);text-align:left;
+}
+.spreadOption>b{font:17px Georgia,serif;font-weight:400;color:var(--faint);padding-right:12px;border-right:1px solid rgba(213,176,122,.12);}
+.spreadOption>span{display:block;}
+.spreadOption strong{margin:0 0 3px;color:#c7bdc8;font-size:12px;font-weight:500;}
+.spreadOption em{display:block;color:var(--faint);font-size:9px;line-height:1.4;font-style:normal;letter-spacing:.5px;}
+.spreadOption:hover{border-color:rgba(213,176,122,.3);background:rgba(201,163,109,.045);}
+.spreadOption.active{
+  border-color:var(--line-strong);background:linear-gradient(100deg,rgba(201,163,109,.11),rgba(98,50,79,.08));
+  box-shadow:inset 3px 0 var(--gold),0 10px 30px rgba(0,0,0,.12);
+}
+.spreadOption.active>b,.spreadOption.active strong{color:var(--gold-bright);}
+#questionConfirm{
+  width:100%;margin:0;padding:15px 18px;display:flex;align-items:center;justify-content:space-between;
+  border:1px solid var(--gold);border-radius:13px;
+  background:var(--gold);color:#171017;font-size:12px;letter-spacing:2px;font-weight:600;
+  box-shadow:0 10px 30px rgba(160,117,69,.14);
+}
+#questionConfirm b{font-size:17px;font-weight:400;transition:transform .25s;}
+#questionConfirm:hover{background:var(--gold-bright);border-color:var(--gold-bright);box-shadow:0 14px 38px rgba(160,117,69,.22);}
+#questionConfirm:hover b{transform:translate(2px,-2px);}
+#questionArchive{color:var(--faint);font-size:9px;}
+#questionArchive:hover{color:var(--gold);}
+.qHint{margin:13px 0 0;color:var(--faint);font-size:9px;line-height:1.65;text-align:center;}
+
+/* In-reading HUD */
+#stateHint{
+  top:130px;padding:10px 17px;border:1px solid rgba(213,176,122,.16);border-radius:999px;
+  background:rgba(13,10,17,.72);backdrop-filter:blur(12px);
+  color:var(--gold-bright);font-family:"Songti SC","STSong",serif;font-size:15px;letter-spacing:2px;text-shadow:none;
+}
+#instrPanel{
+  bottom:28px;padding:9px 15px;border:1px solid rgba(213,176,122,.11);border-radius:999px;
+  background:rgba(10,8,13,.68);backdrop-filter:blur(10px);
+  color:var(--muted);font-size:10px;line-height:1;opacity:1;
+}
+#drawCount{
+  bottom:84px;padding:8px 13px;border:1px solid rgba(213,176,122,.18);border-radius:999px;
+  background:rgba(13,10,17,.78);color:var(--gold);font-size:10px;letter-spacing:1px;backdrop-filter:blur(10px);
+}
+#settleBtn{
+  bottom:27px;min-width:225px;padding:11px 13px 11px 17px;display:flex;align-items:center;justify-content:space-between;gap:18px;
+  border:1px solid var(--line-strong);border-radius:14px;
+  background:rgba(18,13,20,.9);color:var(--muted);box-shadow:0 18px 42px rgba(0,0,0,.35);animation:none;
+}
+#settleBtn span{font-size:9px;letter-spacing:1px;}
+#settleBtn b{color:var(--gold-bright);font-size:11px;letter-spacing:.5px;}
+#cardInfo{
+  bottom:26px;right:26px;width:350px;max-height:48vh;padding:23px 24px 22px;
+  border:1px solid var(--line);border-radius:20px;
+  background:linear-gradient(145deg,rgba(19,14,23,.94),rgba(11,9,14,.93));
+  box-shadow:0 24px 60px rgba(0,0,0,.42),inset 0 1px rgba(255,255,255,.03);backdrop-filter:blur(18px);
+}
+.cardInfoKicker{margin-bottom:12px;color:var(--gold);font:9px Georgia,serif;letter-spacing:2.2px;text-transform:uppercase;}
+#cardInfo h2{margin:0 0 9px;color:var(--ivory);font-family:"Songti SC","STSong",Georgia,serif;font-size:23px;line-height:1.3;text-shadow:none;font-weight:500;}
+#cardInfo .orient{display:inline-flex;margin:0 0 15px;padding:5px 9px;border:1px solid rgba(213,176,122,.15);border-radius:999px;font-size:10px;}
+#cardInfo .meaning{padding-top:14px;border-top:1px solid rgba(213,176,122,.12);color:var(--muted);font-size:13px;line-height:1.8;}
+#camWrap{bottom:26px;left:26px;width:156px;height:117px;border:1px solid var(--line-strong);border-radius:18px;box-shadow:0 20px 50px rgba(0,0,0,.4);}
+
+/* Gesture cursor */
+#vCursorInner{width:42px;height:42px;border:1px solid rgba(240,218,177,.75);background:rgba(201,163,109,.08);box-shadow:0 0 0 8px rgba(201,163,109,.04),0 0 24px rgba(201,163,109,.2);}
+#vCursor.hover #vCursorInner{border-color:var(--sage);background:rgba(133,169,155,.13);box-shadow:0 0 0 8px rgba(133,169,155,.04),0 0 25px rgba(133,169,155,.26);}
+#vCursor.grab #vCursorInner{border-color:var(--gold-bright);background:rgba(201,163,109,.2);box-shadow:0 0 0 5px rgba(201,163,109,.08),0 0 30px rgba(201,163,109,.36);}
+#vCursorLabel{top:50px;padding:5px 8px;border-radius:7px;background:rgba(13,10,17,.82);color:var(--gold-bright);font-size:9px;}
+
+/* Archive drawer */
+#histPanel{
+  top:94px;right:18px;width:340px;max-height:calc(100dvh - 122px);
+  border:1px solid var(--line);border-radius:20px;
+  background:var(--panel-strong);box-shadow:0 28px 80px rgba(0,0,0,.48);backdrop-filter:blur(20px);
+}
+#histHeader{padding:18px 19px;background:rgba(13,10,17,.97);border-bottom:1px solid var(--line);color:var(--ivory);font-size:13px;}
+#histHeader span{display:flex;flex-direction:column;gap:2px;}
+#histHeader small{color:var(--gold);font:8px Georgia,serif;letter-spacing:2px;}
+#histTools button{color:var(--faint);font-size:9px;}
+#histExport:hover{color:var(--gold-bright);}
+#histClear:hover{color:#d78d8d;}
+#histEmpty{color:var(--faint)!important;font-size:11px!important;line-height:1.7;}
+.histItem{padding:15px 18px;border-bottom:1px solid rgba(213,176,122,.1);}
+.histItem:hover{background:rgba(201,163,109,.04);}
+.histItem .hname{color:var(--ivory);font-family:"Songti SC","STSong",serif;font-size:13px;font-weight:500;}
+.histMeta{color:var(--gold);font-size:8px;letter-spacing:.8px;}
+.histQuestion{color:var(--muted);font-size:10px;}
+.histCards{border-color:rgba(213,176,122,.1);color:var(--faint);font-size:10px;}
+.histDialogue{border-color:rgba(213,176,122,.1);color:var(--faint);font-size:10px;}
+.histDialogue strong{color:var(--gold);}
+.histTranscript{border-color:rgba(213,176,122,.1);}
+.histTranscript summary{color:var(--gold);}
+.histTranscriptBody{border-color:rgba(213,176,122,.08);color:var(--faint);}
+#archiveInsights{border-color:rgba(213,176,122,.1);background:rgba(201,163,109,.025);}
+.archivePrivacy{color:var(--faint);}.archivePrivacy b{color:var(--gold);}
+.archiveStat{border-color:var(--line);background:rgba(8,6,10,.3);}
+.archiveStat b{color:var(--ivory);}.archiveStat span{color:var(--faint);}
+.archiveSignal{border-color:rgba(213,176,122,.14);}
+.archiveSignal small{color:var(--faint);}.archiveSignal strong{color:var(--muted);}
+.archiveWeekLabel{color:var(--faint);}.archiveDay{background:rgba(213,176,122,.05);}
+.archiveDay::after{background:linear-gradient(180deg,var(--gold),rgba(114,47,61,.32));}
+#historySearch{border-color:var(--line);background:rgba(8,6,10,.35);color:var(--ivory);}
+#historySearch:focus{border-color:var(--gold);}
+
+/* PWA install, offline and update notice */
+#appNotice{
+  --notice-progress:0%;position:fixed;left:50%;bottom:25px;z-index:310;width:min(520px,calc(100vw - 32px));
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:11px;
+  padding:11px 12px;border:1px solid var(--line-strong);border-radius:15px;
+  background:rgba(13,10,17,.95);box-shadow:0 20px 60px rgba(0,0,0,.52);backdrop-filter:blur(20px);
+  opacity:0;pointer-events:none;transform:translate(-50%,18px);transition:opacity .25s,transform .25s;
+}
+#appNotice.show{opacity:1;pointer-events:auto;transform:translate(-50%,0);}
+.appNoticeIcon{display:grid;place-items:center;width:34px;height:34px;border:1px solid var(--line-strong);border-radius:10px;color:var(--gold-bright);background:rgba(201,163,109,.06);font:17px Georgia,serif;}
+.appNoticeCopy{min-width:0;}.appNoticeCopy strong{display:block;color:var(--ivory);font-size:11px;font-weight:500;}
+.appNoticeCopy span{display:block;margin-top:3px;overflow:hidden;color:var(--muted);font-size:9px;white-space:nowrap;text-overflow:ellipsis;}
+#appNoticeProgress{display:none;height:2px;margin-top:7px;border-radius:2px;background:rgba(201,163,109,.08);overflow:hidden;}
+#appNoticeProgress::after{content:"";display:block;width:var(--notice-progress);height:100%;background:linear-gradient(90deg,var(--wine),var(--gold-bright));transition:width .2s;}
+#appNotice.progress #appNoticeProgress{display:block;}
+#appNoticeAction{display:none;min-height:34px;padding:7px 11px;border:1px solid var(--line-strong);border-radius:9px;background:rgba(201,163,109,.08);color:var(--gold-bright);font:9px inherit;cursor:pointer;white-space:nowrap;}
+#appNoticeAction.show{display:block;}
+#appNoticeDismiss{border:0;background:transparent;color:var(--faint);font-size:16px;cursor:pointer;line-height:1;}
+#appNotice.offline .appNoticeIcon{color:#d78d8d;border-color:rgba(215,141,141,.25);}
+
+/* Reading result */
+#settleOverlay{
+  padding:32px 22px 70px;
+  background:radial-gradient(circle at 50% 0,rgba(99,54,80,.18),transparent 32%),rgba(6,5,8,.96);
+  backdrop-filter:blur(18px);
+}
+#settlePanel{max-width:980px;padding:28px 0;margin:0 auto;}
+#settlePanel>h2{
+  margin:10px 0 34px;color:var(--ivory);font-family:"Songti SC","STSong",Georgia,serif;
+  font-size:28px;font-weight:500;letter-spacing:3px;text-shadow:none;
+}
+#settlePanel>h2::before{content:"OBSERVATION  /  ";display:block;margin-bottom:8px;color:var(--gold);font:9px Georgia,serif;letter-spacing:3px;}
+#settleCards{gap:12px;margin-bottom:20px;align-items:stretch;}
+.settleCard{
+  flex:1 1 170px;width:auto;min-width:0;max-width:230px;padding:18px 16px;
+  border:1px solid rgba(213,176,122,.14);border-radius:17px;
+  background:linear-gradient(145deg,rgba(20,15,24,.88),rgba(12,9,15,.88));text-align:left;
+}
+.settleCard:hover{border-color:var(--line-strong);box-shadow:0 16px 40px rgba(0,0,0,.25);transform:translateY(-3px);}
+.settleCard .scNum{color:var(--gold);font:8px Georgia,serif;letter-spacing:1.5px;}
+.settleCard .scName{color:var(--ivory);font-family:"Songti SC","STSong",serif;font-size:16px;font-weight:500;line-height:1.4;}
+.settleCard .scOrient{font-size:10px;}
+.settleCard .scMeaning{color:var(--muted);font-size:11px;line-height:1.65;}
+.settleCard .scElem{color:var(--faint);font-size:9px;}
+#settleSummary,#aiReading{
+  border:1px solid var(--line);border-radius:20px;
+  background:linear-gradient(135deg,rgba(20,15,24,.82),rgba(12,9,15,.78));
+}
+#settleSummary{padding:23px 25px;margin-bottom:14px;color:var(--muted);font-size:13px;line-height:1.95;}
+#settleSummary strong{color:var(--gold-bright);font-weight:500;}
+#aiReading{padding:0 24px;margin-top:14px;}
+#aiReading.active{padding:20px 24px;border-color:var(--line-strong);animation:none;box-shadow:0 20px 55px rgba(0,0,0,.2);}
+#aiReadingHeader{border-color:rgba(213,176,122,.12);}
+#aiReadingHeader .readingLabel{color:var(--gold);font-size:10px;letter-spacing:2px;animation:none;}
+.readingOrb::before{background:radial-gradient(circle,rgba(201,163,109,.48),transparent 70%);}
+.readingOrb::after{background:radial-gradient(circle,var(--gold-bright),rgba(201,163,109,.24) 60%,transparent);}
+.readingDots span,.aiThinking .dots span{background:var(--gold);}
+#aiContent{color:var(--muted);font-size:13px;line-height:1.95;}
+#aiContent h3{color:var(--gold-bright);font-family:"Songti SC","STSong",serif;font-size:17px;font-weight:500;letter-spacing:1px;}
+#aiContent strong{color:var(--ivory);}
+#aiProgressBar{background:rgba(201,163,109,.08);}
+#aiProgressFill{background:linear-gradient(90deg,var(--wine),var(--gold));}
+#aiRetryBtn{margin-top:16px;padding:9px 18px;border:1px solid var(--line-strong);border-radius:11px;background:rgba(201,163,109,.04);color:var(--gold);font-size:10px;letter-spacing:1px;}
+#aiRetryBtn:hover{border-color:var(--gold-bright);color:var(--gold-bright);background:rgba(201,163,109,.08);}
+#followupPanel{border-color:rgba(213,176,122,.13);}
+.followupKicker{color:var(--gold);}
+#followupCount{color:var(--faint);}
+.followupTurn{border-color:var(--line);}
+.followupTurn.user{background:rgba(114,47,61,.13);color:var(--ivory);}
+.followupTurn.assistant{background:rgba(201,163,109,.045);color:var(--muted);}
+.followupChip{border-color:var(--line);color:var(--muted);font-size:9px;}
+.followupChip:hover{border-color:var(--gold);color:var(--gold-bright);}
+#followupInput{border-color:var(--line);background:rgba(8,6,10,.55);color:var(--ivory);}
+#followupInput:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,163,109,.07);}
+#followupSubmit{border-color:var(--line-strong);background:rgba(201,163,109,.06);color:var(--gold-bright);}
+#readingActions{margin-top:18px;gap:8px;}
+#readingActions .uiBtn{min-height:42px;padding:11px 17px;}
+#readingActions #settleClose{margin:0;border-color:var(--line-strong);color:var(--gold-bright);}
+#readingDisclaimer{color:var(--faint);font-size:9px;}
+
+/* Share poster */
+#posterOverlay{position:fixed;inset:0;z-index:290;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(5,4,7,.96);backdrop-filter:blur(18px);overflow:auto;}
+#posterOverlay.show{display:flex;}
+#posterPanel{width:min(900px,100%);display:grid;grid-template-columns:minmax(280px,430px) minmax(260px,1fr);gap:26px;align-items:center;}
+#posterPreviewShell{position:relative;display:grid;place-items:center;min-height:420px;border:1px solid var(--line);border-radius:22px;padding:14px;background:rgba(201,163,109,.025);box-shadow:0 25px 70px rgba(0,0,0,.4);}
+#posterPreview{display:block;width:100%;max-height:76vh;object-fit:contain;border-radius:12px;background:#09070b;box-shadow:0 14px 45px rgba(0,0,0,.45);}
+#posterLoading{position:absolute;inset:0;display:none;place-items:center;border-radius:22px;background:rgba(8,6,10,.82);color:var(--gold);font-size:10px;letter-spacing:2px;}
+#posterLoading.show{display:grid;}
+.posterKicker{color:var(--gold);font:9px Georgia,serif;letter-spacing:3px;}
+#posterControls h2{margin:10px 0 12px;color:var(--ivory);font-family:"Songti SC","STSong",serif;font-size:28px;font-weight:400;}
+#posterControls>p{color:var(--muted);font-size:11px;line-height:1.8;}
+.posterPrivacy{display:flex;align-items:flex-start;gap:9px;margin:20px 0;padding:12px;border:1px solid var(--line);border-radius:11px;color:var(--muted);font-size:10px;line-height:1.5;cursor:pointer;}
+.posterPrivacy input{margin-top:2px;accent-color:var(--gold);}
+.posterButtons{display:grid;gap:9px;}
+.posterButtons button{min-height:44px;border:1px solid var(--line-strong);border-radius:11px;background:rgba(201,163,109,.06);color:var(--gold-bright);font:10px inherit;cursor:pointer;}
+.posterButtons #posterShare{background:var(--gold-bright);border-color:var(--gold-bright);color:#160f12;font-weight:600;}
+.posterButtons button:disabled{opacity:.42;cursor:wait;}
+#posterClose{margin-top:14px;border:0;background:transparent;color:var(--faint);font:10px inherit;cursor:pointer;}
+
+@media(max-width:900px){
+  .sessionStatus{display:none;}
+  .qCard{width:min(760px,calc(100vw - 40px));grid-template-columns:.82fr 1.18fr;}
+  .qIntro,.qForm{padding:40px;}
+  .qOrb{width:92px;height:92px;}
+  .qOrb::before{width:126px;height:126px;}
+  .qOrb::after{width:64px;height:64px;}
+}
+@media(max-width:720px){
+  body::after{box-shadow:inset 0 0 80px 16px rgba(0,0,0,.62);}
+  #topBar{top:10px;left:10px;right:10px;height:54px;padding:0 13px;border-radius:15px;}
+  .brandSigil{width:30px;height:30px;font-size:15px;}
+  .brandLockup strong{font-size:13px;letter-spacing:3px;}
+  .brandLockup small{display:none;}
+  #headerActions{
+    position:fixed;top:auto;left:10px;right:10px;bottom:10px;z-index:60;
+    display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:7px;
+    border:1px solid var(--line);border-radius:16px;background:rgba(13,10,17,.92);
+    box-shadow:0 16px 50px rgba(0,0,0,.45);backdrop-filter:blur(18px);
+  }
+  #headerActions .uiBtn{min-height:40px;padding:8px;font-size:10px;}
+  #questionOverlay{padding:12px;align-items:flex-start;}
+  #questionOverlay::before{display:none;}
+  .qCard{
+    width:100%;max-width:none;min-height:0;margin:auto 0;max-height:calc(100dvh - 24px);overflow-y:auto;
+    display:block;border-radius:22px;
+  }
+  .qIntro,.qForm{padding:25px 24px;}
+  .qIntro{display:grid;grid-template-columns:68px 1fr;column-gap:18px;justify-content:stretch;border-right:0;border-bottom:1px solid var(--line);}
+  .qOrb{grid-row:1/4;width:64px;height:64px;margin:4px 0 0;box-shadow:0 0 0 8px rgba(201,163,109,.025),0 0 0 9px rgba(201,163,109,.1);}
+  .qOrb::before{width:82px;height:82px;}
+  .qOrb::after{width:44px;height:44px;}
+  .qOrb span{font-size:21px;}
+  .qKicker{grid-column:2;margin:0 0 7px;font-size:8px;}
+  .qCard h2,.qCard #questionTitle{grid-column:2;margin:0;font-size:20px;line-height:1.35;}
+  .qCard .qSub{grid-column:1/-1;max-width:none;margin-top:19px;font-size:11px;line-height:1.7;}
+  .ritualLegend{display:none;}
+  .qForm{padding-top:22px;}
+  #questionInput{min-height:88px;margin-bottom:18px;padding:13px 14px;font-size:13px;}
+  .spreadPicker{gap:7px;margin-bottom:16px;}
+  .spreadOption{padding:9px 11px;grid-template-columns:36px 1fr;}
+  #questionConfirm{padding:13px 15px;}
+  .qHint{font-size:8px;}
+  #stateHint{top:96px;font-size:13px;}
+  #instrPanel{bottom:74px;font-size:9px;max-width:calc(100vw - 30px);white-space:nowrap;}
+  #drawCount{bottom:123px;}
+  #settleBtn{bottom:74px;min-width:210px;}
+  #cardInfo{left:10px;right:10px;bottom:72px;width:auto;max-height:36vh;padding:18px;border-radius:17px;}
+  #cardInfo h2{font-size:18px;}
+  #cardInfo .meaning{font-size:11px;}
+  #camWrap{left:12px;bottom:74px;width:96px;height:72px;border-radius:13px;}
+  #histPanel{top:72px;left:10px;right:10px;bottom:72px;width:auto;max-height:none;border-radius:18px;}
+  #histPanel.modalArchive{top:12px;bottom:12px;max-height:none;}
+  #appNotice{bottom:12px;grid-template-columns:auto minmax(0,1fr) auto;padding:10px;gap:9px;}
+  #appNoticeAction{grid-column:2/4;width:100%;}
+  #appNoticeDismiss{grid-column:3;grid-row:1;}
+  #settleOverlay{padding:20px 12px 95px;}
+  #settlePanel{padding:10px 0;}
+  #settlePanel>h2{font-size:22px;margin:12px 0 25px;}
+  #settleCards{gap:9px;}
+  .settleCard{width:100%;max-width:none;flex-basis:100%;padding:16px;}
+  #settleSummary{padding:18px;font-size:12px;}
+  #aiReading,#aiReading.active{padding-left:18px;padding-right:18px;}
+  #followupForm{grid-template-columns:1fr;}
+  #followupSubmit{min-height:42px;}
+  .followupTurn{max-width:94%;}
+  #readingActions{display:grid;grid-template-columns:1fr 1fr;}
+  #readingActions #settleClose{grid-column:1/-1;}
+  #posterOverlay{align-items:flex-start;padding:12px;}
+  #posterPanel{grid-template-columns:1fr;gap:17px;}
+  #posterPreviewShell{min-height:280px;padding:9px;}
+  #posterPreview{max-height:62vh;}
+  #posterControls{padding:0 6px 16px;}
+  #posterControls h2{font-size:22px;}
+}
+@media(max-width:380px), (max-height:620px) and (max-width:720px){
+  .qIntro{padding:20px 21px;}
+  .qForm{padding:18px 21px;}
+  .qCard .qSub{display:none;}
+  #questionInput{min-height:72px;}
+  .spreadOption em{display:none;}
+  .qHint{display:none;}
+}
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
 <div id="ui">
-  <div id="topBar">
-    <h1>✦ TAROT ✦</h1>
-    <span id="deckCount">剩余: 78</span>
-  </div>
+  <header id="topBar">
+    <div class="brandLockup" aria-label="Astral Tarot">
+      <span class="brandSigil" aria-hidden="true">◐</span>
+      <span><strong>ASTRAL</strong><small>TAROT ARCHIVE</small></span>
+    </div>
+    <div class="sessionStatus">
+      <span class="liveDot" aria-hidden="true"></span>
+      <span id="gestureInfo">鼠标仪式</span>
+      <span class="statusDivider" aria-hidden="true"></span>
+      <span id="deckCount">牌库 78</span>
+    </div>
+  </header>
+  <nav id="headerActions" aria-label="仪式控制">
+    <button id="histToggle" class="uiBtn" aria-controls="histPanel" aria-expanded="false"><span aria-hidden="true">⌛</span> 观测记录</button>
+    <button id="modeBtn" class="uiBtn" aria-label="切换鼠标或摄像头手势模式"><span aria-hidden="true">◇</span> 启用手势</button>
+  </nav>
 </div>
-<div id="gestureInfo">模式: 鼠标</div>
-<button id="modeBtn" class="uiBtn" aria-label="切换鼠标或摄像头手势模式">切换手势模式</button>
-<button id="histToggle" class="uiBtn" aria-controls="histPanel" aria-expanded="false">历史记录</button>
-<div id="histPanel" aria-label="抽牌历史"><div id="histHeader"><span>抽牌历史</span><button id="histClear">清空</button></div><div id="histItems"><div id="histEmpty" style="padding:20px;text-align:center;color:#4a5878;font-size:13px;">暂无抽牌记录</div></div></div>
+<div id="histPanel" aria-label="观测记录">
+  <div id="histHeader"><span><small>ARCHIVE</small>个人观测档案</span><div id="histTools"><button id="histExport">导出</button><button id="histClear">清空</button><button id="histClose" aria-label="关闭个人观测档案">×</button></div></div>
+  <section id="archiveInsights" aria-label="长期观测概览">
+    <div class="archivePrivacy"><b>LOCAL MEMORY</b><span>仅保存在此浏览器</span></div>
+    <div class="archiveStats">
+      <div class="archiveStat"><b id="archiveReadingCount">0</b><span>观测次数</span></div>
+      <div class="archiveStat"><b id="archiveCardCount">0</b><span>累计牌面</span></div>
+      <div class="archiveStat"><b id="archiveUprightRate">—</b><span>正位比例</span></div>
+    </div>
+    <div class="archiveSignals">
+      <div class="archiveSignal"><small>高频牌</small><strong id="archiveTopCard">等待积累</strong></div>
+      <div class="archiveSignal"><small>元素倾向</small><strong id="archiveElement">等待积累</strong></div>
+    </div>
+    <div id="archiveWeek" class="archiveWeek" aria-label="近七日观测活跃度"></div>
+    <input id="historySearch" type="search" maxlength="60" autocomplete="off" placeholder="搜索问题、牌名或追问…" aria-label="搜索个人观测档案">
+  </section>
+  <div id="histItems"><div id="histEmpty" style="padding:28px 20px;text-align:center;">还没有完成过一次观测</div></div>
+</div>
 <div id="cardInfo">
+  <div class="cardInfoKicker">刚刚显现的牌</div>
   <h2 id="ciName"></h2>
   <div class="orient" id="ciOrient"></div>
   <div class="meaning" id="ciMeaning"></div>
@@ -166,46 +701,93 @@ button:focus-visible,textarea:focus-visible{outline:2px solid #8ab4ff;outline-of
 <div id="stateHint"></div>
 <div id="vCursor"><div id="vCursorInner"></div><div id="vCursorLabel"></div></div>
 <div id="instrPanel"></div>
+<div id="appNotice" role="status" aria-live="polite" aria-atomic="true">
+  <div class="appNoticeIcon" aria-hidden="true">◐</div>
+  <div class="appNoticeCopy"><strong id="appNoticeTitle">Astral Tarot</strong><span id="appNoticeDetail"></span><div id="appNoticeProgress"></div></div>
+  <button id="appNoticeAction" type="button"></button>
+  <button id="appNoticeDismiss" type="button" aria-label="关闭提示">×</button>
+</div>
 <!-- Question Input Overlay -->
 <div id="questionOverlay" role="dialog" aria-modal="true" aria-labelledby="questionTitle">
   <div class="qCard">
-    <h2 id="questionTitle">心中所想</h2>
-    <p class="qSub">请在心中默念你的问题，然后写下来</p>
-    <textarea id="questionInput" maxlength="240" placeholder="写下你心中所想的事情...&#10;例如：我的感情方向如何？近期的事业该怎么选择？" rows="4"></textarea>
-    <button id="questionConfirm">开始占卜</button>
-    <p class="qHint">可以留空进行综合解读。塔罗用于自我探索与娱乐，不替代医疗、法律或财务建议。</p>
+    <section class="qIntro">
+      <div class="qOrb" aria-hidden="true"><span>◐</span></div>
+      <p class="qKicker">BEGIN THE READING</p>
+      <h2 id="questionTitle">为今夜设下一个问题</h2>
+      <p class="qSub">不必寻找完美措辞。说出此刻真正困扰你的事，牌面会给你一种新的观察角度。</p>
+      <div class="ritualLegend"><span><i>01</i> 设问</span><span><i>02</i> 触牌</span><span><i>03</i> 观照</span></div>
+    </section>
+    <section class="qForm">
+      <label class="fieldLabel" for="questionInput"><span>你想观察什么？</span><small>OPTIONAL</small></label>
+      <textarea id="questionInput" maxlength="240" placeholder="例如：接下来一个月，我最值得投入精力的方向是什么？" rows="4"></textarea>
+      <div class="spreadLabel"><span>选择观测深度</span><small>SPREAD</small></div>
+      <div class="spreadPicker" role="radiogroup" aria-label="选择牌阵">
+        <button class="spreadOption active" type="button" role="radio" aria-checked="true" data-count="3"><b>03</b><span><strong>三牌·当下路径</strong><em>过去 · 现在 · 未来</em></span></button>
+        <button class="spreadOption" type="button" role="radio" aria-checked="false" data-count="5"><b>05</b><span><strong>五牌·深层观照</strong><em>路径 · 行动 · 潜在影响</em></span></button>
+      </div>
+      <button id="questionConfirm"><span>进入仪式</span><b aria-hidden="true">↗</b></button>
+      <button id="questionArchive" type="button">⌛ 查看个人观测档案</button>
+      <p class="qHint">可以留空进行综合观测。塔罗用于自我探索与娱乐，不替代专业建议。</p>
+    </section>
   </div>
 </div>
-<button id="settleBtn" class="uiBtn" style="display:none;">✦ 结算解读</button>
+<button id="settleBtn" class="uiBtn" style="display:none;"><span>结束抽牌</span><b>生成观测 ↗</b></button>
 <div id="drawCount" style="display:none;"></div>
 <div id="settleOverlay" role="dialog" aria-modal="true" aria-labelledby="settleTitle">
   <div id="settlePanel">
-    <h2 id="settleTitle">✦ 塔罗解读总结 ✦</h2>
+    <h2 id="settleTitle">本次牌面观测</h2>
     <div id="settleCards"></div>
     <div id="settleSummary"></div>
     <div id="aiReading">
       <div id="aiReadingHeader">
         <div class="readingOrb"></div>
-        <span class="readingLabel">正在解读中</span>
+        <span class="readingLabel">正在生成深层观照</span>
         <div class="readingDots"><span></span><span></span><span></span><span></span><span></span></div>
       </div>
       <div id="aiContent"></div>
       <div id="aiProgressBar" style="display:none"><div id="aiProgressFill"></div></div>
       <button id="aiRetryBtn">重新解读</button>
+      <section id="followupPanel" aria-label="继续追问当前牌阵">
+        <div class="followupKicker"><span>CONTINUE · 沿着牌阵继续问</span><span id="followupCount">0 / 4</span></div>
+        <div id="followupThread" role="log" aria-live="polite"></div>
+        <div id="followupSuggestions">
+          <button class="followupChip" type="button">我现在最值得做的一件事是什么？</button>
+          <button class="followupChip" type="button">这组牌最大的提醒是什么？</button>
+          <button class="followupChip" type="button">我可能忽略了什么？</button>
+        </div>
+        <form id="followupForm">
+          <input id="followupInput" maxlength="180" autocomplete="off" placeholder="围绕这组牌继续追问…" aria-label="围绕当前牌阵继续追问">
+          <button id="followupSubmit" type="submit">继续观照 ↗</button>
+        </form>
+      </section>
     </div>
     <div id="readingActions">
-      <button id="copyReadingBtn" class="uiBtn">复制本次解读</button>
-      <button id="settleClose" class="uiBtn">✦ 开始新的解读</button>
+      <button id="shareReadingBtn" class="uiBtn">生成分享海报</button>
+      <button id="copyReadingBtn" class="uiBtn">复制内容</button>
+      <button id="settleClose" class="uiBtn">开启新的观测 ↗</button>
     </div>
-    <p id="readingDisclaimer">解读仅供娱乐与自我反思，请结合现实信息独立判断。</p>
+    <p id="readingDisclaimer">观测仅供娱乐与自我反思，请结合现实信息独立判断。</p>
+  </div>
+</div>
+
+<div id="posterOverlay" role="dialog" aria-modal="true" aria-labelledby="posterTitle">
+  <div id="posterPanel">
+    <div id="posterPreviewShell"><img id="posterPreview" alt="本次塔罗观测分享海报预览"><div id="posterLoading">正在绘制牌面海报…</div></div>
+    <section id="posterControls">
+      <div class="posterKicker">SHARE THE OBSERVATION</div>
+      <h2 id="posterTitle">把这次观测带走</h2>
+      <p>海报由浏览器在当前设备生成，牌面、问题与解读不会上传。Android 会优先打开系统分享面板。</p>
+      <label class="posterPrivacy"><input id="posterQuestionToggle" type="checkbox" checked><span>在海报中显示我的问题<br><small>关闭后只显示“本次牌面观测”</small></span></label>
+      <div class="posterButtons"><button id="posterShare" type="button">分享图片</button><button id="posterSave" type="button">保存高清 PNG</button></div>
+      <button id="posterClose" type="button">返回解读</button>
+    </section>
   </div>
 </div>
 
 <script type="importmap">
 {
   "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    "three": "./vendor/three/three.module.min.js"
   }
 }
 </script>
@@ -266,46 +848,38 @@ function buildDeck(){
   return d;
 }
 let deck=buildDeck();
-const HISTORY_KEY='tarot-draw-history-v2';
+const HISTORY_KEY='tarot-reading-history-v3';
 let historyList=[];
 try{historyList=JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]');}catch{historyList=[];}
+if(!Array.isArray(historyList))historyList=[];
 // Session draw tracking (3 min, 5 max)
 const MIN_DRAWS=3, MAX_DRAWS=5;
+let targetDraws=3;
+const POSITION_LABELS=['过去 / 根源','现在 / 核心','未来 / 方向','建议 / 行动','潜意识 / 隐藏'];
 let sessionDraws=[]; // {card, reversed} for current reading session
 let userQuestion='';
+let currentReadingSaved=false;
+let currentReadingHistoryId=null;
 
 // ═══════════════════════════════════════════════════════════════
-// RWS IMAGE SOURCE
+// LOCAL RWS IMAGE SOURCE
 // ═══════════════════════════════════════════════════════════════
-// Use image proxy for CORS support (sacred-texts.com blocks cross-origin)
-const RWS_RAW='https://www.sacred-texts.com/tarot/pkt/img/';
-const RWS_PROXIES=[
-  (f)=>'https://wsrv.nl/?url='+encodeURIComponent(RWS_RAW+f),
-  (f)=>'https://images.weserv.nl/?url='+encodeURIComponent(RWS_RAW+f),
-  (f)=>'https://corsproxy.io/?url='+encodeURIComponent(RWS_RAW+f),
-];
+const CARD_ASSET_BASE=new URL('./assets/cards/',document.baseURI);
 function rwsFilename(card){
   if(card.type==='major') return 'ar'+String(card.id).padStart(2,'0')+'.jpg';
   const sm={Wands:'wa',Cups:'cu',Swords:'sw',Pentacles:'pe'};
   const rn=['ac','02','03','04','05','06','07','08','09','10','pa','kn','qu','ki'];
   return sm[card.suit]+rn[card.rank]+'.jpg';
 }
-// Load image with retry across multiple proxies
+// Same-origin card files keep drawing fast and deterministic on restricted networks.
 function loadCardImage(card){
   const fname=rwsFilename(card);
   return new Promise(resolve=>{
-    let attempt=0;
-    function tryNext(){
-      if(attempt>=RWS_PROXIES.length){resolve(null);return;}
-      const url=RWS_PROXIES[attempt](fname);
-      attempt++;
-      const img=new Image();img.crossOrigin='anonymous';
-      const timer=setTimeout(()=>{img.src='';console.warn('Timeout proxy',attempt-1,url);tryNext();},8000);
-      img.onload=()=>{clearTimeout(timer);console.log('Loaded:',card.name,'via proxy',attempt-1);resolve(img);};
-      img.onerror=()=>{clearTimeout(timer);console.warn('Error proxy',attempt-1,url);tryNext();};
-      img.src=url;
-    }
-    tryNext();
+    const img=new Image();
+    const timer=setTimeout(()=>{img.src='';resolve(null);},3000);
+    img.onload=()=>{clearTimeout(timer);resolve(img);};
+    img.onerror=()=>{clearTimeout(timer);resolve(null);};
+    img.src=new URL(fname,CARD_ASSET_BASE).href;
   });
 }
 
@@ -739,8 +1313,8 @@ function spawnPile(){
     scene.add(mesh);
     pileMeshes.push(mesh);
   }
-  document.getElementById('deckCount').textContent=`剩余: ${deck.length}`;
-  showHint('选择一张牌');
+  document.getElementById('deckCount').textContent=`牌库 ${deck.length}`;
+  showHint('移动以感知牌面');
 }
 
 function clearPile(){
@@ -749,6 +1323,8 @@ function clearPile(){
     scene.remove(m);m.geometry.dispose();
   });
   pileMeshes=[];
+  canvas.style.cursor='default';
+  lastHoveredIndex=-1;
   if(revealedMesh){scene.remove(revealedMesh);revealedMesh.geometry.dispose();revealedMesh=null;}
   // NOTE: retiredMeshes are NOT cleared — they persist in the corner
 }
@@ -769,6 +1345,7 @@ scene.add(revealLight,revealLight.target);
 
 function selectCard(index){
   if(gameState!=='pile')return;
+  canvas.style.cursor='default';
   playTick(500,0.15);playWhoosh(300,0.3,0.08);
   selectedIndex=index;
   const cardData=pileCardData[index];
@@ -853,19 +1430,18 @@ function updateDrawUI(){
   const sb=document.getElementById('settleBtn');
   if(n>0){
     dc.style.display='block';
-    dc.textContent=`已抽 ${n}/${MAX_DRAWS} 张`;
+    dc.textContent=`${targetDraws===3?'三牌阵':'五牌阵'} · 已抽 ${n}/${targetDraws} 张`;
   } else {
     dc.style.display='none';
   }
-  sb.style.display=(n>=MIN_DRAWS&&n<MAX_DRAWS)?'block':'none';
+  sb.style.display=(targetDraws===5&&n>=MIN_DRAWS&&n<targetDraws)?'flex':'none';
 }
 function confirmDraw(){
   if(gameState!=='revealed')return;
   sessionDraws.push({card:revealedCard,reversed:revealedReversed});
-  addToHistory(revealedCard,revealedReversed);
   deck=deck.filter(c=>c.id!==revealedCard.id);
-  document.getElementById('deckCount').textContent=`剩余: ${deck.length}`;
-  showHint(`✦ ${revealedCard.name} (${sessionDraws.length}/${MAX_DRAWS})`);
+  document.getElementById('deckCount').textContent=`牌库 ${deck.length}`;
+  showHint(`✦ ${revealedCard.name} (${sessionDraws.length}/${targetDraws})`);
   // compute target position: centered at top
   const idx=retiredMeshes.length;
   const totalW=idx*CORNER_SPACING; // after adding this one
@@ -1005,8 +1581,8 @@ function updateAnimations(dt){
       revealedMesh=null;
       hideCardInfo();
       updateDrawUI();
-      if(sessionDraws.length>=MAX_DRAWS){
-        // max draws reached — auto settle
+      if(sessionDraws.length>=targetDraws){
+        // selected spread reached — auto settle
         gameState='idle';
         setTimeout(()=>showSettlement(),500);
       } else {
@@ -1098,38 +1674,154 @@ function updateParticles(dt){
 // ═══════════════════════════════════════════════════════════════
 // HISTORY & UI
 // ═══════════════════════════════════════════════════════════════
-function addToHistory(card,reversed){
-  historyList.push({name:card.name,reversed,meaning:reversed?card.rev:card.up,time:Date.now()});
+function saveReadingToHistory(){
+  if(currentReadingSaved||!sessionDraws.length)return;
+  currentReadingHistoryId=Date.now();
+  historyList.push({
+    id:currentReadingHistoryId,time:currentReadingHistoryId,question:userQuestion||'综合解读',spread:sessionDraws.length,
+    cards:sessionDraws.map(d=>({
+      id:d.card.id,name:d.card.name,type:d.card.type,suit:d.card.suit||null,
+      reversed:d.reversed,meaning:d.reversed?d.card.rev:d.card.up
+    }))
+  });
   historyList=historyList.slice(-60);
   localStorage.setItem(HISTORY_KEY,JSON.stringify(historyList));
+  currentReadingSaved=true;
   renderHistory();
 }
 function historyItem(item){
-  const div=document.createElement('div');div.className='histItem';
-  div.innerHTML=`<span class="hname"></span><br><span class="horient" style="color:${item.reversed?'#d06050':'#60b080'}">${item.reversed?'⟲ 逆位':'△ 正位'}</span><br><span class="hmeaning" style="color:#7a8aaa"></span>`;
-  div.querySelector('.hname').textContent=item.name;
-  div.querySelector('.hmeaning').textContent=item.meaning;
-  return div;
+  const details=document.createElement('details');details.className='histItem';
+  const summary=document.createElement('summary');
+  const name=document.createElement('div');name.className='hname';name.textContent=`${item.spread||3}张牌 · ${item.cards?.[0]?.name||'塔罗解读'}`;
+  const meta=document.createElement('div');meta.className='histMeta';
+  meta.textContent=new Intl.DateTimeFormat('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(item.time||Date.now()));
+  const question=document.createElement('div');question.className='histQuestion';question.textContent=item.question||'综合解读';
+  summary.append(name,meta,question);details.appendChild(summary);
+  const cards=document.createElement('div');cards.className='histCards';
+  (item.cards||[]).forEach((card,i)=>{
+    const row=document.createElement('div');
+    row.textContent=`${POSITION_LABELS[i]||`第${i+1}张`}：${card.name} · ${card.reversed?'逆位':'正位'}`;
+    cards.appendChild(row);
+  });
+  details.appendChild(cards);
+  if(item.aiReading||item.followUps?.length){
+    const dialogue=document.createElement('div');dialogue.className='histDialogue';
+    const followUpQuestions=(item.followUps||[]).filter(turn=>turn.role==='user').map(turn=>turn.content);
+    dialogue.innerHTML=`<strong>深层观照已保存</strong>${followUpQuestions.length?` · ${followUpQuestions.length} 次追问`:''}`;
+    const transcript=document.createElement('details');transcript.className='histTranscript';
+    const transcriptSummary=document.createElement('summary');transcriptSummary.textContent='展开完整观照';
+    const transcriptBody=document.createElement('div');transcriptBody.className='histTranscriptBody';
+    if(item.aiReading){
+      const initial=document.createElement('div');initial.textContent=`【初次深层观照】\n${item.aiReading}`;transcriptBody.appendChild(initial);
+    }
+    (item.followUps||[]).forEach(turn=>{
+      const row=document.createElement('div');row.style.marginTop='10px';
+      row.textContent=`【${turn.role==='user'?'你的追问':'继续观照'}】\n${turn.content}`;transcriptBody.appendChild(row);
+    });
+    transcript.append(transcriptSummary,transcriptBody);dialogue.appendChild(transcript);
+    details.appendChild(dialogue);
+  }
+  return details;
+}
+const ARCHIVE_ELEMENTS={Wands:'🔥 火 · 行动力',Cups:'💧 水 · 情感',Swords:'🌬️ 风 · 思考',Pentacles:'🌍 土 · 现实'};
+const ARCHIVE_CARD_META=new Map(buildDeck().map(card=>[card.name,card]));
+function resolveHistoryCard(card){return card?.suit||card?.type?card:ARCHIVE_CARD_META.get(card?.name)||card||{};}
+function renderArchiveInsights(){
+  const cards=historyList.flatMap(item=>Array.isArray(item.cards)?item.cards:[]);
+  const upright=cards.filter(card=>!card.reversed).length;
+  document.getElementById('archiveReadingCount').textContent=String(historyList.length);
+  document.getElementById('archiveCardCount').textContent=String(cards.length);
+  document.getElementById('archiveUprightRate').textContent=cards.length?`${Math.round(upright/cards.length*100)}%`:'—';
+
+  const cardCounts=new Map();
+  const suitCounts=new Map();
+  let majorCount=0;
+  cards.forEach(card=>{
+    if(card.name)cardCounts.set(card.name,(cardCounts.get(card.name)||0)+1);
+    const meta=resolveHistoryCard(card);
+    if(meta.suit)suitCounts.set(meta.suit,(suitCounts.get(meta.suit)||0)+1);
+    else if(meta.type==='major'||Number(meta.id)<22)majorCount++;
+  });
+  const topCard=[...cardCounts].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]))[0];
+  const topSuit=[...suitCounts].sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('archiveTopCard').textContent=topCard?`${topCard[0]} · ${topCard[1]}次`:'等待积累';
+  document.getElementById('archiveElement').textContent=topSuit?ARCHIVE_ELEMENTS[topSuit[0]]:(majorCount?'✦ 大阿卡纳':'等待积累');
+
+  const week=document.getElementById('archiveWeek');week.replaceChildren();
+  const label=document.createElement('span');label.className='archiveWeekLabel';label.textContent='近7日';week.appendChild(label);
+  const today=new Date();today.setHours(0,0,0,0);
+  const daily=Array.from({length:7},(_,index)=>{
+    const date=new Date(today);date.setDate(today.getDate()-(6-index));
+    const end=new Date(date);end.setDate(date.getDate()+1);
+    return{date,count:historyList.filter(item=>(item.time||0)>=date.getTime()&&(item.time||0)<end.getTime()).length};
+  });
+  const maxDaily=Math.max(1,...daily.map(day=>day.count));
+  daily.forEach(day=>{
+    const bar=document.createElement('span');bar.className='archiveDay';
+    const height=day.count?Math.max(18,Math.round(day.count/maxDaily*100)):0;
+    bar.style.setProperty('--activity',`${height}%`);
+    bar.title=`${new Intl.DateTimeFormat('zh-CN',{month:'numeric',day:'numeric'}).format(day.date)} · ${day.count}次`;
+    week.appendChild(bar);
+  });
+  document.getElementById('histExport').disabled=!historyList.length;
+}
+function historyMatches(item,query){
+  if(!query)return true;
+  const followups=(item.followUps||[]).map(turn=>turn.content).join(' ');
+  const cards=(item.cards||[]).map(card=>`${card.name||''} ${card.meaning||''}`).join(' ');
+  return `${item.question||''} ${cards} ${followups} ${item.aiReading||''}`.toLocaleLowerCase('zh-CN').includes(query);
 }
 function renderHistory(){
   const items=document.getElementById('histItems');
   items.replaceChildren();
-  if(!historyList.length){
+  renderArchiveInsights();
+  const query=(document.getElementById('historySearch')?.value||'').trim().toLocaleLowerCase('zh-CN');
+  const filtered=historyList.filter(item=>historyMatches(item,query));
+  if(!filtered.length){
     const empty=document.createElement('div');empty.id='histEmpty';
     empty.style.cssText='padding:20px;text-align:center;color:#4a5878;font-size:13px;';
-    empty.textContent='暂无抽牌记录';items.appendChild(empty);return;
+    empty.textContent=historyList.length?'没有找到匹配的观测':'还没有完成过一次观测';items.appendChild(empty);return;
   }
-  [...historyList].reverse().forEach(item=>items.appendChild(historyItem(item)));
+  [...filtered].reverse().forEach(item=>items.appendChild(historyItem(item)));
+}
+function closeHistoryPanel(){
+  const p=document.getElementById('histPanel');
+  p.style.display='none';p.classList.remove('modalArchive');
+  document.getElementById('histToggle').setAttribute('aria-expanded','false');
+}
+function openHistoryPanel({modal=false}={}){
+  const p=document.getElementById('histPanel');
+  p.classList.toggle('modalArchive',modal);p.style.display='block';renderHistory();
+  document.getElementById('histToggle').setAttribute('aria-expanded','true');
 }
 document.getElementById('histToggle').onclick=()=>{
   const p=document.getElementById('histPanel');
-  const open=getComputedStyle(p).display==='none';
-  p.style.display=open?'block':'none';
-  document.getElementById('histToggle').setAttribute('aria-expanded',String(open));
+  if(getComputedStyle(p).display==='none')openHistoryPanel();else closeHistoryPanel();
 };
+document.getElementById('histClose').onclick=closeHistoryPanel;
+document.getElementById('questionArchive').onclick=()=>openHistoryPanel({modal:true});
+document.addEventListener('keydown',event=>{
+  if(event.key==='Escape'&&getComputedStyle(document.getElementById('histPanel')).display!=='none')closeHistoryPanel();
+});
 document.getElementById('histClear').onclick=()=>{
-  historyList=[];localStorage.removeItem(HISTORY_KEY);renderHistory();
+  const button=document.getElementById('histClear');
+  if(button.dataset.armed!=='true'){
+    button.dataset.armed='true';button.textContent='确认清空';
+    setTimeout(()=>{button.dataset.armed='false';button.textContent='清空';},2500);return;
+  }
+  historyList=[];localStorage.removeItem(HISTORY_KEY);
+  document.getElementById('historySearch').value='';button.dataset.armed='false';button.textContent='清空';renderHistory();
 };
+document.getElementById('histExport').onclick=()=>{
+  if(!historyList.length)return;
+  const payload={format:'astral-tarot-archive',version:1,exportedAt:new Date().toISOString(),readings:historyList};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);const link=document.createElement('a');
+  const now=new Date();const localDate=[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-');
+  link.href=url;link.download=`astral-tarot-archive-${localDate}.json`;
+  document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+};
+document.getElementById('historySearch').addEventListener('input',renderHistory);
 renderHistory();
 const SUIT_ELEM={
   Wands:{elem:'🔥 火元素',desc:'代表行动力、热情与创造，关联事业与灵感'},
@@ -1150,24 +1842,24 @@ function showCardInfo(card,reversed){
   document.getElementById('ciName').textContent=card.name;
   const o=document.getElementById('ciOrient');
   o.textContent=reversed?'⟲ 逆位 Reversed':'△ 正位 Upright';
-  o.style.color=reversed?'#d06050':'#60b080';
+  o.style.color=reversed?'#d47f70':'#85a99b';
   // build rich meaning
   let html='';
   // current meaning (highlighted)
   const active=reversed?card.rev:card.up;
-  html+=`<div style="margin-bottom:10px;font-size:16px;color:#c8d8f0;font-weight:600">✦ ${active}</div>`;
+  html+=`<div style="margin-bottom:10px;font-size:15px;color:#eee7dc;font-weight:500">✦ ${active}</div>`;
   // suit/element info for minor arcana
   if(card.suit&&SUIT_ELEM[card.suit]){
     const se=SUIT_ELEM[card.suit];
-    html+=`<div style="margin-bottom:8px;font-size:14px;color:#7a90b8">${se.elem}｜${se.desc}</div>`;
+    html+=`<div style="margin-bottom:8px;font-size:12px;color:#a99a87">${se.elem}｜${se.desc}</div>`;
   }
   // opposite orientation for reference
   const opposite=reversed?card.up:card.rev;
   const oppLabel=reversed?'正位参考':'逆位参考';
-  html+=`<div style="margin-bottom:8px;font-size:13px;color:#6a7a98">📖 ${oppLabel}：${opposite}</div>`;
+  html+=`<div style="margin-bottom:8px;font-size:11px;color:#7f7482">📖 ${oppLabel}：${opposite}</div>`;
   // guidance
   const g=GUIDANCE[Math.floor(Math.random()*GUIDANCE.length)];
-  html+=`<div style="margin-top:10px;font-size:13px;color:#8090a8;font-style:italic;border-top:1px solid rgba(100,140,255,.15);padding-top:8px">💫 ${g}</div>`;
+  html+=`<div style="margin-top:10px;font-size:11px;color:#9a909f;font-style:italic;border-top:1px solid rgba(213,176,122,.12);padding-top:10px">💫 ${g}</div>`;
   document.getElementById('ciMeaning').innerHTML=html;
   ci.style.display='block';
 }
@@ -1176,13 +1868,44 @@ function hideCardInfo(){document.getElementById('cardInfo').style.display='none'
 // ═══════════════════════════════════════════════════════════════
 // SETTLEMENT / READING SUMMARY
 // ═══════════════════════════════════════════════════════════════
-const POSITION_LABELS=['过去 / 根源','现在 / 核心','未来 / 方向','建议 / 行动','潜意识 / 隐藏'];
 const OVERALL_MSGS=[
   '这组牌阵揭示了你内在能量的流动方向，信任你的直觉。',
   '牌面之间的联系构成了完整的信息，整体观之会有更深的领悟。',
   '宇宙通过这些牌面向你传递讯息，静心感受它们的共鸣。',
   '每张牌都是拼图的一角，它们共同描绘出你当前旅程的画卷。',
 ];
+const SUIT_THEMES={
+  Wands:'行动、创造与推进',Cups:'情感、关系与直觉',
+  Swords:'思考、沟通与选择',Pentacles:'现实、资源与稳定'
+};
+function escapeHTML(value){
+  return String(value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function buildLocalSynthesis(){
+  const revCount=sessionDraws.filter(d=>d.reversed).length;
+  const upCount=sessionDraws.length-revCount;
+  const suitCounts={};
+  sessionDraws.forEach(d=>{if(d.card.suit)suitCounts[d.card.suit]=(suitCounts[d.card.suit]||0)+1;});
+  const dominant=Object.entries(suitCounts).sort((a,b)=>b[1]-a[1])[0];
+  const majorCount=sessionDraws.filter(d=>d.card.type==='major').length;
+  let balanceNote='正逆位相对均衡，既要看见推动力，也要留意尚未整合的部分。';
+  if(revCount>upCount)balanceNote='逆位较多，重点更偏向内在调整、重新评估与释放阻力。';
+  else if(upCount>revCount)balanceNote='正位较多，整体动力较顺畅，适合把洞察转化为具体行动。';
+  const dominantNote=dominant?`牌阵以${SUIT_ELEM[dominant[0]].elem}为主，核心主题偏向<strong>${SUIT_THEMES[dominant[0]]}</strong>。`:'大阿卡纳占据主导，问题可能正处于较明显的阶段转换中。';
+  const majorNote=majorCount?`其中有 ${majorCount} 张大阿卡纳，提示这次议题不只关乎眼前事件，也关联更长期的成长课题。`:'';
+  const first=sessionDraws[0],last=sessionDraws[sessionDraws.length-1];
+  const startMeaning=first?(first.reversed?first.card.rev:first.card.up):'';
+  const endMeaning=last?(last.reversed?last.card.rev:last.card.up):'';
+  const question=userQuestion?`<div style="margin-bottom:12px;color:#c9a36d">你的问题：${escapeHTML(userQuestion)}</div>`:'';
+  const msg=OVERALL_MSGS[Math.floor(Math.random()*OVERALL_MSGS.length)];
+  return `${question}
+    <div style="margin-bottom:8px">共抽 ${sessionDraws.length} 张：正位 ${upCount} 张，逆位 ${revCount} 张。</div>
+    <div style="margin-bottom:8px">${balanceNote}</div>
+    <div style="margin-bottom:8px">${dominantNote}</div>
+    ${majorNote?`<div style="margin-bottom:8px">${majorNote}</div>`:''}
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(213,176,122,.12)"><strong>牌阵路径：</strong>从“${escapeHTML(startMeaning)}”走向“${escapeHTML(endMeaning)}”。把两者之间的变化，当作这次解读最值得追问的线索。</div>
+    <div style="margin-top:12px;color:#9a909f;font-style:italic">${msg}</div>`;
+}
 function showSettlement(){
   const overlay=document.getElementById('settleOverlay');
   const cardsDiv=document.getElementById('settleCards');
@@ -1193,7 +1916,7 @@ function showSettlement(){
     const c=d.card, r=d.reversed;
     const meaning=r?c.rev:c.up;
     const orientTxt=r?'⟲ 逆位 Reversed':'△ 正位 Upright';
-    const orientClr=r?'#d06050':'#60b080';
+    const orientClr=r?'#d47f70':'#85a99b';
     const posLabel=POSITION_LABELS[i]||`第${i+1}张`;
     let elemHtml='';
     if(c.suit&&SUIT_ELEM[c.suit]){
@@ -1209,18 +1932,10 @@ function showSettlement(){
         ${elemHtml}
       </div>`;
   });
-  // overall summary
-  const msg=OVERALL_MSGS[Math.floor(Math.random()*OVERALL_MSGS.length)];
-  const revCount=sessionDraws.filter(d=>d.reversed).length;
-  const upCount=sessionDraws.length-revCount;
-  let balanceNote='';
-  if(revCount>upCount) balanceNote='逆位牌较多，暗示当前需要反思与调整内在状态。';
-  else if(upCount>revCount) balanceNote='正位牌居多，整体能量积极，顺势而为即可。';
-  else balanceNote='正逆位均衡，阴阳平衡，关键在于你如何把握。';
   summDiv.innerHTML=`
-    <div style="margin-bottom:10px;color:#8ab4ff;font-weight:600">📊 整体解读</div>
-    <div style="margin-bottom:8px">共抽 ${sessionDraws.length} 张：正位 ${upCount} 张，逆位 ${revCount} 张</div>
-    <div style="margin-bottom:10px">${balanceNote}</div>`;
+    <div style="margin-bottom:12px;color:#f0dab1;font-family:Georgia,serif;font-size:11px;letter-spacing:2px">◇ LOCAL SYNTHESIS · 整体观照</div>
+    ${buildLocalSynthesis()}`;
+  saveReadingToHistory();
   // show overlay
   overlay.classList.add('show');
   // hide settle button & draw count
@@ -1233,6 +1948,8 @@ function showSettlement(){
   requestAIReading();
 }
 function resetSession(){
+  closePoster();
+  if(posterObjectUrl){URL.revokeObjectURL(posterObjectUrl);posterObjectUrl='';posterBlob=null;}
   document.getElementById('settleOverlay').classList.remove('show');
   document.getElementById('aiContent').innerHTML='';
   document.getElementById('aiProgressBar').style.display='none';
@@ -1242,11 +1959,14 @@ function resetSession(){
   userQuestion='';
   document.getElementById('questionInput').value='';
   isAIStreaming=false;
+  resetFollowups();
+  currentReadingSaved=false;
+  currentReadingHistoryId=null;
   sessionDraws=[];
   retiredMeshes.forEach(m=>{scene.remove(m);m.geometry.dispose();});
   retiredMeshes=[];
   deck=buildDeck();
-  document.getElementById('deckCount').textContent=`剩余: ${deck.length}`;
+  document.getElementById('deckCount').textContent=`牌库 ${deck.length}`;
   updateDrawUI();
   clearPile();
   hideCardInfo();
@@ -1270,6 +1990,11 @@ document.getElementById('settleClose').onclick=()=>resetSession();
 // AI READING (via Netlify Function so the API key never reaches the browser)
 // ═══════════════════════════════════════════════════════════════
 let isAIStreaming=false;
+let isFollowUpStreaming=false;
+let aiConversation=[];
+let initialAIReading='';
+let followUpCount=0;
+const MAX_FOLLOWUPS=4;
 
 function parseMD(t){
   return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
@@ -1282,113 +2007,349 @@ function parseMD(t){
     .replace(/\n{2,}/g,'</p><p style="margin-top:12px">')
     .replace(/\n/g,'<br>');
 }
-
-async function requestAIReading(){
-  if(isAIStreaming) return;
-  isAIStreaming=true;
-  const contentDiv=document.getElementById('aiContent');
-  const progressBar=document.getElementById('aiProgressBar');
-  const progressFill=document.getElementById('aiProgressFill');
-  const retryBtn=document.getElementById('aiRetryBtn');
-  contentDiv.innerHTML='';
-  progressBar.style.display='block';
-  progressFill.style.width='0%';
-  retryBtn.style.display='none';
-  // activate reading animation
-  document.getElementById('aiReading').classList.add('active');
-  document.getElementById('aiReadingHeader').classList.add('show');
-  // thinking animation
-  const thinkEl=document.createElement('div');
-  thinkEl.className='aiThinking';
-  thinkEl.innerHTML='<div class="dots"><span></span><span></span><span></span></div><span>正在连接星象，解读牌面...</span>';
-  contentDiv.appendChild(thinkEl);
-
-  const cardsDesc=sessionDraws.map((d,i)=>{
+function getCardsDescription(){
+  return sessionDraws.map((d,i)=>{
     const c=d.card,r=d.reversed;
     const meaning=r?c.rev:c.up;
     const pos=POSITION_LABELS[i]||`第${i+1}张`;
     return `【${pos}】${c.name} - ${r?'逆位':'正位'}\n含义：${meaning}`;
   }).join('\n\n');
+}
+function resetFollowups(){
+  aiConversation=[];initialAIReading='';followUpCount=0;isFollowUpStreaming=false;
+  document.getElementById('followupThread').replaceChildren();
+  document.getElementById('followupPanel').classList.remove('show');
+  document.getElementById('followupInput').value='';
+  updateFollowupControls();
+}
+function updateFollowupControls(){
+  const limitReached=followUpCount>=MAX_FOLLOWUPS;
+  const disabled=isAIStreaming||isFollowUpStreaming||limitReached;
+  document.getElementById('followupCount').textContent=`${followUpCount} / ${MAX_FOLLOWUPS}`;
+  document.getElementById('followupInput').disabled=disabled;
+  document.getElementById('followupSubmit').disabled=disabled;
+  document.querySelectorAll('.followupChip').forEach(button=>{button.disabled=disabled;});
+  document.getElementById('followupInput').placeholder=limitReached?'本次追问已经完整收束':'围绕这组牌继续追问…';
+}
+function showFollowups(){
+  document.getElementById('followupPanel').classList.add('show');
+  updateFollowupControls();
+}
+function persistAIHistory(){
+  if(!currentReadingHistoryId)return;
+  const item=historyList.find(entry=>(entry.id||entry.time)===currentReadingHistoryId);
+  if(!item)return;
+  if(initialAIReading)item.aiReading=initialAIReading.slice(0,6000);
+  item.followUps=aiConversation.slice(initialAIReading?1:0).slice(-8).map(turn=>({role:turn.role,content:turn.content.slice(0,2400)}));
+  localStorage.setItem(HISTORY_KEY,JSON.stringify(historyList));
+  renderHistory();
+}
+async function readAIStream(resp,onUpdate){
+  if(!resp.body)throw new Error('浏览器不支持流式解读');
+  const reader=resp.body.getReader();
+  const decoder=new TextDecoder();
+  let buffer='',fullText='';
+  const consumeLine=line=>{
+    if(!line.startsWith('data: '))return;
+    const data=line.slice(6);
+    if(data==='[DONE]')return;
+    try{
+      const json=JSON.parse(data);
+      if(json.error)throw new Error(json.error.message||'解读服务返回错误');
+      const content=json.choices?.[0]?.delta?.content;
+      if(content){fullText+=content;onUpdate(fullText);}
+    }catch(error){if(!(error instanceof SyntaxError))throw error;}
+  };
+  while(true){
+    const{done,value}=await reader.read();
+    if(done)break;
+    buffer+=decoder.decode(value,{stream:true});
+    const lines=buffer.split('\n');buffer=lines.pop()||'';
+    lines.forEach(consumeLine);
+  }
+  if(buffer.trim())consumeLine(buffer.trim());
+  return fullText.trim();
+}
 
+async function requestAIReading(){
+  if(isAIStreaming)return;
+  resetFollowups();
+  isAIStreaming=true;updateFollowupControls();
+  const contentDiv=document.getElementById('aiContent');
+  const progressBar=document.getElementById('aiProgressBar');
+  const progressFill=document.getElementById('aiProgressFill');
+  const retryBtn=document.getElementById('aiRetryBtn');
+  contentDiv.innerHTML='';progressBar.style.display='block';progressFill.style.width='0%';retryBtn.style.display='none';
+  document.getElementById('aiReading').classList.add('active');
+  document.getElementById('aiReadingHeader').classList.add('show');
+  const thinkEl=document.createElement('div');thinkEl.className='aiThinking';
+  thinkEl.innerHTML='<div class="dots"><span></span><span></span><span></span></div><span>正在连接星象，解读牌面...</span>';
+  contentDiv.appendChild(thinkEl);
   try{
-    const resp=await fetch('/.netlify/functions/tarot-reading',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({question:userQuestion,cards:cardsDesc})
+    const resp=await fetch('/api/tarot-reading',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({question:userQuestion,cards:getCardsDescription()})
     });
-    if(!resp.ok){const e=await resp.text();throw new Error(`API错误(${resp.status}): ${e}`);}
-    thinkEl.remove();
-    const textDiv=document.createElement('div');
-    textDiv.style.cssText='margin-top:4px;';
-    contentDiv.appendChild(textDiv);
-    const cursor=document.createElement('span');
-    cursor.id='aiCursor';
-    textDiv.appendChild(cursor);
-
-    const reader=resp.body.getReader();
-    const decoder=new TextDecoder();
-    let buffer='',fullText='';
-    while(true){
-      const{done,value}=await reader.read();
-      if(done) break;
-      buffer+=decoder.decode(value,{stream:true});
-      const lines=buffer.split('\n');
-      buffer=lines.pop()||'';
-      for(const line of lines){
-        if(line.startsWith('data: ')){
-          const data=line.slice(6);
-          if(data==='[DONE]')continue;
-          try{
-            const json=JSON.parse(data);
-            if(json.error)throw new Error(json.error.message||JSON.stringify(json.error));
-            const c=json.choices?.[0]?.delta?.content;
-            if(c){
-              fullText+=c;
-              textDiv.innerHTML='<p>'+parseMD(fullText)+'</p>';
-              textDiv.appendChild(cursor);
-              contentDiv.scrollTop=contentDiv.scrollHeight;
-              progressFill.style.width=Math.min(95,fullText.length/8)+'%';
-            }
-          }catch(e){if(e.message&&!e.message.includes('JSON'))throw e;}
-        }
-      }
+    if(!resp.ok){
+      let message=`智能解读暂时不可用（${resp.status}）`;
+      try{const data=await resp.json();if(data.error)message=data.error;}catch{}
+      if(['127.0.0.1','localhost'].includes(location.hostname)&&[404,405,501].includes(resp.status))message='当前是静态预览，不运行 AI；请使用 Netlify Dev 或部署后的正式网址测试';
+      throw new Error(message);
     }
-    if(!fullText){textDiv.innerHTML='<p style="color:#6a80a8;text-align:center">解读未能返回内容，请检查网络或 API Key 后重试。</p>';}
+    thinkEl.remove();
+    const textDiv=document.createElement('div');textDiv.style.cssText='margin-top:4px;';contentDiv.appendChild(textDiv);
+    const cursor=document.createElement('span');cursor.id='aiCursor';textDiv.appendChild(cursor);
+    const fullText=await readAIStream(resp,text=>{
+      textDiv.innerHTML='<p>'+parseMD(text)+'</p>';textDiv.appendChild(cursor);
+      contentDiv.scrollTop=contentDiv.scrollHeight;progressFill.style.width=Math.min(95,text.length/8)+'%';
+    });
+    if(!fullText)textDiv.innerHTML='<p style="color:#9a909f;text-align:center">解读未能返回内容，请检查网络或 API Key 后重试。</p>';
+    else{initialAIReading=fullText;aiConversation=[{role:'assistant',content:fullText}];persistAIHistory();}
     progressFill.style.width='100%';
   }catch(err){
     console.error('AI reading error:',err);
-    contentDiv.innerHTML=`
-      <div style="text-align:center;padding:30px 0;">
-        <p style="color:#d06050;font-size:15px;margin-bottom:10px;">解读连接出现了问题</p>
-        <p style="color:#5a6a8a;font-size:12px;">${err.message}</p>
-      </div>`;
+    contentDiv.innerHTML=`<div style="text-align:center;padding:30px 0;"><p style="color:#f0dab1;font-size:15px;margin-bottom:10px;">基础牌阵解读已经完成</p><p style="color:#9a909f;font-size:12px;">${escapeHTML(err.message)}；你仍可以使用上方的本地综合解读。</p></div>`;
   }finally{
-    isAIStreaming=false;
-    retryBtn.style.display='inline-block';
-    progressBar.style.display='none';
-    // stop reading animation
+    isAIStreaming=false;retryBtn.style.display='inline-block';progressBar.style.display='none';
     document.getElementById('aiReading').classList.remove('active');
     document.getElementById('aiReadingHeader').classList.remove('show');
-    const c=document.getElementById('aiCursor');if(c)c.remove();
+    const cursor=document.getElementById('aiCursor');if(cursor)cursor.remove();
+    showFollowups();
   }
 }
 document.getElementById('aiRetryBtn').onclick=requestAIReading;
-document.getElementById('copyReadingBtn').onclick=async()=>{
-  const btn=document.getElementById('copyReadingBtn');
+function appendFollowupTurn(role,text,{local=false,thinking=false}={}){
+  const turn=document.createElement('div');turn.className=`followupTurn ${role}${local?' local':''}`;
+  const label=document.createElement('small');label.textContent=role==='user'?'你的追问':local?'本地牌面回应':'继续观照';
+  const body=document.createElement('div');
+  body.innerHTML=thinking?'<span class="aiThinking" style="padding:0"><span class="dots"><span></span><span></span><span></span></span><span>正在沿牌阵寻找线索…</span></span>':parseMD(text);
+  turn.append(label,body);document.getElementById('followupThread').appendChild(turn);
+  turn.scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'nearest'});
+  return{turn,body};
+}
+function buildLocalFollowUp(query){
+  const last=sessionDraws[sessionDraws.length-1],first=sessionDraws[0];
+  const lastMeaning=last?(last.reversed?last.card.rev:last.card.up):'放慢速度观察';
+  const firstMeaning=first?(first.reversed?first.card.rev:first.card.up):'此刻的起点';
+  const action=/做|行动|选择|下一步|怎么办/.test(query)
+    ?`把“${lastMeaning}”缩小成一个今天或本周能完成的小动作，并在行动后记录真实反馈。`
+    :`先比较牌阵从“${firstMeaning}”到“${lastMeaning}”的变化，看看哪一处最像你现实中的矛盾。`;
+  return `**这是一段本地牌面回应。** 当前智能连接不可用，所以没有重新生成或重新抽牌。\n\n围绕“${query}”，这组牌仍把注意力带回从“${firstMeaning}”走向“${lastMeaning}”的路径。${action}\n\n你可以继续问自己：什么证据会支持或推翻我现在的理解？`;
+}
+async function requestFollowUp(rawQuestion){
+  const followUp=String(rawQuestion||'').trim().slice(0,180);
+  if(!followUp||isFollowUpStreaming||isAIStreaming||followUpCount>=MAX_FOLLOWUPS)return;
+  isFollowUpStreaming=true;followUpCount++;
+  document.getElementById('followupInput').value='';updateFollowupControls();
+  appendFollowupTurn('user',followUp);
+  const pending=appendFollowupTurn('assistant','',{thinking:true});
+  const priorConversation=aiConversation.slice(-7);
+  try{
+    const resp=await fetch('/api/tarot-reading',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({question:userQuestion,cards:getCardsDescription(),followUp,conversation:priorConversation})
+    });
+    if(!resp.ok){
+      let message=`智能解读暂时不可用（${resp.status}）`;
+      try{const data=await resp.json();if(data.error)message=data.error;}catch{}
+      if(['127.0.0.1','localhost'].includes(location.hostname)&&[404,405,501].includes(resp.status))message='当前是静态预览，不运行 AI；请使用 Netlify Dev 或部署后的正式网址测试';
+      throw new Error(message);
+    }
+    const answer=await readAIStream(resp,text=>{pending.body.innerHTML=parseMD(text);});
+    if(!answer)throw new Error('解读未能返回内容');
+    aiConversation.push({role:'user',content:followUp},{role:'assistant',content:answer});
+  }catch(error){
+    const fallback=buildLocalFollowUp(followUp);
+    pending.turn.classList.add('local');pending.turn.querySelector('small').textContent='本地牌面回应';
+    pending.body.innerHTML=parseMD(fallback);
+    aiConversation.push({role:'user',content:followUp},{role:'assistant',content:fallback});
+    console.warn('Follow-up reading fallback:',error);
+  }finally{
+    isFollowUpStreaming=false;updateFollowupControls();persistAIHistory();
+  }
+}
+document.getElementById('followupForm').addEventListener('submit',event=>{
+  event.preventDefault();requestFollowUp(document.getElementById('followupInput').value);
+});
+document.querySelectorAll('.followupChip').forEach(button=>button.addEventListener('click',()=>requestFollowUp(button.textContent)));
+function getReadingText(){
   const question=userQuestion?`问题：${userQuestion}\n\n`:'';
   const cards=sessionDraws.map((d,i)=>`${POSITION_LABELS[i]||`第${i+1}张`}：${d.card.name}（${d.reversed?'逆位':'正位'}）— ${d.reversed?d.card.rev:d.card.up}`).join('\n');
   const ai=document.getElementById('aiContent').innerText.trim();
-  const text=`塔罗解读\n\n${question}${cards}${ai?`\n\n${ai}`:''}\n\n仅供娱乐与自我反思。`;
+  const followups=document.getElementById('followupThread').innerText.trim();
+  return `塔罗解读\n\n${question}${cards}${ai?`\n\n${ai}`:''}${followups?`\n\n继续追问\n${followups}`:''}\n\n仅供娱乐与自我反思。\n${location.origin}${location.pathname}`;
+}
+let posterBlob=null;
+let posterObjectUrl='';
+function posterRoundRect(ctx,x,y,width,height,radius){
+  const r=Math.min(radius,width/2,height/2);
+  ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+width,y,x+width,y+height,r);ctx.arcTo(x+width,y+height,x,y+height,r);
+  ctx.arcTo(x,y+height,x,y,r);ctx.arcTo(x,y,x+width,y,r);ctx.closePath();
+}
+function drawWrappedText(ctx,text,x,y,maxWidth,lineHeight,maxLines=2){
+  const chars=[...String(text||'')];let line='',lines=[];
+  for(const char of chars){
+    const next=line+char;
+    if(ctx.measureText(next).width>maxWidth&&line){lines.push(line);line=char;if(lines.length===maxLines)break;}
+    else line=next;
+  }
+  if(lines.length<maxLines&&line)lines.push(line);
+  const consumed=lines.join('').length;
+  if(consumed<chars.length&&lines.length){
+    while(ctx.measureText(lines.at(-1)+'…').width>maxWidth)lines[lines.length-1]=lines.at(-1).slice(0,-1);
+    lines[lines.length-1]+='…';
+  }
+  lines.forEach((value,index)=>ctx.fillText(value,x,y+index*lineHeight));
+  return y+lines.length*lineHeight;
+}
+function posterCardTitle(card){
+  if(card.name.includes(' · '))return card.name.split(' · ').at(-1);
+  const chinese=card.name.match(/[\u3400-\u9fff].*$/);return chinese?.[0]||card.name;
+}
+function posterSummary(){
+  const first=sessionDraws[0],last=sessionDraws.at(-1);
+  const start=first?(first.reversed?first.card.rev:first.card.up):'当下';
+  const end=last?(last.reversed?last.card.rev:last.card.up):'新的方向';
+  return `牌阵从「${start}」走向「${end}」。把两者之间的变化，作为下一步最值得验证的线索。`;
+}
+async function createReadingPoster(showQuestion=true){
+  if(!sessionDraws.length)throw new Error('请先完成一次牌面观测');
+  const width=1080,height=1440;
+  const poster=document.createElement('canvas');poster.width=width;poster.height=height;
+  const ctx=poster.getContext('2d');
+  const background=ctx.createRadialGradient(240,180,10,540,650,1050);
+  background.addColorStop(0,'#241722');background.addColorStop(.48,'#100b13');background.addColorStop(1,'#07060a');
+  ctx.fillStyle=background;ctx.fillRect(0,0,width,height);
+  const seedBase=sessionDraws.reduce((sum,draw)=>sum+Number(draw.card.id||0)*17,97);let seed=seedBase;
+  const random=()=>{seed=(seed*9301+49297)%233280;return seed/233280;};
+  for(let i=0;i<96;i++){
+    const x=random()*width,y=random()*height,r=.5+random()*1.5;
+    ctx.fillStyle=`rgba(240,218,177,${.08+random()*.3})`;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+  }
+  const gold='#d5b07a',bright='#f0dab1',ivory='#eee7dc',muted='#a79ca9',faint='#716673';
+  ctx.textAlign='left';ctx.fillStyle=gold;ctx.font='22px Georgia,serif';ctx.fillText('◐  ASTRAL TAROT ARCHIVE',72,78);
+  ctx.textAlign='right';ctx.fillStyle=faint;ctx.font='17px system-ui,sans-serif';ctx.fillText(`${sessionDraws.length===3?'THREE':'FIVE'} CARD OBSERVATION`,1008,78);
+  ctx.strokeStyle='rgba(213,176,122,.28)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(72,108);ctx.lineTo(1008,108);ctx.stroke();
+
+  ctx.textAlign='center';ctx.fillStyle=bright;ctx.font='38px "Songti SC","STSong",serif';
+  const question=showQuestion&&userQuestion?userQuestion:'本次牌面观测';
+  drawWrappedText(ctx,question,width/2,170,890,52,2);
+  ctx.fillStyle=faint;ctx.font='17px system-ui,sans-serif';ctx.fillText('THE CARDS HAVE SPOKEN',width/2,275);
+
+  const images=await Promise.all(sessionDraws.map(draw=>loadCardImage(draw.card)));
+  const five=sessionDraws.length>3;
+  const cardWidth=five?176:244;
+  const cardHeight=Math.round(cardWidth*600/350);
+  const positions=[];
+  if(five){
+    const gap=48,rowWidth=cardWidth*3+gap*2,start=(width-rowWidth)/2;
+    for(let i=0;i<3;i++)positions.push({x:start+i*(cardWidth+gap),y:330});
+    const lowerWidth=cardWidth*2+gap;const lowerStart=(width-lowerWidth)/2;
+    positions.push({x:lowerStart,y:735},{x:lowerStart+cardWidth+gap,y:735});
+  }else{
+    const gap=48,total=cardWidth*3+gap*2,start=(width-total)/2;
+    for(let i=0;i<3;i++)positions.push({x:start+i*(cardWidth+gap),y:335});
+  }
+  sessionDraws.forEach((draw,index)=>{
+    const{x,y}=positions[index],image=images[index];
+    ctx.textAlign='center';ctx.fillStyle=gold;ctx.font=`${five?16:18}px system-ui,sans-serif`;
+    ctx.fillText((POSITION_LABELS[index]||`第${index+1}张`).split('/')[0].trim(),x+cardWidth/2,y-18);
+    ctx.save();ctx.shadowColor='rgba(0,0,0,.55)';ctx.shadowBlur=24;ctx.shadowOffsetY=12;
+    posterRoundRect(ctx,x,y,cardWidth,cardHeight,12);ctx.fillStyle='#160f17';ctx.fill();ctx.clip();
+    if(image){
+      if(draw.reversed){ctx.translate(x+cardWidth/2,y+cardHeight/2);ctx.rotate(Math.PI);ctx.drawImage(image,-cardWidth/2,-cardHeight/2,cardWidth,cardHeight);}
+      else ctx.drawImage(image,x,y,cardWidth,cardHeight);
+    }else{
+      ctx.fillStyle='#1c131d';ctx.fillRect(x,y,cardWidth,cardHeight);ctx.fillStyle=bright;ctx.font='50px Georgia,serif';ctx.fillText('◐',x+cardWidth/2,y+cardHeight/2);
+    }
+    ctx.restore();ctx.strokeStyle='rgba(240,218,177,.6)';ctx.lineWidth=2;posterRoundRect(ctx,x,y,cardWidth,cardHeight,12);ctx.stroke();
+    ctx.textAlign='center';ctx.fillStyle=ivory;ctx.font=`${five?17:21}px "Songti SC","STSong",serif`;
+    ctx.fillText(posterCardTitle(draw.card),x+cardWidth/2,y+cardHeight+30);
+    ctx.fillStyle=draw.reversed?'#d78d8d':'#91b6a7';ctx.font=`${five?13:15}px system-ui,sans-serif`;
+    ctx.fillText(draw.reversed?'逆位 · REVERSED':'正位 · UPRIGHT',x+cardWidth/2,y+cardHeight+53);
+  });
+
+  const summaryY=five?1150:875;
+  ctx.strokeStyle='rgba(213,176,122,.24)';ctx.beginPath();ctx.moveTo(110,summaryY-30);ctx.lineTo(970,summaryY-30);ctx.stroke();
+  ctx.textAlign='left';ctx.fillStyle=gold;ctx.font='18px Georgia,serif';ctx.fillText('OBSERVATION NOTE',110,summaryY);
+  ctx.fillStyle=ivory;ctx.font=`${five?25:28}px "Songti SC","STSong",serif`;
+  drawWrappedText(ctx,posterSummary(),110,summaryY+48,860,five?38:42,2);
+  const reversed=sessionDraws.filter(draw=>draw.reversed).length;
+  ctx.fillStyle=muted;ctx.font='18px system-ui,sans-serif';ctx.fillText(`正位 ${sessionDraws.length-reversed}  ·  逆位 ${reversed}  ·  仅供娱乐与自我反思`,110,summaryY+(five?145:160));
+
+  const now=new Date();const date=new Intl.DateTimeFormat('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit'}).format(now);
+  ctx.strokeStyle='rgba(213,176,122,.18)';ctx.beginPath();ctx.moveTo(72,1350);ctx.lineTo(1008,1350);ctx.stroke();
+  ctx.textAlign='left';ctx.fillStyle=faint;ctx.font='16px system-ui,sans-serif';ctx.fillText(date,72,1390);
+  ctx.textAlign='right';ctx.fillStyle=gold;ctx.fillText(location.hostname||'ASTRAL TAROT',1008,1390);
+  return new Promise((resolve,reject)=>poster.toBlob(blob=>blob?resolve(blob):reject(new Error('海报生成失败')),'image/png'));
+}
+function posterFilename(){
+  const now=new Date();const date=[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-');
+  return `astral-tarot-${date}.png`;
+}
+async function refreshPosterPreview(){
+  const loading=document.getElementById('posterLoading');const buttons=document.querySelectorAll('.posterButtons button');
+  loading.classList.add('show');buttons.forEach(button=>{button.disabled=true;});
   try{
-    await navigator.clipboard.writeText(text);
+    posterBlob=await createReadingPoster(document.getElementById('posterQuestionToggle').checked);
+    if(posterObjectUrl)URL.revokeObjectURL(posterObjectUrl);
+    posterObjectUrl=URL.createObjectURL(posterBlob);
+    const preview=document.getElementById('posterPreview');preview.src=posterObjectUrl;await preview.decode();
+  }catch(error){console.error('Poster generation failed:',error);showHint(error.message);}
+  finally{loading.classList.remove('show');buttons.forEach(button=>{button.disabled=false;});}
+}
+async function openPoster(){
+  hideAppNotice();document.getElementById('posterOverlay').classList.add('show');
+  document.getElementById('posterShare').textContent=/android/i.test(navigator.userAgent)?'分享到 Android 应用':'分享图片';
+  document.getElementById('posterQuestionToggle').checked=Boolean(userQuestion);
+  document.getElementById('posterQuestionToggle').disabled=!userQuestion;
+  await refreshPosterPreview();document.getElementById('posterShare').focus();
+}
+function closePoster(){document.getElementById('posterOverlay').classList.remove('show');}
+function savePoster(){
+  if(!posterBlob)return;
+  const link=document.createElement('a');link.href=posterObjectUrl;link.download=posterFilename();document.body.appendChild(link);link.click();link.remove();
+}
+document.getElementById('copyReadingBtn').onclick=async()=>{
+  const btn=document.getElementById('copyReadingBtn');
+  try{
+    await navigator.clipboard.writeText(getReadingText());
     btn.textContent='已复制';btn.classList.add('copied');
-    setTimeout(()=>{btn.textContent='复制本次解读';btn.classList.remove('copied');},1800);
+    setTimeout(()=>{btn.textContent='复制内容';btn.classList.remove('copied');},1800);
   }catch{showHint('复制失败，请长按选择文本');}
 };
+document.getElementById('shareReadingBtn').onclick=openPoster;
+document.getElementById('posterQuestionToggle').addEventListener('change',refreshPosterPreview);
+document.getElementById('posterClose').onclick=closePoster;
+document.getElementById('posterSave').onclick=savePoster;
+document.getElementById('posterShare').onclick=async()=>{
+  if(!posterBlob)return;
+  const file=new File([posterBlob],posterFilename(),{type:'image/png'});
+  try{
+    if(navigator.share&&navigator.canShare?.({files:[file]})){
+      await navigator.share({title:'我的塔罗观测',text:'来自 Astral Tarot Archive',files:[file]});
+    }else{
+      savePoster();showHint('设备不支持图片直分享，已保存高清 PNG');
+    }
+  }catch(error){if(error.name!=='AbortError'){console.warn('Poster share failed:',error);savePoster();showHint('系统分享不可用，已保存高清 PNG');}}
+};
+document.addEventListener('keydown',event=>{if(event.key==='Escape'&&document.getElementById('posterOverlay').classList.contains('show'))closePoster();});
 
 // ── Question overlay handlers ──
+document.querySelectorAll('.spreadOption').forEach(button=>{
+  button.addEventListener('click',()=>{
+    targetDraws=Number(button.dataset.count)||3;
+    document.querySelectorAll('.spreadOption').forEach(option=>{
+      const active=option===button;
+      option.classList.toggle('active',active);
+      option.setAttribute('aria-checked',String(active));
+    });
+  });
+});
 document.getElementById('questionConfirm').onclick=()=>{
+  closeHistoryPanel();
   userQuestion=document.getElementById('questionInput').value.trim();
+  currentReadingSaved=false;
   document.getElementById('questionOverlay').classList.add('hidden');
   spawnPile();
 };
@@ -1404,8 +2365,8 @@ function showHint(text,dur=2500){
 }
 function updateInstructions(){
   const el=document.getElementById('instrPanel');
-  if(inputMode==='mouse') el.innerHTML='鼠标模式: 点击选牌 → 再次点击确认';
-  else el.innerHTML='手势模式: ✋张开=浏览 · 🤏捏合=选牌/确认';
+  if(inputMode==='mouse') el.innerHTML='移动浏览 · 点击选牌 · 再次点击确认';
+  else el.innerHTML='✋ 张开手掌浏览 · 🤏 短暂捏合完成选牌与确认';
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1482,6 +2443,10 @@ let lastHoveredIndex=-1; // track which card is hovered for sound
 let inputMode='mouse';
 let handsReady=false;
 let handResults=null;
+let handsInitializing=false;
+let cameraStream=null;
+let activeHands=null;
+let handSessionToken=0;
 const mouse=new THREE.Vector2();
 const raycaster=new THREE.Raycaster();
 let pileOffsetTarget=0; // target X offset from mouse
@@ -1583,15 +2548,9 @@ canvas.addEventListener('touchend',e=>{
 // MEDIAPIPE HANDS
 // ═══════════════════════════════════════════════════════════════
 document.getElementById('modeBtn').onclick=()=>{
+  if(handsInitializing)return;
   if(inputMode==='mouse') initHands();
-  else {
-    inputMode='mouse';
-    document.getElementById('camWrap').style.display='none';
-    document.getElementById('vCursor').style.display='none';
-    document.getElementById('gestureInfo').textContent='模式: 鼠标';
-    document.getElementById('modeBtn').textContent='切换手势模式';
-    updateInstructions();
-  }
+  else exitHands();
 };
 function loadScript(src){
   return new Promise((res,rej)=>{
@@ -1601,32 +2560,66 @@ function loadScript(src){
   });
 }
 async function initHands(){
+  handsInitializing=true;
   showHint('正在加载手势识别…',5000);
+  let pendingStream=null;
   try{
     const video=document.getElementById('camVid');
-    const stream=await navigator.mediaDevices.getUserMedia({video:{width:320,height:240,facingMode:'user'}});
-    video.srcObject=stream;await video.play();
+    pendingStream=await navigator.mediaDevices.getUserMedia({video:{width:320,height:240,facingMode:'user'}});
+    cameraStream=pendingStream;
+    video.srcObject=cameraStream;await video.play();
     document.getElementById('camWrap').style.display='block';
-    await loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js');
-    const hands=new window.Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}`});
+    const handsBase=new URL('./vendor/mediapipe/hands/',document.baseURI);
+    await loadScript(new URL('hands.js',handsBase).href);
+    const hands=new window.Hands({locateFile:f=>new URL(f,handsBase).href});
+    activeHands=hands;
     hands.setOptions({maxNumHands:1,modelComplexity:1,minDetectionConfidence:0.6,minTrackingConfidence:0.5});
     hands.onResults(r=>{handResults=r;});
+    const session=++handSessionToken;
     async function detect(){
-      if(inputMode!=='gesture')return;
+      if(inputMode!=='gesture'||session!==handSessionToken)return;
       try{await hands.send({image:video});}catch(e){}
       requestAnimationFrame(detect);
     }
-    inputMode='gesture';handsReady=true;
-    document.getElementById('gestureInfo').textContent='模式: 手势 ✋';
-    document.getElementById('modeBtn').textContent='切换鼠标模式';
+    inputMode='gesture';handsReady=true;resetPinchState();
+    document.getElementById('gestureInfo').textContent='手势仪式 · ✋';
+    document.getElementById('modeBtn').innerHTML='<span aria-hidden="true">○</span> 退出手势';
+    handsInitializing=false;
     showHint('手势模式已启用');updateInstructions();detect();
   }catch(e){
+    handsInitializing=false;
+    pendingStream?.getTracks().forEach(track=>track.stop());
+    cameraStream=null;
+    document.getElementById('camVid').srcObject=null;
+    const failedHands=activeHands;activeHands=null;
+    if(failedHands?.close)Promise.resolve(failedHands.close()).catch(()=>{});
     console.warn('MediaPipe failed:',e);inputMode='mouse';
     document.getElementById('camWrap').style.display='none';
-    document.getElementById('gestureInfo').textContent='模式: 鼠标 (摄像头不可用)';
+    document.getElementById('gestureInfo').textContent='鼠标仪式 · 摄像头不可用';
     showHint('摄像头权限失败，已降级鼠标模式',3000);updateInstructions();
   }
 }
+function exitHands({silent=false}={}){
+  handSessionToken++;
+  inputMode='mouse';handsReady=false;handResults=null;
+  resetPinchState();
+  cameraStream?.getTracks().forEach(track=>track.stop());
+  cameraStream=null;
+  const video=document.getElementById('camVid');
+  video.pause();video.srcObject=null;
+  const closingHands=activeHands;activeHands=null;
+  if(closingHands?.close)Promise.resolve(closingHands.close()).catch(()=>{});
+  document.getElementById('camWrap').style.display='none';
+  vCursor.style.display='none';
+  document.getElementById('gestureInfo').textContent='鼠标仪式';
+  document.getElementById('modeBtn').innerHTML='<span aria-hidden="true">◇</span> 启用手势';
+  updateInstructions();
+  if(!silent)showHint('手势模式已退出');
+}
+window.addEventListener('pagehide',()=>{if(inputMode==='gesture')exitHands({silent:true});});
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden&&inputMode==='gesture')exitHands({silent:true});
+});
 function classifyGesture(lms){
   if(!lms||!lms.length)return'NONE';
   const lm=lms[0];
@@ -1634,29 +2627,48 @@ function classifyGesture(lms){
   const tips=[4,8,12,16,20],pips=[3,6,10,14,18];
   const ext=tips.map((t,i)=>i===0?dist(4,9)>dist(3,9):lm[t].y<lm[pips[i]].y);
   const cnt=ext.filter(Boolean).length;
-  if(dist(4,8)<0.07)return'PINCH';
-  if(cnt<=1&&!ext[1]&&!ext[2]&&!ext[3]&&!ext[4])return'FIST';
+  const palmWidth=Math.max(dist(5,17),0.025);
+  const pinchRatio=dist(4,8)/palmWidth;
+  if(pinchPose?pinchRatio<0.62:pinchRatio<0.42){pinchPose=true;return'PINCH';}
+  pinchPose=false;
   if(ext[1]&&!ext[2]&&!ext[3]&&!ext[4])return'POINT';
   if(cnt>=4)return'OPEN';
   return'NONE';
 }
-let lastGesture='NONE',gestureStable=0;
+let lastGesture='NONE';
 const vCursor=document.getElementById('vCursor');
 const vCursorLabel=document.getElementById('vCursorLabel');
 let vCursorHovIdx=-1;
-let gestureSelectCooldown=0;
+let gestureSelectCooldownUntil=0;
+let pinchLatched=false;
+let pinchPose=false;
+let pinchCandidateAt=0;
+const PINCH_HOLD_MS=260;
 let vCursorX=0,vCursorY=0; // smoothed cursor position
+
+function resetPinchState(){
+  pinchLatched=false;pinchPose=false;pinchCandidateAt=0;lastGesture='NONE';
+  gestureSelectCooldownUntil=0;
+  vCursor.style.setProperty('--pinch-angle','0deg');
+  vCursor.className='';
+}
+function gestureLabel(g,progress=0){
+  if(g==='PINCH')return progress>0?`捏合 ${Math.round(progress*100)}%`:'捏合';
+  if(g==='OPEN')return'张手浏览';
+  if(g==='POINT')return'指向浏览';
+  return'寻找手掌';
+}
 
 function processGesture(){
   if(inputMode!=='gesture'||!handResults)return;
   const lms=handResults.multiHandLandmarks;
   const g=classifyGesture(lms);
-  document.getElementById('gestureInfo').textContent=`手势: ${g} · 模式: 手势`;
-
-  if(gestureSelectCooldown>0) gestureSelectCooldown--;
+  const now=performance.now();
 
   if(!lms||!lms.length){
     vCursor.style.display='none';
+    resetPinchState();
+    document.getElementById('gestureInfo').textContent='手势仪式 · 寻找手掌';
     // clear hover when hand disappears
     pileMeshes.forEach(m=>{ m.userData.hovered=false; });
     return;
@@ -1681,8 +2693,7 @@ function processGesture(){
   const screenX=vCursorX,screenY=vCursorY;
 
   // Update cursor visual state
-  vCursor.className='';
-  if(g==='PINCH') vCursor.className='grab';
+  vCursor.className=g==='PINCH'?'grab':'';
 
   // Convert to normalized device coords for raycasting
   mouse.x=(screenX/window.innerWidth)*2-1;
@@ -1719,22 +2730,31 @@ function processGesture(){
     vCursorLabel.textContent='';
   }
 
-  // Gesture actions with stability + cooldown
-  if(g===lastGesture) gestureStable++; else gestureStable=0;
-  lastGesture=g;
-  if(gestureStable<4||gestureSelectCooldown>0) return;
-
-  if(gameState==='pile'&&g==='PINCH'){
-    if(vCursorHovIdx>=0){
-      selectCard(vCursorHovIdx);
-      gestureSelectCooldown=30;
-      vCursor.className='grab';
+  // Pinch must be held briefly over an actionable target. Threshold hysteresis,
+  // a release latch, and a time cooldown prevent accidental double selections.
+  const actionable=(gameState==='pile'&&vCursorHovIdx>=0)||gameState==='revealed';
+  if(g!=='PINCH'){
+    pinchCandidateAt=0;pinchLatched=false;
+    vCursor.style.setProperty('--pinch-angle','0deg');
+  }else if(actionable&&!pinchLatched&&now>=gestureSelectCooldownUntil){
+    if(!pinchCandidateAt)pinchCandidateAt=now;
+    const progress=Math.min(1,(now-pinchCandidateAt)/PINCH_HOLD_MS);
+    vCursor.classList.add('arming');
+    vCursor.style.setProperty('--pinch-angle',`${progress*360}deg`);
+    if(progress>=1){
+      const selectedIndex=vCursorHovIdx;
+      pinchLatched=true;pinchCandidateAt=0;gestureSelectCooldownUntil=now+650;
+      vCursor.classList.remove('arming');vCursor.classList.add('armed');
+      if(gameState==='pile'&&selectedIndex>=0)selectCard(selectedIndex);
+      else if(gameState==='revealed'){playConfirm();confirmDraw();}
     }
+  }else{
+    pinchCandidateAt=0;
+    vCursor.style.setProperty('--pinch-angle','0deg');
   }
-  if(gameState==='revealed'&&g==='PINCH'){
-    confirmDraw();
-    gestureSelectCooldown=30;
-  }
+  const progress=pinchCandidateAt?Math.min(1,(now-pinchCandidateAt)/PINCH_HOLD_MS):0;
+  document.getElementById('gestureInfo').textContent=`手势仪式 · ${gestureLabel(g,progress)}`;
+  lastGesture=g;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1766,9 +2786,134 @@ function animate(){
 // ═══════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════
+const appNotice=document.getElementById('appNotice');
+const appNoticeTitle=document.getElementById('appNoticeTitle');
+const appNoticeDetail=document.getElementById('appNoticeDetail');
+const appNoticeAction=document.getElementById('appNoticeAction');
+let appNoticeTimer=null;
+let deferredInstallPrompt=null;
+let pwaRegistration=null;
+let updateRequested=false;
+const INSTALL_DISMISS_KEY='astral-pwa-install-dismissed';
+const isStandalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+
+function hideAppNotice(){
+  clearTimeout(appNoticeTimer);appNotice.className='';
+  appNoticeAction.classList.remove('show');appNoticeAction.onclick=null;
+}
+function showAppNotice({title,detail='',actionLabel='',onAction=null,progress=null,sticky=false,kind='',dismissKey=''}){
+  clearTimeout(appNoticeTimer);
+  appNotice.className=`show${progress===null?'':' progress'}${kind?` ${kind}`:''}`;
+  appNotice.style.setProperty('--notice-progress',`${Math.max(0,Math.min(100,progress??0))}%`);
+  appNoticeTitle.textContent=title;appNoticeDetail.textContent=detail;
+  appNotice.dataset.dismissKey=dismissKey;
+  if(actionLabel&&onAction){
+    appNoticeAction.textContent=actionLabel;appNoticeAction.classList.add('show');appNoticeAction.onclick=onAction;
+  }else{appNoticeAction.classList.remove('show');appNoticeAction.onclick=null;}
+  if(!sticky)appNoticeTimer=setTimeout(hideAppNotice,3200);
+}
+document.getElementById('appNoticeDismiss').onclick=()=>{
+  if(appNotice.dataset.dismissKey)localStorage.setItem(appNotice.dataset.dismissKey,String(Date.now()));
+  hideAppNotice();
+};
+function installOfferRecentlyDismissed(){
+  const dismissed=Number(localStorage.getItem(INSTALL_DISMISS_KEY)||0);
+  return dismissed&&Date.now()-dismissed<7*24*60*60*1000;
+}
+function showInstallOffer(){
+  if(isStandalone||installOfferRecentlyDismissed()||!navigator.onLine)return;
+  if(deferredInstallPrompt){
+    showAppNotice({
+      title:'安装 Astral Tarot',detail:'添加到桌面，获得全屏与离线体验',actionLabel:'安装',sticky:true,dismissKey:INSTALL_DISMISS_KEY,
+      onAction:async()=>{
+        const prompt=deferredInstallPrompt;deferredInstallPrompt=null;
+        await prompt.prompt();const choice=await prompt.userChoice;
+        if(choice?.outcome!=='accepted')localStorage.setItem(INSTALL_DISMISS_KEY,String(Date.now()));
+        hideAppNotice();
+      }
+    });
+  }else if(isIOS){
+    showAppNotice({
+      title:'把塔罗装到 iPhone',detail:'使用 Safari 的“添加到主屏幕”即可全屏运行',actionLabel:'查看方法',sticky:true,dismissKey:INSTALL_DISMISS_KEY,
+      onAction:()=>showAppNotice({title:'添加到主屏幕',detail:'点 Safari 分享按钮，再选择“添加到主屏幕”',sticky:true,dismissKey:INSTALL_DISMISS_KEY})
+    });
+  }
+}
+window.addEventListener('beforeinstallprompt',event=>{
+  event.preventDefault();deferredInstallPrompt=event;
+  if(!appNotice.classList.contains('show'))showInstallOffer();
+});
+window.addEventListener('appinstalled',()=>{
+  deferredInstallPrompt=null;localStorage.removeItem(INSTALL_DISMISS_KEY);
+  showAppNotice({title:'安装完成',detail:'Astral Tarot 已加入你的桌面'});
+});
+function showNetworkStatus(){
+  if(!navigator.onLine){
+    showAppNotice({title:'当前处于离线模式',detail:'抽牌、牌图与本地观照仍然可用',sticky:true,kind:'offline'});
+  }else{
+    showAppNotice({title:'网络已经恢复',detail:'智能解读与资源更新重新可用'});
+    (pwaRegistration?.active||navigator.serviceWorker?.controller)?.postMessage({type:'WARM_CARD_CACHE'});
+  }
+}
+window.addEventListener('offline',showNetworkStatus);
+window.addEventListener('online',showNetworkStatus);
+
+function offerAppUpdate(worker){
+  showAppNotice({
+    title:'发现新版本',detail:'更新不会影响你的本地观测档案',actionLabel:'立即更新',sticky:true,
+    onAction:()=>{updateRequested=true;worker.postMessage({type:'SKIP_WAITING'});showAppNotice({title:'正在更新',detail:'完成后会自动重新打开',progress:70,sticky:true});}
+  });
+}
+async function initOfflineSupport(){
+  if(!('serviceWorker' in navigator)||location.protocol==='file:'){
+    if(location.protocol==='file:')showAppNotice({title:'请通过本地服务器打开',detail:'直接打开文件无法安装或使用离线缓存',sticky:true});
+    return;
+  }
+  try{
+    pwaRegistration=await navigator.serviceWorker.register('./service-worker.js',{scope:'./',updateViaCache:'none'});
+    if(pwaRegistration.waiting&&navigator.serviceWorker.controller)offerAppUpdate(pwaRegistration.waiting);
+    pwaRegistration.addEventListener('updatefound',()=>{
+      const worker=pwaRegistration.installing;if(!worker)return;
+      worker.addEventListener('statechange',()=>{
+        if(worker.state==='installed'&&navigator.serviceWorker.controller)offerAppUpdate(worker);
+      });
+    });
+    navigator.serviceWorker.addEventListener('controllerchange',()=>{
+      if(updateRequested){updateRequested=false;location.reload();}
+    });
+    navigator.serviceWorker.addEventListener('message',event=>{
+      const data=event.data||{};
+      if(data.type==='CARD_CACHE_PROGRESS'&&navigator.onLine){
+        const progress=data.total?data.completed/data.total*100:0;
+        if(data.completed<data.total)showAppNotice({title:'正在准备离线牌库',detail:`已保存 ${data.completed}/${data.total} 张牌`,progress,sticky:true});
+      }
+      if(data.type==='CARD_CACHE_READY'){
+        const ready=data.total-data.failed;
+        console.info(`Offline card cache ready: ${ready}/${data.total}`);
+        if(!navigator.onLine){showNetworkStatus();return;}
+        if(data.failed){
+          showAppNotice({title:'部分离线资源未完成',detail:`已保存 ${ready}/${data.total} 张牌`,actionLabel:'重试',sticky:true,onAction:()=>pwaRegistration?.active?.postMessage({type:'WARM_CARD_CACHE'})});
+        }else{
+          showAppNotice({title:'已经可以离线使用',detail:'78 张牌与核心界面已保存在设备上'});
+          setTimeout(()=>{if(!appNotice.classList.contains('show'))showInstallOffer();},3600);
+        }
+      }
+    });
+    const registration=await navigator.serviceWorker.ready;
+    (registration.active||navigator.serviceWorker.controller)?.postMessage({type:'WARM_CARD_CACHE'});
+  }catch(error){
+    console.warn('Offline support unavailable:',error);
+    showAppNotice({title:'离线功能暂时不可用',detail:'仍可在联网状态下正常抽牌'});
+  }
+}
+
 // Show question overlay on load; spawn pile after user confirms
 document.getElementById('questionOverlay').style.display='flex';
 updateInstructions();
+initOfflineSupport();
+if(new URLSearchParams(location.search).get('archive')==='1')setTimeout(()=>openHistoryPanel({modal:true}),0);
+else if(isIOS&&!isStandalone)setTimeout(()=>{if(!appNotice.classList.contains('show'))showInstallOffer();},5000);
 animate();
 </script>
 </body>
