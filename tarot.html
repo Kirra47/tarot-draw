@@ -17,7 +17,7 @@
 *{margin:0;padding:0;box-sizing:border-box;}
 body{overflow:hidden;min-height:100dvh;overscroll-behavior:none;background:#020208 url('./tarot-bg.png') center center/cover no-repeat fixed;font-family:'Segoe UI',system-ui,sans-serif;color:#c8d8f0;}
 #c{display:block;width:100vw;height:100dvh;position:relative;z-index:1;touch-action:none;}
-#camWrap{position:fixed;bottom:12px;left:12px;width:180px;height:135px;border-radius:10px;overflow:hidden;border:1px solid rgba(100,140,255,.3);z-index:20;display:none;box-shadow:0 4px 20px rgba(0,0,40,.5);}
+#camWrap{position:fixed;bottom:12px;left:12px;width:180px;height:135px;border-radius:10px;overflow:hidden;border:1px solid rgba(100,140,255,.3);z-index:20;display:none!important;box-shadow:0 4px 20px rgba(0,0,40,.5);}
 #camWrap video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);}
 #ui{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;}
 #ui *{pointer-events:auto;}
@@ -705,7 +705,7 @@ body::after{
   <div class="orient" id="ciOrient"></div>
   <div class="meaning" id="ciMeaning"></div>
 </div>
-<div id="camWrap"><video id="camVid" autoplay playsinline></video></div>
+<div id="camWrap" hidden aria-hidden="true"><video id="camVid" autoplay playsinline></video></div>
 <div id="stateHint"></div>
 <div id="vCursor"><div id="vCursorInner"></div><div id="vCursorLabel"></div></div>
 <div id="instrPanel"></div>
@@ -2585,7 +2585,6 @@ async function initHands(){
     pendingStream=await navigator.mediaDevices.getUserMedia({video:{width:320,height:240,facingMode:'user'}});
     cameraStream=pendingStream;
     video.srcObject=cameraStream;await video.play();
-    document.getElementById('camWrap').style.display='block';
     const handsBase=new URL('./vendor/mediapipe/hands/',document.baseURI);
     await loadScript(new URL('hands.js',handsBase).href);
     const hands=new window.Hands({locateFile:f=>new URL(f,handsBase).href});

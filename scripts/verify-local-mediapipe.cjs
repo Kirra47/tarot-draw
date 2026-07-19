@@ -35,6 +35,7 @@ const baseUrl = process.env.TAROT_URL || "http://127.0.0.1:8766";
     button: await page.locator("#modeBtn").textContent(),
     mode: await page.locator("#gestureInfo").textContent(),
     cameraVisible: await page.locator("#camWrap").isVisible(),
+    videoHasStream: await page.locator("#camVid").evaluate((video) => Boolean(video.srcObject)),
     localRuntime: [...localRuntime],
     external: [...external],
     errors,
@@ -51,7 +52,8 @@ const baseUrl = process.env.TAROT_URL || "http://127.0.0.1:8766";
 
   if (
     !result.button.includes("退出手势") ||
-    !result.cameraVisible ||
+    result.cameraVisible ||
+    !result.videoHasStream ||
     result.afterExit.cameraVisible ||
     result.afterExit.videoHasStream ||
     !result.afterExit.button.includes("启用手势") ||
