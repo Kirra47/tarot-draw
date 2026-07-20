@@ -25,7 +25,7 @@ body{overflow:hidden;min-height:100dvh;overscroll-behavior:none;background:#0202
 #topBar h1{font-size:20px;letter-spacing:4px;color:#8ab4ff;text-shadow:0 0 15px rgba(100,160,255,.4);}
 #deckCount{font-size:13px;color:#6a80a8;}
 #gestureInfo{position:fixed;top:60px;left:22px;font-size:12px;color:#5a70a0;z-index:10;}
-.uiBtn{background:rgba(15,20,40,.8);border:1px solid rgba(100,140,255,.25);color:#8ab4ff;padding:7px 16px;border-radius:8px;font-size:13px;cursor:pointer;transition:all .25s;backdrop-filter:blur(4px);}
+.uiBtn{background:rgba(15,20,40,.8);border:1px solid rgba(100,140,255,.25);color:#8ab4ff;padding:7px 16px;border-radius:8px;font-size:13px;cursor:pointer;transition:transform .2s ease-out,color .2s ease,background-color .2s ease,border-color .2s ease,box-shadow .2s ease;backdrop-filter:blur(4px);}
 .uiBtn:hover{background:rgba(30,50,100,.6);border-color:rgba(100,160,255,.5);box-shadow:0 0 12px rgba(80,130,255,.2);}
 button:focus-visible,textarea:focus-visible{outline:2px solid #8ab4ff;outline-offset:3px;}
 #modeBtn{position:fixed;top:12px;right:22px;z-index:30;}
@@ -79,7 +79,7 @@ button:focus-visible,textarea:focus-visible{outline:2px solid #8ab4ff;outline-of
 #stateHint.show{opacity:1;}
 #instrPanel{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);text-align:center;font-size:13px;color:#4a6090;z-index:10;pointer-events:none;line-height:2;opacity:.7;}
 #vCursor{position:fixed;z-index:25;pointer-events:none;display:none;transform:translate(-50%,-50%);}
-#vCursorInner{position:relative;width:36px;height:36px;border-radius:50%;border:2.5px solid rgba(100,180,255,.7);background:rgba(60,130,255,.15);box-shadow:0 0 18px rgba(80,160,255,.5),inset 0 0 8px rgba(100,180,255,.2);transition:all .2s;}
+#vCursorInner{position:relative;width:36px;height:36px;border-radius:50%;border:2.5px solid rgba(100,180,255,.7);background:rgba(60,130,255,.15);box-shadow:0 0 18px rgba(80,160,255,.5),inset 0 0 8px rgba(100,180,255,.2);transition:transform .2s ease-out,border-color .2s ease,background-color .2s ease,box-shadow .2s ease;}
 #vCursorInner::after{content:"";position:absolute;inset:-9px;border-radius:50%;background:conic-gradient(rgba(241,205,143,.95) var(--pinch-angle,0deg),rgba(241,205,143,.08) 0);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 0);mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 0);opacity:0;transform:rotate(-90deg);transition:opacity .15s;}
 #vCursor.arming #vCursorInner::after{opacity:1;}
 #vCursor.armed #vCursorInner::after{opacity:1;filter:drop-shadow(0 0 5px rgba(241,205,143,.8));}
@@ -95,7 +95,7 @@ button:focus-visible,textarea:focus-visible{outline:2px solid #8ab4ff;outline-of
 #settlePanel{max-width:720px;width:100%;padding:30px 24px;margin:20px auto;}
 #settlePanel h2{text-align:center;font-size:24px;color:#8ab4ff;margin-bottom:24px;letter-spacing:4px;text-shadow:0 0 15px rgba(100,160,255,.4);}
 #settleCards{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;margin-bottom:24px;}
-.settleCard{width:200px;background:rgba(10,15,30,.85);border:1px solid rgba(100,140,255,.2);border-radius:12px;padding:14px;text-align:center;transition:all .3s;}
+.settleCard{width:200px;background:rgba(10,15,30,.85);border:1px solid rgba(100,140,255,.2);border-radius:12px;padding:14px;text-align:center;transition:transform .2s ease-out,border-color .2s ease,box-shadow .2s ease;}
 .settleCard:hover{border-color:rgba(100,160,255,.5);box-shadow:0 0 20px rgba(80,130,255,.2);transform:translateY(-4px);}
 .settleCard .scNum{font-size:11px;color:#5a6a8a;margin-bottom:6px;}
 .settleCard .scName{font-size:16px;color:#8ab4ff;font-weight:600;margin-bottom:4px;}
@@ -141,7 +141,7 @@ button:focus-visible,textarea:focus-visible{outline:2px solid #8ab4ff;outline-of
 #questionInput{width:100%;min-height:100px;padding:16px;border-radius:10px;border:1px solid rgba(100,140,255,.25);background:rgba(2,2,8,.8);color:#c8d8f0;font-size:16px;font-family:inherit;resize:none;outline:none;transition:border-color .3s;}
 #questionInput:focus{border-color:rgba(100,160,255,.6);}
 #questionInput::placeholder{color:#4a5878;font-style:italic;}
-#questionConfirm{margin-top:24px;padding:12px 44px;border:1px solid rgba(100,140,255,.35);border-radius:10px;background:rgba(20,30,60,.8);color:#8ab4ff;font-size:15px;letter-spacing:3px;cursor:pointer;transition:all .3s;font-family:inherit;}
+#questionConfirm{margin-top:24px;padding:12px 44px;border:1px solid rgba(100,140,255,.35);border-radius:10px;background:rgba(20,30,60,.8);color:#8ab4ff;font-size:15px;letter-spacing:3px;cursor:pointer;transition:transform .2s ease-out,color .2s ease,background-color .2s ease,border-color .2s ease,box-shadow .2s ease;font-family:inherit;}
 #questionConfirm:hover{background:rgba(30,50,100,.7);border-color:rgba(100,160,255,.6);box-shadow:0 0 20px rgba(80,130,255,.2);}
 #questionArchive{display:block;margin:12px auto 0;border:0;background:transparent;color:#64789e;font:11px inherit;cursor:pointer;letter-spacing:1px;}
 #questionArchive:hover{color:#8ab4ff;}
@@ -166,7 +166,7 @@ button:focus-visible,textarea:focus-visible{outline:2px solid #8ab4ff;outline-of
 @keyframes dPulse{0%,80%,100%{opacity:.2;transform:scale(.8);}40%{opacity:1;transform:scale(1.2);}}
 #aiProgressBar{width:100%;height:3px;background:rgba(100,140,255,.1);border-radius:2px;margin-top:12px;overflow:hidden;}
 #aiProgressFill{height:100%;width:0%;background:linear-gradient(90deg,rgba(100,140,255,.6),rgba(100,180,255,.9));transition:width .3s;border-radius:2px;}
-#aiRetryBtn{margin-top:16px;padding:8px 24px;border:1px solid rgba(100,140,255,.25);border-radius:8px;background:transparent;color:#6a80a8;cursor:pointer;font-size:12px;letter-spacing:2px;transition:all .3s;font-family:inherit;display:none;}
+#aiRetryBtn{margin-top:16px;padding:8px 24px;border:1px solid rgba(100,140,255,.25);border-radius:8px;background:transparent;color:#6a80a8;cursor:pointer;font-size:12px;letter-spacing:2px;transition:transform .2s ease-out,color .2s ease,background-color .2s ease,border-color .2s ease;font-family:inherit;display:none;}
 #aiRetryBtn:hover{border-color:rgba(100,160,255,.5);color:#8ab4ff;}
 #followupPanel{display:none;margin-top:18px;padding-top:18px;border-top:1px solid rgba(100,140,255,.12);}
 #followupPanel.show{display:block;}
@@ -660,6 +660,7 @@ body::after{
   .qHint{display:none;}
 }
 </style>
+<link rel="stylesheet" href="./emil-redesign.css">
 </head>
 <body>
 <canvas id="c"></canvas>
@@ -667,7 +668,7 @@ body::after{
   <header id="topBar">
     <div class="brandLockup" aria-label="星象塔罗">
       <span class="brandSigil" aria-hidden="true">◐</span>
-      <span><strong>星象塔罗</strong><small>个人牌面观测</small></span>
+      <span><strong>星象塔罗</strong><small>在牌面中换个角度</small></span>
     </div>
     <div class="sessionStatus">
       <span class="liveDot" aria-hidden="true"></span>
@@ -677,7 +678,7 @@ body::after{
     </div>
   </header>
   <nav id="headerActions" aria-label="仪式控制">
-    <button id="histToggle" class="uiBtn" aria-controls="histPanel" aria-expanded="false"><span aria-hidden="true">⌛</span> 观测记录</button>
+    <button id="histToggle" class="uiBtn" aria-controls="histPanel" aria-expanded="false"><span aria-hidden="true">⌛</span> 观测档案</button>
     <button id="modeBtn" class="uiBtn" aria-label="切换鼠标或摄像头手势模式"><span aria-hidden="true">◇</span> 启用手势</button>
   </nav>
 </div>
@@ -720,21 +721,21 @@ body::after{
   <div class="qCard">
     <section class="qIntro">
       <div class="qOrb" aria-hidden="true"><span>◐</span></div>
-      <p class="qKicker">开始本次观测</p>
-      <h2 id="questionTitle">为今夜设下一个问题</h2>
-      <p class="qSub">不必寻找完美措辞。说出此刻真正困扰你的事，牌面会给你一种新的观察角度。</p>
+      <p class="qKicker">第一步 · 写下问题</p>
+      <h2 id="questionTitle">把此刻的困惑，交给牌面</h2>
+      <p class="qSub">不必寻找完美措辞。写下真正困扰你的事，再从牌面里换一个角度看它。</p>
       <div class="ritualLegend"><span><i>01</i> 设问</span><span><i>02</i> 触牌</span><span><i>03</i> 观照</span></div>
     </section>
     <section class="qForm">
-      <label class="fieldLabel" for="questionInput"><span>你想观察什么？</span><small>可以留空</small></label>
+      <label class="fieldLabel" for="questionInput"><span>写下你最想理清的事</span><small>选填</small></label>
       <textarea id="questionInput" maxlength="240" placeholder="例如：接下来一个月，我最值得投入精力的方向是什么？" rows="4"></textarea>
-      <div class="spreadLabel"><span>选择观测深度</span><small>牌阵选择</small></div>
+      <div class="spreadLabel"><span>选择牌阵</span><small>一次只选一种</small></div>
       <div class="spreadPicker" role="radiogroup" aria-label="选择牌阵">
         <button class="spreadOption active" type="button" role="radio" aria-checked="true" data-count="3"><b>03</b><span><strong>三牌·当下路径</strong><em>过去 · 现在 · 未来</em></span></button>
         <button class="spreadOption" type="button" role="radio" aria-checked="false" data-count="5"><b>05</b><span><strong>五牌·深层观照</strong><em>路径 · 行动 · 潜在影响</em></span></button>
       </div>
-      <button id="questionConfirm"><span>进入仪式</span><b aria-hidden="true">↗</b></button>
-      <button id="questionArchive" type="button" aria-controls="histPanel" aria-expanded="false">⌛ 查看个人观测档案</button>
+      <button id="questionConfirm"><span>开始抽牌</span><b aria-hidden="true">↗</b></button>
+      <button id="questionArchive" type="button" aria-controls="histPanel" aria-expanded="false">⌛ 打开观测档案</button>
       <p class="qHint">可以留空进行综合观测。塔罗用于自我探索与娱乐，不替代专业建议。</p>
     </section>
   </div>
@@ -786,7 +787,7 @@ body::after{
       <h2 id="posterTitle">把这次观测带走</h2>
       <p>海报直接在当前设备生成，牌面、问题与解读不会上传。安卓手机会优先打开系统分享面板。</p>
       <label class="posterPrivacy"><input id="posterQuestionToggle" type="checkbox" checked><span>在海报中显示我的问题<br><small>关闭后只显示“本次牌面观测”</small></span></label>
-      <div class="posterButtons"><button id="posterShare" type="button">分享图片</button><button id="posterSave" type="button">保存高清 PNG</button></div>
+      <div class="posterButtons"><button id="posterShare" type="button">分享图片</button><button id="posterSave" type="button">保存高清图片</button></div>
       <button id="posterClose" type="button">返回解读</button>
     </section>
   </div>

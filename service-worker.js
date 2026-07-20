@@ -1,10 +1,11 @@
-const CACHE_VERSION = "astral-tarot-v9-20260719";
+const CACHE_VERSION = "astral-tarot-v10-20260720";
 const CORE_CACHE = `${CACHE_VERSION}-core`;
 const ASSET_CACHE = `${CACHE_VERSION}-assets`;
 
 const CORE_ASSETS = [
   "./",
   "./tarot.html",
+  "./emil-redesign.css",
   "./tarot-bg.png",
   "./manifest.webmanifest",
   "./assets/icons/tarot-icon.svg",

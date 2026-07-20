@@ -133,6 +133,18 @@ function sse(text) {
   result.errors = errors;
   await page.screenshot({ path: "D:/codex/outputs/tarot-followup.png", fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
+  result.mobileLayout = await page.evaluate(() => ({
+    viewportWidth: document.documentElement.clientWidth,
+    scrollWidth: document.documentElement.scrollWidth,
+    widest: [...document.querySelectorAll("body *")]
+      .map((node) => {
+        const rect = node.getBoundingClientRect();
+        return { tag: node.tagName, id: node.id, className: String(node.className || ""), left: rect.left, right: rect.right, width: rect.width };
+      })
+      .filter((item) => item.width > 390 || item.right > 391 || item.left < -1)
+      .sort((a, b) => b.width - a.width)
+      .slice(0, 8),
+  }));
   await page.screenshot({ path: "D:/codex/outputs/tarot-followup-mobile.png", fullPage: true });
   console.log(JSON.stringify(result, null, 2));
   await browser.close();
@@ -147,6 +159,7 @@ function sse(text) {
     result.poster.previewDimensions.width !== 1080 || result.poster.previewDimensions.height !== 1440 ||
     result.poster.metadata.width !== 1080 || result.poster.metadata.height !== 1440 ||
     result.poster.sharedPoster.type !== "image/png" || !result.poster.sharedPoster.name.endsWith(".png") ||
+    result.mobileLayout.scrollWidth > result.mobileLayout.viewportWidth + 1 ||
     errors.length
   ) process.exitCode = 1;
 })().catch((error) => {

@@ -29,7 +29,8 @@ https://peas-47.netlify.app/
 
 | 文件 | 说明 |
 |------|------|
-| `tarot.html` | 单文件应用（HTML + CSS + JS 全内联） |
+| `tarot.html` | 应用结构、3D 牌桌与交互逻辑 |
+| `emil-redesign.css` | “雾金夜航台”视觉系统、动效与安卓响应式布局 |
 | `tarot-bg.png` | 背景图（主） |
 | `tarot-bg.jpg` | 背景图（备用） |
 | `netlify.toml` | Netlify 部署配置 |
