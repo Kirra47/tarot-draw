@@ -100,6 +100,7 @@ export default async (request) => {
         messages,
         stream: true,
         max_tokens: 1200,
+        enable_thinking: false,
         enable_search: false,
       }),
     });
