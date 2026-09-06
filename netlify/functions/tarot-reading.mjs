@@ -56,7 +56,7 @@ export default async (request) => {
   const configuredModel = readEnvironment("DASHSCOPE_MODEL");
   const model = /^[a-z0-9._-]{1,80}$/i.test(configuredModel || "")
     ? configuredModel
-    : "qwen3.6-flash";
+    : "qwen3.8-flash";
   if (!apiKey) return json(503, { error: "智能解读尚未配置，请联系站点维护者。" });
 
   let payload;

@@ -26,6 +26,7 @@ function request(payload, extraHeaders = {}) {
 
 const initial = await tarotReading(request({ question: "我的方向", cards: "【现在】星星 - 正位" }));
 assert.equal(initial.status, 200);
+assert.equal(upstreamCalls[0].body.model, "qwen3.8-flash");
 assert.deepEqual(upstreamCalls[0].body.messages.map((message) => message.role), ["system", "user"]);
 
 const followup = await tarotReading(request({
@@ -63,6 +64,7 @@ assert.equal(upstreamCalls.length, 2);
 
 console.log(JSON.stringify({
   initialRoles: upstreamCalls[0].body.messages.map((message) => message.role),
+  model: upstreamCalls[0].body.model,
   followupRoles: upstreamCalls[1].body.messages.map((message) => message.role),
   forgedSystemMessageRemoved: true,
   crossSiteStatus: crossSite.status,
