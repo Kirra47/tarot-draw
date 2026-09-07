@@ -75,6 +75,16 @@ node scripts/generate-pwa-icons.cjs
 
 脚本会校验文件格式、体积与 SHA-256，并把确切来源写入 `assets/asset-manifest.json`。页面首次完整打开后会在后台缓存 78 张牌；手势模型约 23 MB，仅在第一次开启手势模式时加载并缓存。离线 AI 不可用时，应用会自动使用本地综合解读。
 
+### 本地运行 AI
+
+本地静态服务器只负责页面。若要在电脑上启用 AI，请先复制 `.env.example` 为 `.env`，只在 `.env` 中填写自己的 `DASHSCOPE_API_KEY`，然后运行：
+
+```bash
+node scripts/local-server.mjs --port=8888
+```
+
+访问 `http://localhost:8888/tarot.html`。本地服务只监听 `127.0.0.1`，不会把 API Key 发送到浏览器或暴露到公网；`.env` 已被 Git 忽略。
+
 梅花易数同步起卦在第一张牌确认瞬间完成，不调用摄像头、不上传起卦时间；起卦结果随本次观测保存在本机档案，并随 AI 请求以结构化资料传入，不包含任何 API 密钥。
 
 ## 部署到 Netlify
