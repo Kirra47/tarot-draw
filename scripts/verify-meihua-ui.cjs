@@ -59,6 +59,7 @@ function sse(text) {
   await page.locator("#followupPanel.show").waitFor({ state: "visible", timeout: 5_000 });
   await page.locator(".followupChip").first().click();
   await page.waitForFunction(() => document.querySelectorAll(".followupTurn").length === 2);
+  await page.locator(".meihuaSupporting summary").click();
 
   const result = await page.evaluate(() => {
     const text = (id) => document.querySelector(id)?.textContent?.trim() || "";
@@ -66,6 +67,13 @@ function sse(text) {
     const latest = history.at(-1) || {};
     return {
       panelVisible: !document.querySelector("#meihuaPanel")?.hidden,
+      baseHexagram: text("#meihuaTitle"),
+      baseReading: text("#meihuaBaseReading"),
+      lineCount: document.querySelectorAll("#meihuaBaseReading .hexagramLine").length,
+      supportingOpen: Boolean(document.querySelector(".meihuaSupporting")?.open),
+      tarotReferenceOpen: Boolean(document.querySelector("#tarotReference")?.open),
+      aiTitle: text("#aiReadingTitle"),
+      question: text("#readingQuestion"),
       summary: text("#meihuaSummary"),
       cells: [...document.querySelectorAll("#meihuaGrid .meihuaCell")].map((node) => node.innerText),
       trace: text("#meihuaTraceText"),
@@ -79,12 +87,23 @@ function sse(text) {
     sameMeihua: payload.meihua === requests[0]?.meihua,
     followUp: payload.followUp || null,
   }));
+  await page.setViewportSize({ width: 390, height: 844 });
+  result.mobileOverflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
+  await page.screenshot({ path: "D:/codex/outputs/tarot-base-reading-mobile.png", fullPage: true });
   result.errors = errors;
   console.log(JSON.stringify(result, null, 2));
   await browser.close();
 
   if (
     !result.panelVisible ||
+    !result.baseHexagram ||
+    !result.baseReading.includes("本卦主题") ||
+    !result.baseReading.includes("用白话读这一卦") ||
+    result.lineCount !== 6 ||
+    !result.supportingOpen ||
+    result.tarotReferenceOpen ||
+    result.mobileOverflow ||
+    result.aiTitle !== "本卦重点分析" ||
     result.cells.length !== 5 ||
     !result.summary.includes("第一张牌") ||
     !result.summary.includes("体卦") ||

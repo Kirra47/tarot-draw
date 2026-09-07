@@ -25,6 +25,7 @@ https://peas-47.netlify.app/
 - 首次完整访问后，基础抽牌与 78 张牌面可离线使用；桌面快捷入口可直达新观测或个人档案
 - Three.js、MediaPipe、牌图全部由本站托管，运行时不依赖境外 CDN
 - 抽第一张牌确认时同步锁定梅花易数时间卦：展示本卦、动爻、互卦、变卦与体用关系；同一牌阵的后续追问沿用同一卦
+- 结果页以“本卦先读”为主线：先给六爻图、本卦主题、白话导读、上下卦取象与变化提示；动爻 / 互卦 / 体用和塔罗牌面参照可按需展开
 - 起卦方式可选：按抽牌时间、三个数字、射覆、静物取象、人物取象、失物占、声音占、物数占、测字与外应记录；自动模式会识别“用三个数字起卦”等明确表述
 - 射覆与取象结果会单列颜色、形状、材质、大小手感、方向及候选物品，并明确标注为可核对线索，不把候选当成事实
 
@@ -43,6 +44,7 @@ https://peas-47.netlify.app/
 | `netlify.toml` | Netlify 部署配置 |
 | `netlify/functions/tarot-reading.mjs` | AI 解读代理、输入校验与限流配置 |
 | `scripts/meihua-display.mjs` | 农历/时辰读取、六十四卦名称映射、各类起卦与取象展示数据 |
+| `scripts/meihua-insight.mjs` | 64 卦本站白话导读、上下卦取象、动爻变化提示与逐卦原文链接 |
 | `books/meihua-yishu-wikisource/meihua-numeric-cast/scripts/meihua.mjs` | 可复核的梅花易数时间卦计算核心 |
 | `manifest.webmanifest` / `service-worker.js` | PWA 安装信息与离线缓存策略 |
 | `assets/cards/` | 本地 78 张 Rider–Waite 牌图 |
