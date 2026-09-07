@@ -11,7 +11,7 @@ async function waitForCardCache(page, timeoutMs = 30_000) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     const count = await page.evaluate(async () => {
-      const key = (await caches.keys()).find((name) => name.includes("astral-tarot-v17-offline-core-20260907") && name.endsWith("-assets"));
+      const key = (await caches.keys()).find((name) => name.includes("astral-tarot-v18-click-through-20260907") && name.endsWith("-assets"));
       if (!key) return 0;
       const requests = await (await caches.open(key)).keys();
       return requests.filter((request) => new URL(request.url).pathname.includes("/assets/cards/")).length;
