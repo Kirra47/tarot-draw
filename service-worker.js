@@ -1,4 +1,4 @@
-const CACHE_VERSION = "astral-tarot-v10-20260720";
+const CACHE_VERSION = "astral-tarot-v11-meihua-20260907";
 const CORE_CACHE = `${CACHE_VERSION}-core`;
 const ASSET_CACHE = `${CACHE_VERSION}-assets`;
 
@@ -13,7 +13,9 @@ const CORE_ASSETS = [
   "./assets/icons/tarot-icon-512.png",
   "./assets/icons/tarot-maskable-512.png",
   "./assets/icons/apple-touch-icon.png",
-  "./vendor/three/three.module.min.js"
+  "./vendor/three/three.module.min.js",
+  "./scripts/meihua-display.mjs",
+  "./books/meihua-yishu-wikisource/meihua-numeric-cast/scripts/meihua.mjs"
 ];
 
 const majorCards = Array.from({ length: 22 }, (_, i) => `ar${String(i).padStart(2, "0")}.jpg`);

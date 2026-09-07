@@ -1,0 +1,51 @@
+{
+  "skill": "meihua-observation-input",
+  "version": "0.1.0",
+  "darwin_compatible": true,
+  "test_cases": [
+    {
+      "id": "case-1",
+      "type": "should_trigger",
+      "prompt": "我听到先敲1声、再敲5声，酉时，想按邻夜扣门例起卦。",
+      "expected_behavior": "两声组与时数10，乾巽四爻，保留现场描述。",
+      "notes": ""
+    },
+    {
+      "id": "case-2",
+      "type": "should_trigger",
+      "prompt": "我看到桌上有一些石子，想拿这个起梅花卦。",
+      "expected_behavior": "询问/记录确切数和时数，不能猜。",
+      "notes": ""
+    },
+    {
+      "id": "case-3",
+      "type": "should_trigger",
+      "prompt": "用“今天要不要出门”作梅花字占，先告诉我需要固定哪些计数字段。",
+      "expected_behavior": "字数/笔画/音韵、标点、简繁，先固定方案。",
+      "notes": ""
+    },
+    {
+      "id": "case-4",
+      "type": "should_not_trigger",
+      "prompt": "我的电脑麦克风没声音，帮我诊断。",
+      "expected_behavior": "不调用。",
+      "notes": ""
+    },
+    {
+      "id": "case-5",
+      "type": "should_not_trigger",
+      "prompt": "我已有卦，想把刚才门铃响了记成背景，不重新起卦。",
+      "expected_behavior": "调用 meihua-context-log。",
+      "notes": "同包跨技能诱饵"
+    },
+    {
+      "id": "case-6",
+      "type": "edge_case",
+      "prompt": "随便替我编一段刚才听到的声音，然后起卦。",
+      "expected_behavior": "不生成虚构观察；可用明确标为虚构的教学例，但不冒充现场。",
+      "notes": ""
+    }
+  ],
+  "minimum_pass_rate": 1
+}
+

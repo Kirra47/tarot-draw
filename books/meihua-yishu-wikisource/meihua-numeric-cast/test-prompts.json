@@ -1,0 +1,51 @@
+{
+  "skill": "meihua-numeric-cast",
+  "version": "0.1.0",
+  "darwin_compatible": true,
+  "test_cases": [
+    {
+      "id": "case-1",
+      "type": "should_trigger",
+      "prompt": "用梅花时间法算：年支5、农历月12、日17、时支9。",
+      "expected_behavior": "上兑下离、初爻；34和43的算式。",
+      "notes": ""
+    },
+    {
+      "id": "case-2",
+      "type": "should_trigger",
+      "prompt": "梅花物数法：17件物品，时支数10，算式也给我。",
+      "expected_behavior": "count-time；上乾下兑、三爻；动爻用27。",
+      "notes": ""
+    },
+    {
+      "id": "case-3",
+      "type": "should_trigger",
+      "prompt": "复核梅花时间序数6、3、16、4。",
+      "expected_behavior": "上乾下巽、五爻；25和29。",
+      "notes": ""
+    },
+    {
+      "id": "case-4",
+      "type": "should_not_trigger",
+      "prompt": "帮我写一下骰子动画的CSS。",
+      "expected_behavior": "不调用。",
+      "notes": ""
+    },
+    {
+      "id": "case-5",
+      "type": "should_not_trigger",
+      "prompt": "本卦从初爻到上爻101110，初爻动，只算互卦变卦。",
+      "expected_behavior": "调用 meihua-hexagram-structure。",
+      "notes": "同包跨技能诱饵"
+    },
+    {
+      "id": "case-6",
+      "type": "edge_case",
+      "prompt": "用我当地现在的时间起梅花卦，我没说城市也没给年月日。",
+      "expected_behavior": "可调用作输入检查，要求补时间时区及可靠转换；不能编造计算结果。",
+      "notes": ""
+    }
+  ],
+  "minimum_pass_rate": 1
+}
+

@@ -747,6 +747,23 @@ body::after{
     <h2 id="settleTitle">本次牌面观测</h2>
     <div id="settleCards"></div>
     <div id="settleSummary"></div>
+    <section id="meihuaPanel" aria-labelledby="meihuaTitle" hidden>
+      <div class="meihuaPanelHead">
+        <div>
+          <span class="meihuaKicker">同步起卦 · 梅花易数</span>
+          <h3 id="meihuaTitle">这次抽牌的卦象</h3>
+        </div>
+        <span id="meihuaModeBadge">第一张牌确认时起卦</span>
+      </div>
+      <p id="meihuaSummary"></p>
+      <div id="meihuaGrid" class="meihuaGrid"></div>
+      <details class="meihuaTrace">
+        <summary>展开取数过程</summary>
+        <pre id="meihuaTraceText"></pre>
+      </details>
+      <p id="meihuaSource">卦名按周易六十四卦次序标注；原文可打开底本查看。</p>
+      <a id="meihuaSourceLink" class="meihuaSourceLink" href="https://ctext.org/book-of-changes/zh" target="_blank" rel="noopener noreferrer">查看《周易》原文底本 ↗</a>
+    </section>
     <div id="aiReading">
       <div id="aiReadingHeader">
         <div class="readingOrb"></div>
@@ -802,6 +819,14 @@ body::after{
 </script>
 <script type="module">
 import * as THREE from 'three';
+import {
+  MEIHUA_PROFILE,
+  ZHOUYI_SOURCE_URL,
+  castFromMoment,
+  hexagramMeta,
+  movingLineLabel,
+  trigram,
+} from './scripts/meihua-display.mjs';
 
 // ═══════════════════════════════════════════════════════════════
 // TAROT DECK DATA
@@ -874,6 +899,7 @@ let sessionDraws=[]; // {card, reversed} for current reading session
 let userQuestion='';
 let currentReadingSaved=false;
 let currentReadingHistoryId=null;
+let meihuaSession=null;
 
 // ═══════════════════════════════════════════════════════════════
 // LOCAL RWS IMAGE SOURCE
@@ -1452,6 +1478,7 @@ function updateDrawUI(){
 }
 function confirmDraw(){
   if(gameState!=='revealed')return;
+  if(sessionDraws.length===0)beginMeihuaSession(new Date());
   sessionDraws.push({card:revealedCard,reversed:revealedReversed});
   deck=deck.filter(c=>c.id!==revealedCard.id);
   document.getElementById('deckCount').textContent=`牌库 ${deck.length}`;
@@ -1696,7 +1723,8 @@ function saveReadingToHistory(){
     cards:sessionDraws.map(d=>({
       id:d.card.id,name:d.card.name,type:d.card.type,suit:d.card.suit||null,
       reversed:d.reversed,meaning:d.reversed?d.card.rev:d.card.up
-    }))
+    })),
+    meihua:serializeMeihua()
   });
   historyList=historyList.slice(-60);
   localStorage.setItem(HISTORY_KEY,JSON.stringify(historyList));
@@ -1718,6 +1746,12 @@ function historyItem(item){
     cards.appendChild(row);
   });
   details.appendChild(cards);
+  if(item.meihua?.inputs){
+    const mh=hexagramMeta(item.meihua.upper,item.meihua.lower);
+    const mhMeta=document.createElement('div');mhMeta.className='histMeihua';
+    mhMeta.textContent=`同步起卦：${hexagramTitle(mh)} · ${movingLineLabel(item.meihua.movingLine)} · ${item.meihua.relation||'体用待观'}`;
+    details.appendChild(mhMeta);
+  }
   if(item.aiReading||item.followUps?.length){
     const dialogue=document.createElement('div');dialogue.className='histDialogue';
     const followUpQuestions=(item.followUps||[]).filter(turn=>turn.role==='user').map(turn=>turn.content);
@@ -1783,7 +1817,8 @@ function historyMatches(item,query){
   if(!query)return true;
   const followups=(item.followUps||[]).map(turn=>turn.content).join(' ');
   const cards=(item.cards||[]).map(card=>`${card.name||''} ${card.meaning||''}`).join(' ');
-  return `${item.question||''} ${cards} ${followups} ${item.aiReading||''}`.toLocaleLowerCase('zh-CN').includes(query);
+  const meihua=item.meihua?`${item.meihua.relation||''} ${item.meihua.upper||''} ${item.meihua.lower||''} ${item.meihua.movingLine||''}`:'';
+  return `${item.question||''} ${cards} ${meihua} ${followups} ${item.aiReading||''}`.toLocaleLowerCase('zh-CN').includes(query);
 }
 function renderHistory(){
   const items=document.getElementById('histItems');
@@ -1900,6 +1935,101 @@ const SUIT_THEMES={
 function escapeHTML(value){
   return String(value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 }
+function beginMeihuaSession(moment=new Date()){
+  if(meihuaSession)return meihuaSession;
+  try{
+    meihuaSession={...castFromMoment(moment),capturedAt:moment.toISOString()};
+  }catch(error){
+    console.error('Meihua cast error:',error);
+    meihuaSession={status:'error',error:String(error?.message||error)};
+  }
+  return meihuaSession;
+}
+function serializeMeihua(value=meihuaSession){
+  if(!value||!value.inputs)return null;
+  return {
+    profile:value.profile||MEIHUA_PROFILE,method:value.method,inputs:{...value.inputs},trace:{...value.trace},
+    upper:value.upper,lower:value.lower,movingLine:value.movingLine,
+    changed:value.changed?{...value.changed}:null,mutual:value.mutual?{...value.mutual}:null,
+    mutualFrom:value.mutualFrom,mutualPolicy:value.mutualPolicy,body:value.body,use:value.use,
+    bodyPosition:value.bodyPosition,relation:value.relation,capturedAt:value.capturedAt||null,
+    calendar:value.calendar?{
+      status:value.calendar.status,timeZone:value.calendar.timeZone,display:value.calendar.display,
+      yearName:value.calendar.yearName,yearBranchName:value.calendar.yearBranchName,
+      month:value.calendar.month,day:value.calendar.day,dayLabel:value.calendar.dayLabel,
+      hour:value.calendar.hour,minute:value.calendar.minute,hourBranchName:value.calendar.hourBranchName,
+      note:value.calendar.note,
+    }:null,
+  };
+}
+function hexagramTitle(meta){
+  return meta.number?`第${meta.number}卦 · ${meta.name}`:meta.name;
+}
+function renderMeihuaPanel(){
+  const panel=document.getElementById('meihuaPanel');
+  if(!panel)return;
+  const value=meihuaSession;
+  if(!value||!value.inputs){
+    panel.hidden=true;
+    return;
+  }
+  if(value.status==='error'){
+    panel.hidden=false;
+    document.getElementById('meihuaSummary').textContent='同步起卦暂时未完成，仍可使用上方塔罗观照。';
+    document.getElementById('meihuaGrid').replaceChildren();
+    document.getElementById('meihuaTraceText').textContent=value.error||'未知错误';
+    return;
+  }
+  const base=hexagramMeta(value.upper,value.lower);
+  const changed=hexagramMeta(value.changed?.upper,value.changed?.lower);
+  const mutual=hexagramMeta(value.mutual?.upper,value.mutual?.lower);
+  const upper=trigram(value.upper),lower=trigram(value.lower);
+  const body=trigram(value.body),use=trigram(value.use);
+  const movingPosition=value.movingLine<=3?'下卦':'上卦';
+  const calendar=value.calendar||{};
+  const relationText=value.relation||'—';
+  const statusNote=calendar.status==='fallback'?'（当前浏览器未提供农历接口，已用公历简式演示）':'';
+  document.getElementById('meihuaSummary').innerHTML=`在第一张牌确认的瞬间，以<strong>${escapeHTML(calendar.display||'此刻')}</strong>起卦${statusNote}。体卦为<strong>${escapeHTML(body.name)}</strong>，用卦为<strong>${escapeHTML(use.name)}</strong>，两者关系为<strong>${escapeHTML(relationText)}</strong>；后续追问沿用这一卦，不重新起卦。`;
+  document.getElementById('meihuaGrid').innerHTML=`
+    <div class="meihuaCell"><span>本卦</span><strong>${escapeHTML(hexagramTitle(base))}</strong><small>上${escapeHTML(upper.name)} · 下${escapeHTML(lower.name)}</small></div>
+    <div class="meihuaCell"><span>动爻</span><strong>${escapeHTML(movingLineLabel(value.movingLine))}</strong><small>动爻在${escapeHTML(movingPosition)}</small></div>
+    <div class="meihuaCell"><span>互卦</span><strong>${escapeHTML(hexagramTitle(mutual))}</strong><small>取二、三、四爻与三、四、五爻</small></div>
+    <div class="meihuaCell"><span>变卦</span><strong>${escapeHTML(hexagramTitle(changed))}</strong><small>只改变${escapeHTML(movingLineLabel(value.movingLine))}</small></div>
+    <div class="meihuaCell meihuaRelation"><span>体 · 用</span><strong>${escapeHTML(body.name)} · ${escapeHTML(use.name)}</strong><small>${escapeHTML(relationText)} · ${escapeHTML(body.element)} / ${escapeHTML(use.element)}</small></div>`;
+  const inputs=value.inputs||{};
+  const trace=value.trace||{};
+  document.getElementById('meihuaTraceText').textContent=[
+    `历法：${calendar.display||'—'}${calendar.status==='ok'?'（农历）':'（公历简式）'}`,
+    `时区：${calendar.timeZone||'—'} · 时辰：${calendar.hourBranchName||'—'}（${String(calendar.hour??'—').padStart(2,'0')}:${String(calendar.minute??'—').padStart(2,'0')}）`,
+    `年支 ${inputs.yearBranch||'—'} · 月 ${inputs.month||'—'} · 日 ${inputs.day||'—'} · 时支 ${inputs.hourBranch||'—'}`,
+    `上卦取数：${trace.upperTotal||'—'} → ${value.upper}（${upper.name}）`,
+    `下卦取数：${trace.lowerTotal||'—'} → ${value.lower}（${lower.name}）`,
+    `动爻取数：${trace.movingTotal||'—'} → ${value.movingLine}（${movingLineLabel(value.movingLine)}）`,
+    `规则档案：${value.profile||MEIHUA_PROFILE} · ${value.mutualFrom==='changed'?'纯卦互卦取变卦':'互卦取本卦'}`,
+    calendar.note||'',
+  ].filter(Boolean).join('\n');
+  document.getElementById('meihuaSource').textContent=`卦名按周易六十四卦次序标注；这里只展示可追溯的结构化取数，不替代经典原文或现实判断。`;
+  document.getElementById('meihuaSourceLink').href=ZHOUYI_SOURCE_URL;
+  panel.hidden=false;
+}
+function getMeihuaDescription(){
+  const value=serializeMeihua();
+  if(!value)return '';
+  const base=hexagramMeta(value.upper,value.lower);
+  const changed=hexagramMeta(value.changed?.upper,value.changed?.lower);
+  const mutual=hexagramMeta(value.mutual?.upper,value.mutual?.lower);
+  const upper=trigram(value.upper),lower=trigram(value.lower);
+  const body=trigram(value.body),use=trigram(value.use);
+  return [
+    `规则档案：${value.profile||MEIHUA_PROFILE}（网站本地确定性计算）`,
+    `起卦时刻：${value.calendar?.display||'—'}；时区：${value.calendar?.timeZone||'—'}`,
+    `本卦：${hexagramTitle(base)}（上${upper.name}，下${lower.name}）`,
+    `动爻：${movingLineLabel(value.movingLine)}；互卦：${hexagramTitle(mutual)}；变卦：${hexagramTitle(changed)}`,
+    `体用：体${body.name}（${body.element}）／用${use.name}（${use.element}），关系：${value.relation||'—'}`,
+    `周易底本：${ZHOUYI_SOURCE_URL}`,
+    '说明：以上是抽第一张牌时锁定的结构化取数，后续追问沿用同一卦；请将其作为传统文化角度的自我反思，不作确定预言。',
+  ].join('\n');
+}
 function buildLocalSynthesis(){
   const revCount=sessionDraws.filter(d=>d.reversed).length;
   const upCount=sessionDraws.length-revCount;
@@ -1954,6 +2084,7 @@ function showSettlement(){
   summDiv.innerHTML=`
     <div style="margin-bottom:12px;color:#f0dab1;font-family:'Songti SC','STSong',serif;font-size:13px;letter-spacing:2px">◇ 牌阵整体观照</div>
     ${buildLocalSynthesis()}`;
+  renderMeihuaPanel();
   saveReadingToHistory();
   // show overlay
   overlay.classList.add('show');
@@ -1975,6 +2106,12 @@ function resetSession(){
   document.getElementById('aiRetryBtn').style.display='none';
   document.getElementById('aiReading').classList.remove('active');
   document.getElementById('aiReadingHeader').classList.remove('show');
+  const meihuaPanel=document.getElementById('meihuaPanel');
+  if(meihuaPanel)meihuaPanel.hidden=true;
+  const meihuaGrid=document.getElementById('meihuaGrid');
+  if(meihuaGrid)meihuaGrid.replaceChildren();
+  const meihuaTrace=document.getElementById('meihuaTraceText');
+  if(meihuaTrace)meihuaTrace.textContent='';
   userQuestion='';
   document.getElementById('questionInput').value='';
   isAIStreaming=false;
@@ -1982,6 +2119,7 @@ function resetSession(){
   currentReadingSaved=false;
   currentReadingHistoryId=null;
   sessionDraws=[];
+  meihuaSession=null;
   retiredMeshes.forEach(m=>{scene.remove(m);m.geometry.dispose();});
   retiredMeshes=[];
   deck=buildDeck();
@@ -2107,7 +2245,7 @@ async function requestAIReading(){
   try{
     const resp=await fetch('/api/tarot-reading',{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({question:userQuestion,cards:getCardsDescription()})
+      body:JSON.stringify({question:userQuestion,cards:getCardsDescription(),meihua:getMeihuaDescription()})
     });
     if(!resp.ok){
       let message=`智能解读暂时不可用（${resp.status}）`;
@@ -2150,10 +2288,14 @@ function buildLocalFollowUp(query){
   const last=sessionDraws[sessionDraws.length-1],first=sessionDraws[0];
   const lastMeaning=last?(last.reversed?last.card.rev:last.card.up):'放慢速度观察';
   const firstMeaning=first?(first.reversed?first.card.rev:first.card.up):'此刻的起点';
+  const meihuaNote=meihuaSession?.inputs?(()=>{
+    const base=hexagramMeta(meihuaSession.upper,meihuaSession.lower);
+    return `同步起卦仍沿用${hexagramTitle(base)}，${movingLineLabel(meihuaSession.movingLine)}不变。`;
+  })():'';
   const action=/做|行动|选择|下一步|怎么办/.test(query)
     ?`把“${lastMeaning}”缩小成一个今天或本周能完成的小动作，并在行动后记录真实反馈。`
     :`先比较牌阵从“${firstMeaning}”到“${lastMeaning}”的变化，看看哪一处最像你现实中的矛盾。`;
-  return `**这是一段本地牌面回应。** 当前智能连接不可用，所以没有重新生成或重新抽牌。\n\n围绕“${query}”，这组牌仍把注意力带回从“${firstMeaning}”走向“${lastMeaning}”的路径。${action}\n\n你可以继续问自己：什么证据会支持或推翻我现在的理解？`;
+  return `**这是一段本地牌面回应。** 当前智能连接不可用，所以没有重新生成或重新抽牌。${meihuaNote?`\n\n${meihuaNote}`:''}\n\n围绕“${query}”，这组牌仍把注意力带回从“${firstMeaning}”走向“${lastMeaning}”的路径。${action}\n\n你可以继续问自己：什么证据会支持或推翻我现在的理解？`;
 }
 async function requestFollowUp(rawQuestion){
   const followUp=String(rawQuestion||'').trim().slice(0,180);
@@ -2166,7 +2308,7 @@ async function requestFollowUp(rawQuestion){
   try{
     const resp=await fetch('/api/tarot-reading',{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({question:userQuestion,cards:getCardsDescription(),followUp,conversation:priorConversation})
+      body:JSON.stringify({question:userQuestion,cards:getCardsDescription(),meihua:getMeihuaDescription(),followUp,conversation:priorConversation})
     });
     if(!resp.ok){
       let message=`智能解读暂时不可用（${resp.status}）`;
@@ -2194,9 +2336,10 @@ document.querySelectorAll('.followupChip').forEach(button=>button.addEventListen
 function getReadingText(){
   const question=userQuestion?`问题：${userQuestion}\n\n`:'';
   const cards=sessionDraws.map((d,i)=>`${POSITION_LABELS[i]||`第${i+1}张`}：${d.card.name}（${d.reversed?'逆位':'正位'}）— ${d.reversed?d.card.rev:d.card.up}`).join('\n');
+  const meihua=getMeihuaDescription();
   const ai=document.getElementById('aiContent').innerText.trim();
   const followups=document.getElementById('followupThread').innerText.trim();
-  return `塔罗解读\n\n${question}${cards}${ai?`\n\n${ai}`:''}${followups?`\n\n继续追问\n${followups}`:''}\n\n仅供娱乐与自我反思。\n${location.origin}${location.pathname}`;
+  return `塔罗解读\n\n${question}${cards}${meihua?`\n\n同步起卦（梅花易数）\n${meihua}`:''}${ai?`\n\n${ai}`:''}${followups?`\n\n继续追问\n${followups}`:''}\n\n仅供娱乐与自我反思。\n${location.origin}${location.pathname}`;
 }
 let posterBlob=null;
 let posterObjectUrl='';
@@ -2230,6 +2373,12 @@ function posterSummary(){
   const end=last?(last.reversed?last.card.rev:last.card.up):'新的方向';
   return `牌阵从「${start}」走向「${end}」。把两者之间的变化，作为下一步最值得验证的线索。`;
 }
+function posterMeihuaLabel(){
+  const value=serializeMeihua();
+  if(!value)return '';
+  const base=hexagramMeta(value.upper,value.lower);
+  return `同步起卦 · ${base.number?`第${base.number}卦`:base.name} · ${movingLineLabel(value.movingLine)}`;
+}
 async function createReadingPoster(showQuestion=true){
   if(!sessionDraws.length)throw new Error('请先完成一次牌面观测');
   const width=1080,height=1440;
@@ -2252,7 +2401,7 @@ async function createReadingPoster(showQuestion=true){
   ctx.textAlign='center';ctx.fillStyle=bright;ctx.font='48px "Songti SC","STSong",serif';
   const question=showQuestion&&userQuestion?userQuestion:'本次牌面观测';
   drawWrappedText(ctx,question,width/2,170,890,62,2);
-  ctx.fillStyle=faint;ctx.font='24px "PingFang SC","Microsoft YaHei",sans-serif';ctx.fillText('牌面已经显现',width/2,285);
+  ctx.fillStyle=faint;ctx.font='24px "PingFang SC","Microsoft YaHei",sans-serif';ctx.fillText(posterMeihuaLabel()||'牌面已经显现',width/2,285);
 
   const images=await Promise.all(sessionDraws.map(draw=>loadCardImage(draw.card)));
   const five=sessionDraws.length>3;

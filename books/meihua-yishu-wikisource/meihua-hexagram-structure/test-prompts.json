@@ -1,0 +1,51 @@
+{
+  "skill": "meihua-hexagram-structure",
+  "version": "0.1.0",
+  "darwin_compatible": true,
+  "test_cases": [
+    {
+      "id": "case-1",
+      "type": "should_trigger",
+      "prompt": "自下向上六爻101110，初爻动，求互变。",
+      "expected_behavior": "互下巽上乾，变下艮上兑，体兑用离。",
+      "notes": ""
+    },
+    {
+      "id": "case-2",
+      "type": "should_trigger",
+      "prompt": "上乾下巽，第五爻动，检查变卦。",
+      "expected_behavior": "变上离下巽，只翻转第五爻。",
+      "notes": ""
+    },
+    {
+      "id": "case-3",
+      "type": "should_trigger",
+      "prompt": "纯乾初爻动，请比较standard和changed-for-pure互卦。",
+      "expected_behavior": "显示分支与mutualFrom，即使两结果一致也保持来源区别。",
+      "notes": ""
+    },
+    {
+      "id": "case-4",
+      "type": "should_not_trigger",
+      "prompt": "为我画一个太极图标。",
+      "expected_behavior": "不调用。",
+      "notes": ""
+    },
+    {
+      "id": "case-5",
+      "type": "should_not_trigger",
+      "prompt": "体兑金、用离火，只说明双方五行关系，不重新求卦。",
+      "expected_behavior": "调用 meihua-body-use。",
+      "notes": "同包跨技能诱饵"
+    },
+    {
+      "id": "case-6",
+      "type": "edge_case",
+      "prompt": "六爻都是阳，二爻和五爻一起动，按你这版梅花算体用。",
+      "expected_behavior": "检查后停在不支持多动爻，不任取一爻。",
+      "notes": ""
+    }
+  ],
+  "minimum_pass_rate": 1
+}
+

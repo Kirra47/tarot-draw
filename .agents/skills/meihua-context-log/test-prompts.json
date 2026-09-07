@@ -1,0 +1,52 @@
+{
+  "skill": "meihua-context-log",
+  "version": "0.1.0",
+  "darwin_compatible": true,
+  "test_cases": [
+    {
+      "id": "case-1",
+      "type": "should_trigger",
+      "prompt": "已有梅花卦。刚刚门铃响了一声，我想到有访客，只把事实和联想分开记下来。",
+      "expected_behavior": "听到门铃与想到访客分栏，不新起卦。",
+      "notes": ""
+    },
+    {
+      "id": "case-2",
+      "type": "should_trigger",
+      "prompt": "这次环境很安静，没有外应，帮我留个记录。",
+      "expected_behavior": "允许空观察，记静占/无外应，不补征象。",
+      "notes": ""
+    },
+    {
+      "id": "case-3",
+      "type": "should_trigger",
+      "prompt": "上周按梅花写了会收到回信，实际没有，请帮我复盘这条记录。",
+      "expected_behavior": "记未应验，不新增征象挽救原预测。",
+      "notes": ""
+    },
+    {
+      "id": "case-4",
+      "type": "should_not_trigger",
+      "prompt": "帮我设计摄像头手势的捏合阈值。",
+      "expected_behavior": "不调用。",
+      "notes": ""
+    },
+    {
+      "id": "case-5",
+      "type": "should_not_trigger",
+      "prompt": "我想用刚听到的1声和5声，酉时，重新起梅花卦。",
+      "expected_behavior": "调用 meihua-observation-input。",
+      "notes": "同包跨技能诱饵"
+    },
+    {
+      "id": "case-6",
+      "type": "edge_case",
+      "prompt": "我忘了具体时间，看到白杯子想到不好的事，帮我记下来。",
+      "expected_behavior": "调用，时间未知；白杯是观察，不好是联想，无灾祸断言。",
+      "notes": ""
+    }
+  ],
+  "minimum_pass_rate": 1
+}
+
+

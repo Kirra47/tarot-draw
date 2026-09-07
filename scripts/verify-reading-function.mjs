@@ -24,11 +24,16 @@ function request(payload, extraHeaders = {}) {
   });
 }
 
-const initial = await tarotReading(request({ question: "我的方向", cards: "【现在】星星 - 正位" }));
+const initial = await tarotReading(request({
+  question: "我的方向",
+  cards: "【现在】星星 - 正位",
+  meihua: "本卦：第49卦 · 泽火革\n动爻：初爻；体用：体兑／用离",
+}));
 assert.equal(initial.status, 200);
 assert.equal(upstreamCalls[0].body.model, "qwen3.8-flash");
 assert.equal(upstreamCalls[0].body.enable_thinking, false);
 assert.deepEqual(upstreamCalls[0].body.messages.map((message) => message.role), ["system", "user"]);
+assert.match(upstreamCalls[0].body.messages[1].content, /第49卦/);
 
 const followup = await tarotReading(request({
   question: "我的方向",

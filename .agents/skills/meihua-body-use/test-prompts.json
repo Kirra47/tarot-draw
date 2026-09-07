@@ -1,0 +1,52 @@
+{
+  "skill": "meihua-body-use",
+  "version": "0.1.0",
+  "darwin_compatible": true,
+  "test_cases": [
+    {
+      "id": "case-1",
+      "type": "should_trigger",
+      "prompt": "体兑金、用离火，帮我解释一下关系，用在创作项目反思。",
+      "expected_behavior": "用克体；转为现实阻力核查，不预测失败。",
+      "notes": ""
+    },
+    {
+      "id": "case-2",
+      "type": "should_trigger",
+      "prompt": "体坎水、用乾金，是谁生谁？",
+      "expected_behavior": "用生体，来源映射清楚。",
+      "notes": ""
+    },
+    {
+      "id": "case-3",
+      "type": "should_trigger",
+      "prompt": "体离火，用震木，我没提供日期，解释并标出旺衰是否可判。",
+      "expected_behavior": "用生体，旺衰未判。",
+      "notes": ""
+    },
+    {
+      "id": "case-4",
+      "type": "should_not_trigger",
+      "prompt": "明天上海天气如何？",
+      "expected_behavior": "不调用，天气查询。",
+      "notes": ""
+    },
+    {
+      "id": "case-5",
+      "type": "should_not_trigger",
+      "prompt": "上兑下离初爻动，我只要互卦变卦的爻线。",
+      "expected_behavior": "调用 meihua-hexagram-structure。",
+      "notes": "同包跨技能诱饵"
+    },
+    {
+      "id": "case-6",
+      "type": "edge_case",
+      "prompt": "体坎用乾，你直接说我投资必赚多少，不要现实数据。",
+      "expected_behavior": "不作收益预言；可以说明用生体这一传统关系和其局限。",
+      "notes": ""
+    }
+  ],
+  "minimum_pass_rate": 1
+}
+
+

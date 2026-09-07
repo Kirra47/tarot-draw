@@ -1,0 +1,284 @@
+{
+  "test_type": "independent-blind-routing-and-behavior",
+  "read_scope": [
+    "meihua-numeric-cast/SKILL.md",
+    "meihua-observation-input/SKILL.md",
+    "meihua-hexagram-structure/SKILL.md",
+    "meihua-body-use/SKILL.md",
+    "meihua-context-log/SKILL.md",
+    "meihua-numeric-cast/scripts/meihua.mjs"
+  ],
+  "calculation_verification": "已使用 Node 实际导入指定脚本，验证 A1/A2/A3、C1/C2/C3 与 D1/D2/D3；其余复用相同输入结果或执行技能规定的输入校验。没有读取其他测试、审计或候选材料，没有访问网络或服务。",
+  "results": [
+    {
+      "id": "A1",
+      "target_skill": "meihua-numeric-cast",
+      "prompt": "用梅花时间法算：年支5、农历月12、日17、时支9。",
+      "would_trigger": true,
+      "actual_route": ["meihua-numeric-cast"],
+      "reason": "完整合法的传统时间序数，直接命中时间法计算。",
+      "if_triggered_action": "mh-ws-1/time-ordinals：上卦总数5+12+17=34，34除8余2，兑上；下卦总数34+9=43，43除8余3，离下；43除6余1，初爻动。只确认给定序数的运算，不声称核验了实际当地时刻。"
+    },
+    {
+      "id": "A2",
+      "target_skill": "meihua-numeric-cast",
+      "prompt": "梅花物数法：17件物品，时支数10，算式也给我。",
+      "would_trigger": true,
+      "actual_route": ["meihua-numeric-cast"],
+      "reason": "物数与时支均已明确，无须再取象。",
+      "if_triggered_action": "mh-ws-1/count-time：17除8余1为上乾；时数10除8余2为下兑；17+10=27，27除6余3，三爻动。下卦使用时数10而不是总数27。"
+    },
+    {
+      "id": "A3",
+      "target_skill": "meihua-numeric-cast",
+      "prompt": "复核梅花时间序数6、3、16、4。",
+      "would_trigger": true,
+      "actual_route": ["meihua-numeric-cast"],
+      "reason": "复核已给时间序数属于明确触发场景。",
+      "if_triggered_action": "按年支、农历月、日、时支的顺序复核：6+3+16=25，25除8余1，上乾；25+4=29，29除8余5，下巽；29除6余5，五爻动。全部序数均在有效范围。"
+    },
+    {
+      "id": "A4",
+      "target_skill": "meihua-numeric-cast",
+      "prompt": "帮我写一下骰子动画的CSS。",
+      "would_trigger": false,
+      "actual_route": ["general-css-development"],
+      "reason": "骰子动画是前端实现，不是梅花数值起卦。",
+      "if_triggered_action": null
+    },
+    {
+      "id": "A5",
+      "target_skill": "meihua-numeric-cast",
+      "prompt": "本卦从初爻到上爻101110，初爻动，只算互卦变卦。",
+      "would_trigger": false,
+      "actual_route": ["meihua-hexagram-structure"],
+      "reason": "已成卦后的单爻变化，不需要重新起卦；结构技能借用数值脚本不等于触发数值技能。",
+      "if_triggered_action": null
+    },
+    {
+      "id": "A6",
+      "target_skill": "meihua-numeric-cast",
+      "prompt": "用我当地现在的时间起梅花卦，我没说城市也没给年月日。",
+      "would_trigger": true,
+      "actual_route": ["meihua-numeric-cast"],
+      "reason": "请求时间起卦但输入不足，调用后校验并请求补充也算触发。",
+      "if_triggered_action": "停止计算，不用会话时区推定用户当地时间，不把公历年当年支数。请提供已确认的年支序数、农历月日及时支序数；若只有公历时间，先补城市或时区及准确当地日期时间，并需要可靠历法换算来源。"
+    },
+    {
+      "id": "B1",
+      "target_skill": "meihua-observation-input",
+      "prompt": "我听到先敲1声、再敲5声，酉时，想按邻夜扣门例起卦。",
+      "would_trigger": true,
+      "actual_route": ["meihua-observation-input"],
+      "reason": "明确两声组加时取数，并非数值技能支持的单物数配时法。",
+      "if_triggered_action": "事实（用户转述）：先1声，后5声，酉时；未提供联想。固定两声组法及原数求和约定：上卦cycle(1,8)=1乾，下卦cycle(5,8)=5巽；酉时数10，cycle(1+5+10,6)=4，四爻动。保留公式，不误调用castCount。"
+    },
+    {
+      "id": "B2",
+      "target_skill": "meihua-observation-input",
+      "prompt": "我看到桌上有一些石子，想拿这个起梅花卦。",
+      "would_trigger": true,
+      "actual_route": ["meihua-observation-input"],
+      "reason": "真实观察待计数，符合观察到数值的前处理。",
+      "if_triggered_action": "记录用户转述的事实：桌上有石子，数量未知。确认计数范围后请提供石子总数及对应时支数；不自行编数量或补当前时辰。两项固定后才交meihua-numeric-cast的count-time方法。"
+    },
+    {
+      "id": "B3",
+      "target_skill": "meihua-observation-input",
+      "prompt": "用“今天要不要出门”作梅花字占，先告诉我需要固定哪些计数字段。",
+      "would_trigger": true,
+      "actual_route": ["meihua-observation-input"],
+      "reason": "用户要求固定字占方案，直接对应文字输入歧义处理。",
+      "if_triggered_action": "保留原句“今天要不要出门”。先固定：简体或繁体及异体字版本；是否计标点与空格；按字数、笔画还是声调；若用笔画，字形与笔画表来源；若用声调，古音体系、多音字读法和原文依据；上下卦如何分组以及动爻是否加时、加哪个时数。当前不混用规则、不以普通话声调冒充古音、不直接输出卦。"
+    },
+    {
+      "id": "B4",
+      "target_skill": "meihua-observation-input",
+      "prompt": "我的电脑麦克风没声音，帮我诊断。",
+      "would_trigger": false,
+      "actual_route": ["general-audio-troubleshooting"],
+      "reason": "设备故障诊断与梅花声音取数无关。",
+      "if_triggered_action": null
+    },
+    {
+      "id": "B5",
+      "target_skill": "meihua-observation-input",
+      "prompt": "我已有卦，想把刚才门铃响了记成背景，不重新起卦。",
+      "would_trigger": false,
+      "actual_route": ["meihua-context-log"],
+      "reason": "用户明确只记已有卦的背景，排除新起卦。",
+      "if_triggered_action": null
+    },
+    {
+      "id": "B6",
+      "target_skill": "meihua-observation-input",
+      "prompt": "随便替我编一段刚才听到的声音，然后起卦。",
+      "would_trigger": true,
+      "actual_route": ["meihua-observation-input"],
+      "reason": "属于声音起卦请求，但必须由技能校验观察来源并阻止虚构现场。",
+      "if_triggered_action": "没有真实观察资料，停止取象：不能替你编造刚才发生的声音并当作事实。请提供实际听到的声响及分组、发生时间；也可另行请求明确标注为虚构的教学算例，但本次不编造后起卦。"
+    },
+    {
+      "id": "C1",
+      "target_skill": "meihua-hexagram-structure",
+      "prompt": "自下向上六爻101110，初爻动，求互变。",
+      "would_trigger": true,
+      "actual_route": ["meihua-hexagram-structure"],
+      "reason": "六爻方向与单动爻均完整。",
+      "if_triggered_action": "默认changed-for-pure，本卦非纯乾纯坤，互卦取自本卦。原线101110（兑上离下）；变线001110（兑上艮下），仅初爻改变；互卦下巽011、上乾111，合线011111；体为上兑，用为下离。所有线均自下向上。"
+    },
+    {
+      "id": "C2",
+      "target_skill": "meihua-hexagram-structure",
+      "prompt": "上乾下巽，第五爻动，检查变卦。",
+      "would_trigger": true,
+      "actual_route": ["meihua-hexagram-structure"],
+      "reason": "已知上下卦及唯一动爻，可确定结构。",
+      "if_triggered_action": "自下向上原线011111，第五爻1变0，changedLines=011101；变卦上离下巽。互卦为上乾下乾，取自本卦，策略changed-for-pure；体为下巽，用为上乾。变前后仅第五爻不同。"
+    },
+    {
+      "id": "C3",
+      "target_skill": "meihua-hexagram-structure",
+      "prompt": "纯乾初爻动，请比较standard和changed-for-pure互卦。",
+      "would_trigger": true,
+      "actual_route": ["meihua-hexagram-structure"],
+      "reason": "明确要求比较纯卦互卦规则分支。",
+      "if_triggered_action": "原线111111，初爻变后011111（上乾下巽），体上乾、用下乾。standard从原卦取二三四及三四五爻，互卦上下均乾；changed-for-pure从变卦取同样位置，互卦也上下均乾。两分支mutualFrom不同（original/changed），结果相同，因为初爻不进入互卦。"
+    },
+    {
+      "id": "C4",
+      "target_skill": "meihua-hexagram-structure",
+      "prompt": "为我画一个太极图标。",
+      "would_trigger": false,
+      "actual_route": ["general-icon-design"],
+      "reason": "图标绘制不涉及梅花六爻互变。",
+      "if_triggered_action": null
+    },
+    {
+      "id": "C5",
+      "target_skill": "meihua-hexagram-structure",
+      "prompt": "体兑金、用离火，只说明双方五行关系，不重新求卦。",
+      "would_trigger": false,
+      "actual_route": ["meihua-body-use"],
+      "reason": "体用已确定且只解释五行，不需变更或计算爻线。",
+      "if_triggered_action": null
+    },
+    {
+      "id": "C6",
+      "target_skill": "meihua-hexagram-structure",
+      "prompt": "六爻都是阳，二爻和五爻一起动，按你这版梅花算体用。",
+      "would_trigger": true,
+      "actual_route": ["meihua-hexagram-structure"],
+      "reason": "结构请求触发输入校验；多个动爻超出支持范围，但不是无关请求。",
+      "if_triggered_action": "本卦111111可确认，动爻[2,5]不满足唯一动爻要求，停止体用及互变推算。说明本版只支持单动爻，不能擅选其中一爻或套用六爻纳甲规则；请按原起卦记录确认是否本应只有一个动爻。"
+    },
+    {
+      "id": "D1",
+      "target_skill": "meihua-body-use",
+      "prompt": "体兑金、用离火，帮我解释一下关系，用在创作项目反思。",
+      "would_trigger": true,
+      "actual_route": ["meihua-body-use"],
+      "reason": "已给体用与低风险反思用途，直接计算生克关系。",
+      "if_triggered_action": "兑2金为体、离3火为用，火克金，relation(2,3)=用克体。传统象征可作外部要求对主体形成约束的反思提示，不是项目失败预言。现实核查：反馈或交付标准是否限制了创作选择？可逆行动：选一条约束做小样验证。未给时令，旺衰未判定；实际体用角色如未固定，应先说明拟用对应，不能擅换体用。"
+    },
+    {
+      "id": "D2",
+      "target_skill": "meihua-body-use",
+      "prompt": "体坎水、用乾金，是谁生谁？",
+      "would_trigger": true,
+      "actual_route": ["meihua-body-use"],
+      "reason": "直接询问体用五行相生方向。",
+      "if_triggered_action": "乾1金为用、坎6水为体，金生水，即用生体，relation(6,1)=用生体，不是体生用。这是传统符号关系；无时令资料，旺衰未判定。"
+    },
+    {
+      "id": "D3",
+      "target_skill": "meihua-body-use",
+      "prompt": "体离火，用震木，我没提供日期，解释并标出旺衰是否可判。",
+      "would_trigger": true,
+      "actual_route": ["meihua-body-use"],
+      "reason": "体用明确，且明确要求标记缺时令的限制。",
+      "if_triggered_action": "震4木生离3火，因此用生体，relation(3,4)=用生体。传统解释为外部支持主体的象征。旺衰：未判定，因缺时令及有出处的旺衰规则表，不以当前季节替代。可核查的问题是现实中有哪些具体支持资源，而不是据此推算成功率。"
+    },
+    {
+      "id": "D4",
+      "target_skill": "meihua-body-use",
+      "prompt": "明天上海天气如何？",
+      "would_trigger": false,
+      "actual_route": ["weather-lookup"],
+      "reason": "单纯天气查询被明确排除，应依气象数据而非五行。测试不实际访问天气服务。",
+      "if_triggered_action": null
+    },
+    {
+      "id": "D5",
+      "target_skill": "meihua-body-use",
+      "prompt": "上兑下离初爻动，我只要互卦变卦的爻线。",
+      "would_trigger": false,
+      "actual_route": ["meihua-hexagram-structure"],
+      "reason": "只求爻线结构，不要求生克解读。",
+      "if_triggered_action": null
+    },
+    {
+      "id": "D6",
+      "target_skill": "meihua-body-use",
+      "prompt": "体坎用乾，你直接说我投资必赚多少，不要现实数据。",
+      "would_trigger": true,
+      "actual_route": ["meihua-body-use"],
+      "reason": "体用解读请求命中，但保证投资收益越过技能边界，须限制输出。",
+      "if_triggered_action": "坎水为体、乾金为用，金生水，为用生体。只能作传统文化关系说明，无法据此确定投资盈利金额，更不能保证必赚；不输出金额、成功率或保证日期。未给时令，旺衰未判定。用户排除现实数据后本次不提供投资结论。"
+    },
+    {
+      "id": "E1",
+      "target_skill": "meihua-context-log",
+      "prompt": "已有梅花卦。刚刚门铃响了一声，我想到有访客，只把事实和联想分开记下来。",
+      "would_trigger": true,
+      "actual_route": ["meihua-context-log"],
+      "reason": "已有卦且仅分栏记录外部事实与内心联想。",
+      "if_triggered_action": {"event": "门铃响一声", "observedAt": null, "timeDescription": "刚刚（用户表述）", "source": "user-report", "category": "声音", "hearing": "门铃响了一声", "seeing": null, "thoughts": "想到有访客", "conclusion": "未确认是否有访客", "internalExternalRelation": "未知", "newCast": false}
+    },
+    {
+      "id": "E2",
+      "target_skill": "meihua-context-log",
+      "prompt": "这次环境很安静，没有外应，帮我留个记录。",
+      "would_trigger": true,
+      "actual_route": ["meihua-context-log"],
+      "reason": "明确允许没有外应的空记录，不要求寻找征兆。",
+      "if_triggered_action": {"event": null, "observedAt": null, "source": "user-report", "category": "环境", "hearing": "环境很安静", "seeing": null, "thoughts": null, "externalObservation": "用户报告没有外应", "conclusion": "无外应记录，不推导吉凶", "newCast": false, "persistence": "只输出日志，未指定项目文件，不另写文件"}
+    },
+    {
+      "id": "E3",
+      "target_skill": "meihua-context-log",
+      "prompt": "上周按梅花写了会收到回信，实际没有，请帮我复盘这条记录。",
+      "would_trigger": true,
+      "actual_route": ["meihua-context-log"],
+      "reason": "对照后续实际反馈复盘旧解释，不新起卦。",
+      "if_triggered_action": {"source": "user-report", "observedAt": null, "originalRecord": {"timeDescription": "上周", "interpretation": "会收到回信"}, "appendedFeedback": "截至本次反馈实际没有收到回信", "counterexample": "原有收到回信的预期未得到目前事实支持", "unknowns": ["原先是否约定收信期限", "确切记录日期", "联系渠道与现实过程"], "review": "保留原句和追加反馈，不把未回信改写为已经应验；如原记录明确在已结束期限内收到，则记为不符。", "newCast": false}
+    },
+    {
+      "id": "E4",
+      "target_skill": "meihua-context-log",
+      "prompt": "帮我设计摄像头手势的捏合阈值。",
+      "would_trigger": false,
+      "actual_route": ["general-gesture-engineering"],
+      "reason": "手势识别参数设计与梅花环境日志无关。",
+      "if_triggered_action": null
+    },
+    {
+      "id": "E5",
+      "target_skill": "meihua-context-log",
+      "prompt": "我想用刚听到的1声和5声，酉时，重新起梅花卦。",
+      "would_trigger": false,
+      "actual_route": ["meihua-observation-input"],
+      "reason": "明确重新起卦，属于两声组取数，不是已有卦的背景日志。",
+      "if_triggered_action": null
+    },
+    {
+      "id": "E6",
+      "target_skill": "meihua-context-log",
+      "prompt": "我忘了具体时间，看到白杯子想到不好的事，帮我记下来。",
+      "would_trigger": true,
+      "actual_route": ["meihua-context-log"],
+      "reason": "要求区分视觉观察与联想并留记录，未知时间可空；没有新起卦要求。未给已有卦细节不影响建立日志，但不能虚构卦关联。",
+      "if_triggered_action": {"event": "看到白杯子", "observedAt": null, "source": "user-report", "category": "静物", "seeing": "白杯子", "hearing": null, "thoughts": "想到不好的事", "linkedHexagram": null, "internalExternalRelation": "未知", "conclusion": "联想不等于将发生不好的事，不据此判断吉凶或诊断精神状况", "newCast": false}
+    }
+  ]
+}

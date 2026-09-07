@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "project": "tarot-traditional-culture",
+  "status": "meihua-local-skills-delivered-website-stage1-integrated",
+  "purpose": "为塔罗抽牌后的传统文化观照提供可追溯资料入口；不把不同流派合并成确定性预言。",
+  "defaultLocale": "zh-CN",
+  "sources": [
+    {
+      "id": "zhouyi-zhengyi-ctp",
+      "title": "周易（周易正义底本及相关传篇）",
+      "category": "classic",
+      "role": "hexagram-text",
+      "sourceUrl": "https://ctext.org/book-of-changes/zh",
+      "indexUrl": "https://ctext.org/book-of-changes",
+      "versionNote": "以中国哲学书电子化计划所列底本与版本信息为准；经文与彖、象、文言、系辞、说卦、序卦、杂卦等传篇分开记录。",
+      "rightsNote": "仅保存经核验的原典字段与出处；现代译注另行确认授权。",
+      "extractionStatus": "source-locked-full-text-pending",
+      "plannedArtifacts": ["hexagram-text", "line-text", "commentary-links", "source-citation"]
+    },
+    {
+      "id": "meihua-yishu-wikisource",
+      "title": "梅花易数",
+      "category": "divination",
+      "role": "meihua-rulebook",
+      "sourceUrl": "https://zh.wikisource.org/zh-hans/%E6%A2%85%E8%8A%B1%E6%98%93%E6%95%B8",
+      "versionNote": "采用维基文库公开旧籍文本作首轮校勘底本，页面传统题署宋·邵雍；作者归属与后世辑补不作为未经考证的结论。",
+      "rightsNote": "页面标示为旧籍公有领域；实际发布仍保留页面、版本和校勘记录。",
+      "extractionStatus": "local-skills-tested-installed-website-stage1-integrated",
+      "plannedArtifacts": ["trigram-numbering", "time-numbering", "mutual-hexagram", "changed-hexagram", "body-use", "five-elements", "citation"]
+    },
+    {
+      "id": "daodejing-ctp",
+      "title": "道德经",
+      "category": "daoist-classic",
+      "role": "reflection-layer",
+      "sourceUrl": "https://ctext.org/dao-de-jing",
+      "versionNote": "作为观照与修身语境使用，不将经典短句伪装成占断结果。",
+      "rightsNote": "原典版本与现代译注分离；只保留短引、章节号和链接。",
+      "extractionStatus": "source-locked-full-text-pending",
+      "plannedArtifacts": ["theme-index", "short-citation", "reflection-question", "safety-boundary"]
+    },
+    {
+      "id": "zhuangzi-ctp",
+      "title": "庄子",
+      "category": "daoist-classic",
+      "role": "reflection-layer",
+      "sourceUrl": "https://ctext.org/zhuangzi",
+      "versionNote": "与道德经并列为哲学观照来源，不用于计算卦象或命盘。",
+      "rightsNote": "原典版本与现代译注分离；只保留短引、篇名和链接。",
+      "extractionStatus": "source-locked-full-text-pending",
+      "plannedArtifacts": ["theme-index", "short-citation", "reflection-question", "safety-boundary"]
+    },
+    {
+      "id": "yuanhai-ziping-ctp",
+      "title": "渊海子平",
+      "category": "bazi",
+      "role": "four-pillars-rulebook",
+      "sourceUrl": "https://ctext.org/wiki.pl?chapter=296619&if=gb&remap=gb",
+      "versionNote": "作为四柱规则的历史材料；上线前记录底本、章节和校对状态，不把单一命理派别当作共识。",
+      "rightsNote": "CTP页面、影印本和现代整理本的使用边界分别核验。",
+      "extractionStatus": "source-locked-full-text-pending",
+      "plannedArtifacts": ["calendar-input", "stem-branch", "five-elements", "ten-gods", "luck-cycle", "citation"]
+    },
+    {
+      "id": "sanming-tonghui-ctp",
+      "title": "三命通会",
+      "category": "bazi",
+      "role": "four-pillars-reference",
+      "sourceUrl": "https://ctext.org/wiki.pl?chapter=548506&if=gb",
+      "versionNote": "作为扩展参考。CTP部分页面标注为影印本字符识别初稿，必须在导入前逐段校对。",
+      "rightsNote": "不直接复制现代注本；保留原始页面与校勘记录。",
+      "extractionStatus": "source-locked-full-text-pending",
+      "plannedArtifacts": ["rule-variants", "case-index", "citation", "conflict-notes"]
+    },
+    {
+      "id": "ziwei-quanshu-wikisource",
+      "title": "紫微斗数全书",
+      "category": "ziwei",
+      "role": "destiny-chart-reference",
+      "sourceUrl": "https://zh.wikisource.org/wiki/%E7%B4%AB%E5%BE%AE%E6%96%97%E6%95%B8%E5%85%A8%E6%9B%B8",
+      "versionNote": "紫微版本、排盘顺逆和四化规则存在流派差异；首版只做资料索引，暂不自动断定。",
+      "rightsNote": "旧籍页面的公有领域说明不等于现代整理、校注和排盘软件均可复制。",
+      "extractionStatus": "later-phase",
+      "plannedArtifacts": ["palace-layout", "star-index", "school-profile", "citation"]
+    },
+    {
+      "id": "qimen-academic-overview",
+      "title": "奇门遁甲的基础研究",
+      "category": "three-formulas",
+      "role": "academic-overview",
+      "sourceUrl": "https://eprints.lib.hokudai.ac.jp/repo/huscap/all/44606/",
+      "versionNote": "先作为学术综述和术语地图，不直接把综述当作完整排盘算法。",
+      "rightsNote": "论文按原站许可和引用规范使用。",
+      "extractionStatus": "later-phase",
+      "plannedArtifacts": ["terminology", "source-map", "school-differences", "citation"]
+    }
+  ],
+  "integrationRules": {
+    "calculation": "deterministic-local-only",
+    "languageModel": "explanation-only",
+    "provenance": "every-derived-claim-needs-sourceId-and-location",
+    "uncertainty": "show-school-and-version-when-known",
+    "safety": "traditional-culture-and-self-reflection; no medical-legal-financial certainty"
+  }
+}
