@@ -85,7 +85,7 @@ async function finishThreeCards(page) {
   await page.locator("#settleClose").click();
   await page.locator("#castMode").waitFor({ state: "visible" });
   await page.selectOption("#castMode", "shooting");
-  await page.fill("#questionInput", "他手里握着什么东西？");
+  await page.fill("#questionInput", "三个数字5.7.8。看看我手里有什么东西");
   await page.fill("#castDetailInput", "只描述候选，不提前揭示答案");
   const shootingVisible = await page.locator("#castDetailField:not([hidden])").count() === 1;
   await page.locator("#questionConfirm").click();
@@ -100,6 +100,6 @@ async function finishThreeCards(page) {
   console.log(JSON.stringify(result, null, 2));
   await browser.close();
   if (!explicitFieldsVisible || !autoFieldsHidden || !three.summary.includes("三个数字起卦") || !three.trace.includes("17、26、8") || !three.observationHidden ||
-      !shootingVisible || !shooting.summary.includes("射覆") || shooting.labels.length !== 5 ||
+      !shootingVisible || !shooting.summary.includes("射覆") || !shooting.summary.includes("5、7、8") || shooting.labels.length !== 5 ||
       !shooting.labels.includes("颜色倾向") || !shooting.labels.includes("候选物品") || errors.length) process.exitCode = 1;
 })().catch((error) => { console.error(error); process.exit(1); });

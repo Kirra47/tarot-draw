@@ -1,4 +1,4 @@
-const CACHE_VERSION = "astral-tarot-v12-meihua-modes-20260907";
+const CACHE_VERSION = "astral-tarot-v13-cast-sync-20260907";
 const CORE_CACHE = `${CACHE_VERSION}-core`;
 const ASSET_CACHE = `${CACHE_VERSION}-assets`;
 
@@ -41,7 +41,9 @@ self.addEventListener("activate", (event) => {
 async function networkFirst(request) {
   const cache = await caches.open(CORE_CACHE);
   try {
-    const response = await fetch(request);
+    // Bypass the browser HTTP cache for navigations so an installed PWA can
+    // discover a freshly deployed HTML shell on the next open.
+    const response = await fetch(request, { cache: "no-store" });
     if (response.ok) await cache.put(request, response.clone());
     return response;
   } catch {

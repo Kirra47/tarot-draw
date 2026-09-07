@@ -372,8 +372,16 @@ export function castByMode({ mode = 'time', moment = new Date(), numbers = [], t
     cast = castText(text);
     sourceInput = { text: String(text).trim() };
   } else if (mode === 'shooting' || mode === 'object' || mode === 'person' || mode === 'lost' || mode === 'omen') {
-    cast = castFromMoment(moment);
-    sourceInput = { text: String(text).trim() };
+    if (Array.isArray(numbers) && numbers.length === 3) {
+      cast = castThreeNumbers(numbers);
+      sourceInput = {
+        numbers: [cast.inputs.upperNumber, cast.inputs.lowerNumber, cast.inputs.movingNumber],
+        text: String(text).trim(),
+      };
+    } else {
+      cast = castFromMoment(moment);
+      sourceInput = { text: String(text).trim() };
+    }
   } else {
     cast = castFromMoment(moment);
   }

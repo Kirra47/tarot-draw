@@ -765,7 +765,8 @@ body::after{
         <label id="castCountLabel" for="castCountInput">数量 / 次数 <small>必须是可核对的整数</small></label>
         <input id="castCountInput" type="number" min="1" max="1000000" inputmode="numeric" placeholder="请输入数量或声音次数">
       </div>
-      <button id="questionConfirm"><span>开始抽牌</span><b aria-hidden="true">↗</b></button>
+      <p id="castError" class="castError" role="alert" hidden></p>
+      <button id="questionConfirm" type="button"><span>开始抽牌</span><b aria-hidden="true">↗</b></button>
       <button id="questionArchive" type="button" aria-controls="histPanel" aria-expanded="false">⌛ 打开观测档案</button>
       <p class="qHint">可以留空进行综合观测。塔罗用于自我探索与娱乐，不替代专业建议。</p>
     </section>
@@ -2059,7 +2060,8 @@ function renderMeihuaPanel(){
   }else if(mode!=='time'&&mode!=='shooting'){
     modeSummary=`本次采用<strong>${escapeHTML(modeLabel)}</strong>${source.text?`，已记录“${escapeHTML(source.text)}”`:''}。`;
   }else if(mode==='shooting'){
-    modeSummary=`本次采用<strong>射覆</strong>，以抽牌确认时刻起卦${statusNote}；下面给出可核对的物象候选。`;
+    const numeric=Array.isArray(source.numbers)?`，梅花卦按<strong>${source.numbers.map(escapeHTML).join('、')}</strong>取数`:`，以抽牌确认时刻起卦${statusNote}`;
+    modeSummary=`本次采用<strong>射覆</strong>${numeric}；下面给出可核对的物象候选。`;
   }
   document.getElementById('meihuaModeBadge').textContent=modeLabel;
   document.getElementById('meihuaSummary').innerHTML=`${modeSummary}体卦为<strong>${escapeHTML(body.name)}</strong>，用卦为<strong>${escapeHTML(use.name)}</strong>，两者关系为<strong>${escapeHTML(relationText)}</strong>；后续追问沿用这一卦，不重新起卦。`;
@@ -2088,6 +2090,8 @@ function renderMeihuaPanel(){
   const trace=value.trace||{};
   const inputTrace=mode==='three'
     ? `三个数字：${Array.isArray(source.numbers)?source.numbers.join('、'):'—'}`
+    : Array.isArray(source.numbers)
+      ? `射覆 / 取象同时指定数字：${source.numbers.join('、')}`
     : mode==='sound'||mode==='count'
       ? `现场${mode==='sound'?'声音次数':'物品数量'}：${source.count||'—'} · 取时支：${calendar.hourBranchName||'—'}`
       : source.text
@@ -2124,6 +2128,8 @@ function getMeihuaDescription(){
   const observation=value.observation;
   const inputLine=value.mode==='three'
     ? `输入记录：三个数字 ${Array.isArray(source.numbers)?source.numbers.join('、'):'—'}（抽牌时间只作记录）`
+    : Array.isArray(source.numbers)
+      ? `输入记录：${value.modeLabel||'取象'}同时指定数字 ${source.numbers.join('、')}${source.text?`；现场材料：${source.text}`:''}`
     : value.mode==='sound'||value.mode==='count'
       ? `输入记录：${value.mode==='sound'?'声音次数':'物品数量'} ${source.count||'—'}；时支 ${value.calendar?.hourBranchName||'—'}`
       : source.text?`输入记录：${source.text}`:'输入记录：抽牌确认时刻';
@@ -2699,14 +2705,18 @@ function collectCastRequest(){
   if(['shooting','object','person','lost','text','omen'].includes(selected)){
     const material=detail||question;
     const chars=[...material].filter(char=>!(/\s/u.test(char)));
-    if(selected==='shooting')return {mode:selected,text:material};
+    const explicit=explicitThreeNumbers(question);
+    if(explicit?.error)return explicit;
+    if(selected==='shooting')return {mode:selected,text:material,numbers:explicit?.numbers||undefined};
     if(chars.length<2)return {error:selected==='text'?'测字起卦至少需要两个字。':'请补充两字以上的现场描述，方便记录取象材料。'};
-    return {mode:selected,text:material};
+    return {mode:selected,text:material,numbers:explicit?.numbers||undefined};
   }
   return {mode:selected};
 }
 function updateCastModeUI(){
   const selected=document.getElementById('castMode')?.value||'auto';
+  const errorMessage=document.getElementById('castError');
+  if(errorMessage){errorMessage.hidden=true;errorMessage.textContent='';}
   const numbers=document.getElementById('threeNumberFields');
   const detail=document.getElementById('castDetailField');
   const count=document.getElementById('castCountField');
@@ -2747,11 +2757,23 @@ function updateCastModeUI(){
     hint.textContent=hints[selected]||hints.auto;
   }
 }
-document.getElementById('castMode')?.addEventListener('change',updateCastModeUI);
+const castModeField=document.getElementById('castMode');
+castModeField?.addEventListener('change',updateCastModeUI);
+// Android browsers can restore a native select's value without replaying `change`.
+// Keep the conditional fields and hint in sync whenever the control emits input.
+castModeField?.addEventListener('input',updateCastModeUI);
 updateCastModeUI();
 document.getElementById('questionConfirm').onclick=()=>{
   const request=collectCastRequest();
-  if(request.error){showHint(request.error,4500);return;}
+  const errorMessage=document.getElementById('castError');
+  if(request.error){
+    if(errorMessage){errorMessage.textContent=request.error;errorMessage.hidden=false;}
+    const selected=document.getElementById('castMode')?.value||'auto';
+    const focusId=selected==='three'?'castNum1':(selected==='sound'||selected==='count'?'castCountInput':(selected==='auto'?'questionInput':'castDetailInput'));
+    document.getElementById(focusId)?.focus();
+    return;
+  }
+  if(errorMessage){errorMessage.hidden=true;errorMessage.textContent='';}
   castRequest=request;
   closeHistoryPanel();
   userQuestion=document.getElementById('questionInput').value.trim();
@@ -3270,6 +3292,12 @@ function offerAppUpdate(worker){
     onAction:()=>{updateRequested=true;worker.postMessage({type:'SKIP_WAITING'});showAppNotice({title:'正在更新',detail:'完成后会自动重新打开',progress:70,sticky:true});}
   });
 }
+function refreshPwaAndCastControls(){
+  updateCastModeUI();
+  if(!pwaRegistration||location.protocol==='file:')return;
+  pwaRegistration.update().catch(()=>{});
+}
+window.addEventListener('pageshow',refreshPwaAndCastControls);
 async function initOfflineSupport(){
   if(!('serviceWorker' in navigator)||location.protocol==='file:'){
     if(location.protocol==='file:')showAppNotice({title:'请通过本地服务器打开',detail:'直接打开文件无法安装或使用离线缓存',sticky:true});
@@ -3277,6 +3305,7 @@ async function initOfflineSupport(){
   }
   try{
     pwaRegistration=await navigator.serviceWorker.register('./service-worker.js',{scope:'./',updateViaCache:'none'});
+    pwaRegistration.update().catch(()=>{});
     if(pwaRegistration.waiting&&navigator.serviceWorker.controller)offerAppUpdate(pwaRegistration.waiting);
     pwaRegistration.addEventListener('updatefound',()=>{
       const worker=pwaRegistration.installing;if(!worker)return;

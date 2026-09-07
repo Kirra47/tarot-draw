@@ -39,13 +39,13 @@ const baseUrl = process.env.TAROT_URL || "http://127.0.0.1:8766";
   await page.goto(`${baseUrl}/tarot.html`, { waitUntil: "domcontentloaded", timeout: 30_000 });
   await page.waitForFunction(() => navigator.serviceWorker?.controller, null, { timeout: 15_000 });
   await page.waitForFunction(async () => {
-    const key = (await caches.keys()).find((name) => name.includes("astral-tarot-v12-meihua-modes-20260907") && name.endsWith("-assets"));
+    const key = (await caches.keys()).find((name) => name.includes("astral-tarot-v13-cast-sync-20260907") && name.endsWith("-assets"));
     if (!key) return false;
     const requests = await (await caches.open(key)).keys();
     return requests.filter((request) => new URL(request.url).pathname.includes("/assets/cards/")).length === 78;
   }, null, { timeout: 30_000 });
   const offlineCardCount = await page.evaluate(async () => {
-    const key = (await caches.keys()).find((name) => name.includes("astral-tarot-v12-meihua-modes-20260907") && name.endsWith("-assets"));
+    const key = (await caches.keys()).find((name) => name.includes("astral-tarot-v13-cast-sync-20260907") && name.endsWith("-assets"));
     const requests = await (await caches.open(key)).keys();
     return requests.filter((request) => new URL(request.url).pathname.includes("/assets/cards/")).length;
   });

@@ -110,6 +110,7 @@ button:focus-visible,textarea:focus-visible,input:focus-visible,summary:focus-vi
 #castMode{width:100%;min-height:48px;padding:11px 40px 11px 14px;border:1px solid var(--paper-line);border-radius:12px;background:rgba(255,255,255,.56);color:var(--ink);font:15px var(--sans);outline:none;transition:border-color 180ms ease,box-shadow 180ms ease,background-color 180ms ease}
 #castMode:focus{border-color:rgba(191,125,67,.74);background:rgba(255,255,255,.82);box-shadow:0 0 0 4px rgba(191,125,67,.1)}
 .castModeHint{margin:9px 0 14px;color:var(--ink-muted);font-size:12px;line-height:1.7}
+.castError{margin:7px 0 12px;padding:9px 11px;border:1px solid rgba(164,72,65,.28);border-radius:10px;background:rgba(164,72,65,.07);color:#93453f;font-size:13px;line-height:1.6}.castError[hidden]{display:none}
 .castExtraField{margin:12px 0 18px}.castExtraField[hidden]{display:none}
 .castExtraField>label{display:block;margin:0 0 8px;color:var(--ink);font-size:13px;font-weight:600}.castExtraField>label small{display:block;margin-top:3px}
 .threeNumberRow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
