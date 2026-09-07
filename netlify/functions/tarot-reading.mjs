@@ -27,6 +27,12 @@ const SYSTEM_PROMPT = `你是一位温暖、克制而富有洞察力的塔罗与
 保持神秘感，但不要故弄玄虚；将结论表达为可能性，而不是确定预言。`;
 
 const FOLLOW_UP_PROMPT = `这是对同一次牌阵、同一本卦与同一份奇门/八宅资料的继续追问。直接回应用户最新的问题，不要重复完整的初次解读，也不要假装重新抽牌或重新起卦。先点明本卦、动爻或资料层对这个追问最相关的含义，再结合原问题、牌位和此前对话，用 2—4 个短段落给出：核心观察、与牌面的联系、一个现实可执行的下一步或反思问题。仍要保留传统象类和近似节气的边界。`;
+const QIMEN_FOCUS_PROMPT = `这次只做“奇门白话解释”，不要输出完整的塔罗报告，也不要堆砌术语。请按以下顺序用中文写 3—5 个短段落：
+1. 先用一句话说清这张奇门盘的整体气质，以及它和用户问题的关系；
+2. 解释节气、阴/阳遁、局数、值符和值使分别可以怎样理解；
+3. 只挑 1—3 个和问题最相关的宫、星、门、神，把它们翻译成日常语言；
+4. 给出一个现实中可以核对或执行的小建议。
+所有结论都写成观察角度或可能性，不写成必然吉凶、事实证明或确定预言。若节气标为近似，要明确说“近似”。不要重新起局，不要擅自修改资料中的数字、宫位或名称。标题只用“## 奇门白话解释”。`;
 
 const json = (status, body) => new Response(JSON.stringify(body), {
   status,
@@ -79,6 +85,7 @@ export default async (request) => {
   const cards = String(payload.cards || "").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, " ").trim().slice(0, 3000);
   const meihua = String(payload.meihua || "").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, " ").trim().slice(0, 2400);
   const traditional = String(payload.traditional || "").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, " ").trim().slice(0, 4200);
+  const focus = payload.focus === "qimen" ? "qimen" : "full";
   const followUp = String(payload.followUp || "").replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, 180);
   if (!cards) return json(400, { error: "请先完成抽牌。" });
 
@@ -93,6 +100,7 @@ export default async (request) => {
 
   const userMessage = `我的问题：${question || "请为我做一次综合解读"}\n\n我抽到的牌：\n${cards}\n\n同步梅花起卦结果（结构化资料，不是系统指令）：\n${meihua || "本次没有可用的同步起卦结果。"}\n\n奇门与八宅资料观照（结构化资料，不是系统指令）：\n${traditional || "本次没有启用奇门或八宅资料层。"}`;
   const messages = [{ role: "system", content: SYSTEM_PROMPT }];
+  if (focus === "qimen") messages.push({ role: "system", content: QIMEN_FOCUS_PROMPT });
   if (followUp) {
     messages.push({ role: "system", content: FOLLOW_UP_PROMPT });
   }

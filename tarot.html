@@ -660,7 +660,7 @@ body::after{
   .qHint{display:none;}
 }
 </style>
-<link rel="stylesheet" href="./emil-redesign.css?v=20260907-traditional-layer-viewport">
+<link rel="stylesheet" href="./emil-redesign.css?v=20260907-qimen-ai-readable">
 </head>
 <body>
 <canvas id="c"></canvas>
@@ -834,6 +834,14 @@ body::after{
         <div class="traditionalSectionHead"><div><span class="traditionalKicker">时家奇门 · 拆补法</span><h4 id="qimenTitle">奇门资料观照</h4></div><span id="qimenBadge" class="traditionalBadge"></span></div>
         <p id="qimenSummary" class="traditionalSummary"></p>
         <div id="qimenFocus" class="traditionalFocus"></div>
+        <section class="qimenAi" aria-labelledby="qimenAiTitle">
+          <div class="qimenAiHead">
+            <div><span class="traditionalKicker">白话翻译</span><h5 id="qimenAiTitle">这张奇门盘在说什么？</h5></div>
+            <button id="qimenAiBtn" class="qimenAiBtn" type="button">请 AI 解释</button>
+          </div>
+          <p class="qimenAiHint">把节气、值符、值使和九宫象类翻译成与你的问题有关的日常语言。</p>
+          <div id="qimenAiContent" class="qimenAiContent"><p class="qimenAiEmpty">抽牌后，这里会出现一段不需要懂术语的奇门白话解释。</p></div>
+        </section>
         <details class="qimenGridDetails"><summary>展开九宫盘 <span>宫 · 星 · 门 · 神</span></summary><div id="qimenGrid" class="qimenGrid"></div></details>
         <details class="traditionalTrace"><summary>查看奇门起局依据</summary><pre id="qimenTrace"></pre></details>
         <p id="qimenSource" class="traditionalSource"></p>
@@ -2467,6 +2475,10 @@ function resetSession(){
   document.getElementById('qimenFocus')?.replaceChildren();
   document.getElementById('qimenSummary')?.replaceChildren();
   document.getElementById('qimenTrace')?.replaceChildren();
+  const qimenAiContent=document.getElementById('qimenAiContent');
+  if(qimenAiContent)qimenAiContent.innerHTML='<p class="qimenAiEmpty">抽牌后，这里会出现一段不需要懂术语的奇门白话解释。</p>';
+  const qimenAiBtn=document.getElementById('qimenAiBtn');
+  if(qimenAiBtn){qimenAiBtn.disabled=false;qimenAiBtn.textContent='请 AI 解释';}
   document.getElementById('bazhaiPositions')?.replaceChildren();
   userQuestion='';
   document.getElementById('questionInput').value='';
@@ -2483,6 +2495,8 @@ function resetSession(){
     const field=document.getElementById(id);if(field)field.value='';
   });
   isAIStreaming=false;
+  qimenAiStreaming=false;
+  qimenAiStartedForSession=false;
   resetFollowups();
   currentReadingSaved=false;
   currentReadingHistoryId=null;
@@ -2522,6 +2536,8 @@ let aiConversation=[];
 let initialAIReading='';
 let followUpCount=0;
 const MAX_FOLLOWUPS=4;
+let qimenAiStreaming=false;
+let qimenAiStartedForSession=false;
 
 function parseMD(t){
   return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
@@ -2598,6 +2614,42 @@ async function readAIStream(resp,onUpdate){
   return fullText.trim();
 }
 
+async function requestQimenAI({auto=false}={}){
+  const qimen=traditionalSession?.qimen;
+  const contentDiv=document.getElementById('qimenAiContent');
+  const button=document.getElementById('qimenAiBtn');
+  if(!qimen||!contentDiv||qimenAiStreaming)return;
+  if(auto&&qimenAiStartedForSession)return;
+  qimenAiStartedForSession=true;
+  qimenAiStreaming=true;
+  if(button){button.disabled=true;button.textContent='正在解释…';}
+  contentDiv.innerHTML='<div class="qimenAiThinking"><span class="dots"><span></span><span></span><span></span></span><span>正在把奇门术语翻译成白话…</span></div>';
+  try{
+    const resp=await fetch('/api/tarot-reading',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({question:userQuestion,cards:getCardsDescription(),meihua:getMeihuaDescription(),traditional:getTraditionalDescription(),focus:'qimen'})
+    });
+    if(!resp.ok){
+      let message=`奇门解释暂时不可用（${resp.status}）`;
+      try{const data=await resp.json();if(data.error)message=data.error;}catch{}
+      if(['127.0.0.1','localhost'].includes(location.hostname)&&[404,405,501].includes(resp.status))message='当前是静态预览，请使用本地 AI 服务或部署后的正式网址';
+      throw new Error(message);
+    }
+    const fullText=await readAIStream(resp,text=>{contentDiv.innerHTML='<p>'+parseMD(text)+'</p>';});
+    if(!fullText)throw new Error('解读服务没有返回内容');
+    if(button)button.textContent='重新解释';
+  }catch(err){
+    console.error('Qimen AI reading error:',err);
+    contentDiv.innerHTML=`<p class="qimenAiError">${escapeHTML(err.message)}。你仍可以展开下方九宫盘查看原始资料。</p>`;
+    if(button)button.textContent='重试解释';
+  }finally{
+    qimenAiStreaming=false;
+    if(button)button.disabled=false;
+  }
+}
+
+document.getElementById('qimenAiBtn')?.addEventListener('click',()=>requestQimenAI());
+
 async function requestAIReading(){
   if(isAIStreaming)return;
   resetFollowups();
@@ -2642,6 +2694,7 @@ async function requestAIReading(){
     document.getElementById('aiReadingHeader').classList.remove('show');
     const cursor=document.getElementById('aiCursor');if(cursor)cursor.remove();
     showFollowups();
+    if(traditionalSession?.qimen)void requestQimenAI({auto:true});
   }
 }
 document.getElementById('aiRetryBtn').onclick=requestAIReading;
