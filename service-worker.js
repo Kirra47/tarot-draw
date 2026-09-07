@@ -1,4 +1,4 @@
-const CACHE_VERSION = "astral-tarot-v16-classic-text-20260907";
+const CACHE_VERSION = "astral-tarot-v17-offline-core-20260907";
 const CORE_CACHE = `${CACHE_VERSION}-core`;
 const ASSET_CACHE = `${CACHE_VERSION}-assets`;
 
@@ -54,8 +54,13 @@ async function networkFirst(request) {
 }
 
 async function cacheFirst(request) {
+  // Core modules/styles live in CORE_CACHE; card images live in ASSET_CACHE.
+  // Check both so an offline reload can execute the app shell, not just draw cards.
+  const coreCache = await caches.open(CORE_CACHE);
+  const coreCached = (await coreCache.match(request)) || (await coreCache.match(request, { ignoreSearch: true }));
+  if (coreCached) return coreCached;
   const cache = await caches.open(ASSET_CACHE);
-  const cached = await cache.match(request);
+  const cached = (await cache.match(request)) || (await cache.match(request, { ignoreSearch: true }));
   if (cached) return cached;
   const response = await fetch(request);
   if (response.ok) await cache.put(request, response.clone());
