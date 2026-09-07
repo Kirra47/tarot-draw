@@ -1,11 +1,11 @@
-const CACHE_VERSION = "astral-tarot-v18-click-through-20260907";
+const CACHE_VERSION = "astral-tarot-v20-traditional-viewport-20260907";
 const CORE_CACHE = `${CACHE_VERSION}-core`;
 const ASSET_CACHE = `${CACHE_VERSION}-assets`;
 
 const CORE_ASSETS = [
   "./",
   "./tarot.html",
-  "./emil-redesign.css?v=20260907-click-through",
+  "./emil-redesign.css?v=20260907-traditional-layer-viewport",
   "./tarot-bg.png",
   "./manifest.webmanifest",
   "./assets/icons/tarot-icon.svg",
@@ -16,6 +16,8 @@ const CORE_ASSETS = [
   "./vendor/three/three.module.min.js",
   "./scripts/meihua-display.mjs",
   "./scripts/meihua-insight.mjs",
+  "./scripts/qimen-insight.mjs",
+  "./scripts/bazhai-insight.mjs",
   "./scripts/zhouyi-text.mjs",
   "./books/meihua-yishu-wikisource/meihua-numeric-cast/scripts/meihua.mjs"
 ];

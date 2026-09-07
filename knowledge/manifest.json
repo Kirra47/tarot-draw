@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "project": "tarot-traditional-culture",
-  "status": "meihua-local-skills-delivered-website-stage1-integrated",
+  "status": "meihua-qimen-bazhai-local-layers-website-stage2-integrated",
   "purpose": "为塔罗抽牌后的传统文化观照提供可追溯资料入口；不把不同流派合并成确定性预言。",
   "defaultLocale": "zh-CN",
   "sources": [
@@ -93,6 +93,32 @@
       "rightsNote": "论文按原站许可和引用规范使用。",
       "extractionStatus": "later-phase",
       "plannedArtifacts": ["terminology", "source-map", "school-differences", "citation"]
+    },
+    {
+      "id": "shenqi-zhimen-pdf",
+      "title": "完整版《神奇之门》（奇门遁甲入门）",
+      "category": "three-formulas",
+      "role": "qimen-rulebook",
+      "author": "张志春",
+      "publicationYear": "1998（序文语境；用户文件 PDF 创建于 2007）",
+      "sourceFile": "C:/Users/ROG STRIX/Desktop/完整版《神奇之门》（奇门遁甲入门首先书，此为完整版，word版无例子).pdf",
+      "versionNote": "只提取书中时家奇门、九宫八卦、节气用局、拆补法、三奇六仪、值符值使和象类的可追溯骨架；节气交接分钟与不同流派不混算。",
+      "rightsNote": "用户提供的 PDF 仅作为本地研究资料；网站不嵌入整书，线上只发送短小的结构化计算结果和来源标签。",
+      "extractionStatus": "local-distill-website-stage2-integrated",
+      "plannedArtifacts": ["time-layout", "palace-star-door-god", "symbol-lens", "school-boundary", "citation"]
+    },
+    {
+      "id": "bazhai-fengshui-brief-docx",
+      "title": "八宅风水简介",
+      "category": "fengshui",
+      "role": "bazhai-direction-layer",
+      "author": "yangjie（文档元数据）",
+      "publicationYear": "2014（文档创建时间）",
+      "sourceFile": "C:/Users/ROG STRIX/Desktop/八宅风水简介.docx",
+      "versionNote": "上线规则只采用坐向、后天八卦、东/西四宅、四吉四凶和位置建议；历史起源、秘传、化学/灵异功效等不可复核内容单独拒绝。",
+      "rightsNote": "用户提供的 Word 文档作为本地研究资料；网站仅保存短小的规则摘要与作者/年份元数据，不复制整篇文章。",
+      "extractionStatus": "local-distill-website-stage2-integrated",
+      "plannedArtifacts": ["direction-input", "house-trigram", "east-west-group", "auspicious-inauspicious", "citation"]
     }
   ],
   "integrationRules": {

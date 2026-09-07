@@ -32,7 +32,7 @@ https://peas-47.netlify.app/
 
 ## 传统文化资料库（第一批）
 
-《周易》、梅花易数、道德经、庄子与四柱八字的来源清单位于 [`knowledge/`](knowledge/)。梅花试点已形成[五个技能与阅读说明](books/meihua-yishu-wikisource/INDEX.md)，并安装到本项目 `.agents/skills/`。网站使用 `mh-ws-1` 规则档案做确定性起卦，前端展示结构化卦象、取数过程与取象候选，原文通过周易底本链接查看；30 条行为盲测与 384 组结构检查通过。运行 `node scripts/verify-meihua.mjs` 与 `node scripts/verify-meihua-modes.mjs` 可复核数值与模式检查。
+《周易》、梅花易数、奇门遁甲、八宅与其他传统资料的来源清单位于 [`knowledge/`](knowledge/)。梅花、奇门、八宅的蒸馏笔记与技能说明分别位于 [`books/`](books/)。网站使用 `mh-ws-1` 规则档案做确定性梅花起卦，并在抽牌确认时同步生成可追溯的奇门时课；选择房屋主要朝向后，再显示八宅坐向、宅卦和四吉四凶。原文、现代说明和不纳入规则的说法分开保存，传统象类只作观照线索，不作事实证明或确定预言。运行 `node scripts/verify-meihua.mjs`、`node scripts/verify-meihua-modes.mjs` 与 `node scripts/verify-traditional.mjs` 可复核数值和模式检查。
 
 ## 文件说明
 
@@ -47,6 +47,8 @@ https://peas-47.netlify.app/
 | `scripts/meihua-display.mjs` | 农历/时辰读取、六十四卦名称映射、各类起卦与取象展示数据 |
 | `scripts/meihua-insight.mjs` | 64 卦本站白话导读、上下卦取象、动爻变化提示与逐卦原文链接 |
 | `scripts/zhouyi-text.mjs` | 六十四卦卦辞与爻辞原文对照数据，供本卦和动爻展示 |
+| `scripts/qimen-insight.mjs` | 《神奇之门》规则骨架的时家奇门确定性排盘与九宫资料层 |
+| `scripts/bazhai-insight.mjs` | 《八宅风水简介》的朝向—坐向—宅卦—四吉四凶提示 |
 | `books/meihua-yishu-wikisource/meihua-numeric-cast/scripts/meihua.mjs` | 可复核的梅花易数时间卦计算核心 |
 | `manifest.webmanifest` / `service-worker.js` | PWA 安装信息与离线缓存策略 |
 | `assets/cards/` | 本地 78 张 Rider–Waite 牌图 |
@@ -90,7 +92,7 @@ node scripts/generate-pwa-icons.cjs
 DASHSCOPE_API_KEY=你的通义千问 API Key
 ```
 
-API Key 只由 Netlify Function 读取，不会发送到浏览器。函数端点还会校验请求来源与体积，并按 IP + 站点做分钟级限流。若旧版本曾把 Key 写进前端源码，请先在阿里云控制台撤销旧 Key 并创建新 Key。
+API Key 只由 Netlify Function 读取，不会发送到浏览器。函数端点还会校验请求来源与体积，并按 IP + 站点每分钟最多 100 次限流（适合个人与小范围朋友使用）。若旧版本曾把 Key 写进前端源码，请先在阿里云控制台撤销旧 Key 并创建新 Key。
 
 不要把真实 Key 写进 `tarot.html`、`netlify.toml` 或提交到 GitHub。线上请在 Netlify 的 **Project configuration → Environment variables** 新建 `DASHSCOPE_API_KEY`，如界面提供 Scope，需包含 **Functions**；可将它标记为 **Contains secret values**。修改环境变量后需要重新部署。
 

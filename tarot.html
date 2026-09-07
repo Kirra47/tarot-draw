@@ -660,7 +660,7 @@ body::after{
   .qHint{display:none;}
 }
 </style>
-<link rel="stylesheet" href="./emil-redesign.css?v=20260907-click-through">
+<link rel="stylesheet" href="./emil-redesign.css?v=20260907-traditional-layer-viewport">
 </head>
 <body>
 <canvas id="c"></canvas>
@@ -749,6 +749,22 @@ body::after{
         <option value="omen">外应记录（辅助）</option>
       </select>
       <p id="castModeHint" class="castModeHint">写明“三个数字起卦”时，会优先用你给的数字；否则按第一张牌确认时刻起卦。</p>
+      <label class="traditionalLabel" for="traditionalLayer"><span>传统资料层</span><small>可选</small></label>
+      <select id="traditionalLayer">
+        <option value="all">梅花 + 奇门 + 八宅</option>
+        <option value="qimen">梅花 + 奇门</option>
+        <option value="bazhai">梅花 + 八宅</option>
+        <option value="meihua">只看梅花易数</option>
+      </select>
+      <p id="traditionalLayerHint" class="castModeHint">奇门按抽牌确认时刻生成；八宅需要你明确提供房屋主要朝向，不会替你猜。</p>
+      <div id="houseFacingField" class="castExtraField">
+        <label for="houseFacingInput">房屋主要朝向 <small>站在宅中心面向主要出入口</small></label>
+        <select id="houseFacingInput">
+          <option value="">未提供（只显示八宅规则说明）</option>
+          <option value="北">北</option><option value="东北">东北</option><option value="东">东</option><option value="东南">东南</option>
+          <option value="南">南</option><option value="西南">西南</option><option value="西">西</option><option value="西北">西北</option>
+        </select>
+      </div>
       <div id="threeNumberFields" class="castExtraField" hidden>
         <label for="castNum1">三个数字 <small>第一个取上卦，第二个取下卦，第三个取动爻</small></label>
         <div class="threeNumberRow">
@@ -808,6 +824,34 @@ body::after{
       </details>
       <p id="meihuaSource">本站白话导读与经文原典分开标注；原典对照区显示卦辞和本次动爻辞。</p>
       <a id="meihuaSourceLink" class="meihuaSourceLink" href="https://ctext.org/book-of-changes/zh" target="_blank" rel="noopener noreferrer">对照本卦卦辞与爻辞 ↗</a>
+    </section>
+    <section id="traditionalPanel" aria-labelledby="traditionalTitle" hidden>
+      <div class="traditionalPanelHead">
+        <div><span class="traditionalKicker">资料层 · 奇门与八宅</span><h3 id="traditionalTitle">把时间与空间放回问题</h3></div>
+        <span id="traditionalLayerBadge" class="traditionalLayerBadge">梅花 + 奇门 + 八宅</span>
+      </div>
+      <section id="qimenPanel" class="qimenPanel" aria-labelledby="qimenTitle" hidden>
+        <div class="traditionalSectionHead"><div><span class="traditionalKicker">时家奇门 · 拆补法</span><h4 id="qimenTitle">奇门资料观照</h4></div><span id="qimenBadge" class="traditionalBadge"></span></div>
+        <p id="qimenSummary" class="traditionalSummary"></p>
+        <div id="qimenFocus" class="traditionalFocus"></div>
+        <details class="qimenGridDetails"><summary>展开九宫盘 <span>宫 · 星 · 门 · 神</span></summary><div id="qimenGrid" class="qimenGrid"></div></details>
+        <details class="traditionalTrace"><summary>查看奇门起局依据</summary><pre id="qimenTrace"></pre></details>
+        <p id="qimenSource" class="traditionalSource"></p>
+      </section>
+      <section id="bazhaiPanel" class="bazhaiPanel" aria-labelledby="bazhaiTitle" hidden>
+        <div class="traditionalSectionHead"><div><span class="traditionalKicker">坐向资料 · 八宅</span><h4 id="bazhaiTitle">八宅空间观照</h4></div><span id="bazhaiBadge" class="traditionalBadge">需要朝向</span></div>
+        <label class="resultFacingLabel" for="resultHouseFacing">房屋主要朝向 <small>可在这里补充或修改</small></label>
+        <select id="resultHouseFacing" class="resultFacingSelect">
+          <option value="">未提供（只显示规则说明）</option>
+          <option value="北">北</option><option value="东北">东北</option><option value="东">东</option><option value="东南">东南</option>
+          <option value="南">南</option><option value="西南">西南</option><option value="西">西</option><option value="西北">西北</option>
+        </select>
+        <p id="bazhaiSummary" class="traditionalSummary"></p>
+        <div id="bazhaiPositions" class="bazhaiPositions"></div>
+        <p id="bazhaiAdvice" class="traditionalAdvice"></p>
+        <p id="bazhaiSource" class="traditionalSource"></p>
+      </section>
+      <p class="traditionalDisclaimer">两层资料都只提供传统文化视角：奇门的节气日为近似值，八宅需实际测量；现实证据、建筑规范与专业建议优先。</p>
     </section>
     <section id="aiReading" aria-labelledby="aiReadingTitle">
       <div class="readingSectionHead"><span>结合你的问题</span><h3 id="aiReadingTitle">本卦重点分析</h3><p id="readingQuestion" hidden></p></div>
@@ -880,6 +924,8 @@ import {
   trigram,
 } from './scripts/meihua-display.mjs';
 import { primaryHexagramInsight, questionLens } from './scripts/meihua-insight.mjs';
+import { describeBazhai, deriveBazhai } from './scripts/bazhai-insight.mjs';
+import { describeQimen, deriveQimenCast, QIMEN_GRID_ORDER } from './scripts/qimen-insight.mjs';
 
 // ═══════════════════════════════════════════════════════════════
 // TAROT DECK DATA
@@ -954,6 +1000,8 @@ let currentReadingSaved=false;
 let currentReadingHistoryId=null;
 let meihuaSession=null;
 let castRequest={mode:'time'};
+let traditionalRequest={layer:'all',facing:''};
+let traditionalSession=null;
 
 // ═══════════════════════════════════════════════════════════════
 // LOCAL RWS IMAGE SOURCE
@@ -1778,7 +1826,8 @@ function saveReadingToHistory(){
       id:d.card.id,name:d.card.name,type:d.card.type,suit:d.card.suit||null,
       reversed:d.reversed,meaning:d.reversed?d.card.rev:d.card.up
     })),
-    meihua:serializeMeihua()
+    meihua:serializeMeihua(),
+    traditional:serializeTraditional()
   });
   historyList=historyList.slice(-60);
   localStorage.setItem(HISTORY_KEY,JSON.stringify(historyList));
@@ -1809,6 +1858,13 @@ function historyItem(item){
       if(first)mhMeta.textContent+=` · ${first}`;
     }
     details.appendChild(mhMeta);
+  }
+  if(item.traditional?.layer&&item.traditional.layer!=='meihua'){
+    const traditionalMeta=document.createElement('div');traditionalMeta.className='histTraditional';
+    const qimenLabel=item.traditional.qimen?`${item.traditional.qimen.dun||''}${item.traditional.qimen.ju||''}局`:'';
+    const bazhaiLabel=item.traditional.bazhai?.houseTrigram?`${item.traditional.bazhai.houseTrigram}宅`:'';
+    traditionalMeta.textContent=[item.traditional.layerLabel||'传统资料层',qimenLabel,bazhaiLabel].filter(Boolean).join(' · ');
+    details.appendChild(traditionalMeta);
   }
   if(item.aiReading||item.followUps?.length){
     const dialogue=document.createElement('div');dialogue.className='histDialogue';
@@ -1876,7 +1932,8 @@ function historyMatches(item,query){
   const followups=(item.followUps||[]).map(turn=>turn.content).join(' ');
   const cards=(item.cards||[]).map(card=>`${card.name||''} ${card.meaning||''}`).join(' ');
   const meihua=item.meihua?`${item.meihua.modeLabel||''} ${item.meihua.relation||''} ${item.meihua.upper||''} ${item.meihua.lower||''} ${item.meihua.movingLine||''} ${(item.meihua.observation?.features||[]).map(feature=>`${feature.label} ${feature.value}`).join(' ')}`:'';
-  return `${item.question||''} ${cards} ${meihua} ${followups} ${item.aiReading||''}`.toLocaleLowerCase('zh-CN').includes(query);
+  const traditional=item.traditional?`${item.traditional.layerLabel||''} ${item.traditional.facing||''} ${item.traditional.qimen?.dun||''} ${item.traditional.qimen?.solarTerm?.name||''} ${item.traditional.bazhai?.houseTrigram||''} ${item.traditional.bazhai?.group||''}`:'';
+  return `${item.question||''} ${cards} ${meihua} ${traditional} ${followups} ${item.aiReading||''}`.toLocaleLowerCase('zh-CN').includes(query);
 }
 function renderHistory(){
   const items=document.getElementById('histItems');
@@ -2027,6 +2084,105 @@ function serializeMeihua(value=meihuaSession){
       note:value.calendar.note,
     }:null,
   };
+}
+const TRADITIONAL_LAYER_LABELS=Object.freeze({all:'梅花 + 奇门 + 八宅',qimen:'梅花 + 奇门',bazhai:'梅花 + 八宅',meihua:'只看梅花易数'});
+function serializeTraditional(value=traditionalSession){
+  if(!value)return null;
+  const q=value.qimen;
+  const b=value.bazhai;
+  return {
+    layer:value.layer||'all',layerLabel:TRADITIONAL_LAYER_LABELS[value.layer]||TRADITIONAL_LAYER_LABELS.all,
+    facing:value.facing||'',capturedAt:value.capturedAt||null,
+    qimen:q?{
+      profile:q.profile,solarTerm:q.solarTerm,day:q.day,yuan:q.yuan,dun:q.dun,ju:q.ju,hour:q.hour,
+      xunHead:q.xunHead,valueFu:q.valueFu,valueShi:q.valueShi,meihuaLink:q.meihuaLink,
+      palaceGrid:Object.fromEntries(Object.entries(q.palaceGrid||{}).map(([key,item])=>[key,{palace:item.palace,trigram:item.trigram,direction:item.direction,element:item.element,groundStem:item.groundStem,star:item.star,door:item.door,god:item.god}])),
+    }:null,
+    bazhai:b?{
+      status:b.status,profile:b.profile,facing:b.facing?{direction:b.facing.direction}:null,sitting:b.sitting?{direction:b.sitting.direction}:null,
+      houseTrigram:b.houseTrigram||'',group:b.group||'',positions:b.positions?Object.fromEntries(Object.entries(b.positions).map(([key,item])=>[key,{name:item.name,direction:item.direction,meaning:item.meaning}])):null,
+      note:b.note||'',advice:b.advice||null,
+    }:null,
+  };
+}
+function beginTraditionalSession(moment=new Date(),request=traditionalRequest){
+  if(traditionalSession)return traditionalSession;
+  const layer=request?.layer||'all';
+  const shouldQimen=layer==='all'||layer==='qimen';
+  const shouldBazhai=layer==='all'||layer==='bazhai';
+  const capturedAt=meihuaSession?.capturedAt||moment.toISOString();
+  const stamp=new Date(capturedAt);
+  traditionalSession={
+    layer,layerLabel:TRADITIONAL_LAYER_LABELS[layer]||TRADITIONAL_LAYER_LABELS.all,facing:request?.facing||'',capturedAt,
+    qimen:shouldQimen?deriveQimenCast({moment:stamp,calendar:meihuaSession?.calendar||null,meihua:meihuaSession}):null,
+    bazhai:shouldBazhai?deriveBazhai({facingDirection:request?.facing||''}):null,
+  };
+  return traditionalSession;
+}
+function renderTraditionalPanels(){
+  const panel=document.getElementById('traditionalPanel');
+  if(!panel)return;
+  const value=traditionalSession||beginTraditionalSession();
+  const layer=value?.layer||'all';
+  if(!value||layer==='meihua'){
+    panel.hidden=true;
+    return;
+  }
+  panel.hidden=false;
+  document.getElementById('traditionalLayerBadge').textContent=value.layerLabel||TRADITIONAL_LAYER_LABELS.all;
+  const qimen=value.qimen;
+  const qimenPanel=document.getElementById('qimenPanel');
+  if(qimenPanel){
+    qimenPanel.hidden=!qimen;
+    if(qimen){
+      const qimenBadge=document.getElementById('qimenBadge');
+      qimenBadge.textContent=`${qimen.dun}${qimen.ju}局 · ${qimen.solarTerm.name}`;
+      const upperLink=qimen.meihuaLink?.upperPalace,lowerLink=qimen.meihuaLink?.lowerPalace;
+      document.getElementById('qimenSummary').innerHTML=`${escapeHTML(qimen.solarTerm.name)}（${escapeHTML(qimen.solarTerm.display)}）进入<strong>${escapeHTML(qimen.dun)}${qimen.ju}局</strong>，日课<strong>${escapeHTML(qimen.day.name)}</strong>，时课<strong>${escapeHTML(qimen.hour.name)}</strong>，旬首为<strong>${escapeHTML(qimen.xunHead.name)}</strong>。${upperLink&&lowerLink?`梅花上卦落${upperLink}宫，下卦落${lowerLink}宫，可作为两套资料的呼应。`:''}`;
+      const fu=qimen.valueFu,shi=qimen.valueShi;
+      document.getElementById('qimenFocus').innerHTML=`<div><span>天盘焦点</span><strong>值符 ${escapeHTML(fu.name)} · ${fu.palace}宫</strong><p>把它当作本次“看见什么、如何判断”的观察锚点。</p></div><div><span>行动焦点</span><strong>值使 ${escapeHTML(shi.name)} · ${shi.palace}宫</strong><p>把它当作“下一步如何开门或收束”的提问角度。</p></div><div><span>使用方式</span><strong>先核对现实，再读象类</strong><p>门、星、神只提供传统联想，不替你证明事实。</p></div>`;
+      const grid=document.getElementById('qimenGrid');
+      grid.innerHTML=QIMEN_GRID_ORDER.map(palace=>{
+        const cell=qimen.palaceGrid?.[palace]||{};
+        const marks=[Number(palace)===Number(fu.palace)?'值符':'',Number(palace)===Number(shi.palace)?'值使':''].filter(Boolean).join(' · ');
+        return `<div class="qimenPalaceCell${marks?' qimenHighlight':''}"><div class="qimenCellTop"><b>${escapeHTML(cell.palace||palace)}宫 · ${escapeHTML(cell.trigram||'')}</b><small>${escapeHTML(cell.direction||'')}</small></div><div class="qimenCellBody"><span>地 ${escapeHTML(cell.groundStem||'—')}</span><span>天 ${escapeHTML(cell.star||'—')}</span><span>门 ${escapeHTML(cell.door||'—')}</span><span>神 ${escapeHTML(cell.god||'—')}</span></div>${marks?`<em>${escapeHTML(marks)}</em>`:''}</div>`;
+      }).join('');
+      document.getElementById('qimenTrace').textContent=[
+        `资料版本：${qimen.profile}`,
+        `时区：${qimen.calendar.timeZone} · 节气：${qimen.solarTerm.name}（${qimen.solarTerm.display}）`,
+        `日课：${qimen.day.name} · 符头：${qimen.fuTou?.name||'—'} · ${qimen.yuan.name} · ${qimen.dun}${qimen.ju}局`,
+        `时课：${qimen.hour.name} · 旬首：${qimen.xunHead.name}（藏${qimen.xunHead.stem}，${qimen.xunHead.palace}宫）`,
+        `值符：${qimen.valueFu.name}落${qimen.valueFu.palace}宫 · 值使：${qimen.valueShi.name}落${qimen.valueShi.palace}宫`,
+        `地盘：${Object.entries(qimen.groundByPalace||{}).sort((a,b)=>Number(a[0])-Number(b[0])).map(([palace,stem])=>`${palace}宫${stem}`).join('、')}`,
+        ...qimen.notes,
+      ].join('\n');
+      document.getElementById('qimenSource').textContent=`来源：${qimen.source.title} · ${qimen.source.author}。${qimen.source.note}`;
+    }
+  }
+  const bazhai=value.bazhai;
+  const bazhaiPanel=document.getElementById('bazhaiPanel');
+  if(bazhaiPanel){
+    bazhaiPanel.hidden=!bazhai;
+    if(bazhai){
+      const resultSelect=document.getElementById('resultHouseFacing');
+      if(resultSelect&&resultSelect.value!==value.facing)resultSelect.value=value.facing||'';
+      const badge=document.getElementById('bazhaiBadge');
+      const positions=document.getElementById('bazhaiPositions');
+      if(bazhai.status!=='ok'){
+        badge.textContent='需要朝向';
+        document.getElementById('bazhaiSummary').textContent=bazhai.note||'请补充房屋主要朝向。';
+        positions.innerHTML='<div class="bazhaiEmpty">选择朝向后，这里会列出坐向、宅卦和四吉四凶位。</div>';
+        document.getElementById('bazhaiAdvice').textContent='八宅只读房屋坐向，不会替你推测个人命卦。';
+      }else{
+        badge.textContent=`${bazhai.houseTrigram}宅 · ${bazhai.group}`;
+        document.getElementById('bazhaiSummary').innerHTML=`向<strong>${escapeHTML(bazhai.facing.direction)}</strong>、坐<strong>${escapeHTML(bazhai.sitting.direction)}</strong>，按坐向取<strong>${escapeHTML(bazhai.houseTrigram)}宅</strong>。四吉四凶是传统空间分类，先以实际测量核对。`;
+        const good=bazhai.auspicious||[],bad=bazhai.inauspicious||[];
+        positions.innerHTML=`<div class="bazhaiPositionGroup good"><span>四吉位</span><div>${good.map(item=>`<div><b>${escapeHTML(item.name)}</b><strong>${escapeHTML(item.direction)}</strong><small>${escapeHTML(item.meaning)}</small></div>`).join('')}</div></div><div class="bazhaiPositionGroup bad"><span>四凶位</span><div>${bad.map(item=>`<div><b>${escapeHTML(item.name)}</b><strong>${escapeHTML(item.direction)}</strong><small>${escapeHTML(item.meaning)}</small></div>`).join('')}</div></div>`;
+        document.getElementById('bazhaiAdvice').textContent=`${bazhai.advice?.good||''} ${bazhai.advice?.bad||''}`;
+      }
+      document.getElementById('bazhaiSource').textContent=`来源：${bazhai.source.title} · ${bazhai.source.author} · ${bazhai.source.year}。${bazhai.source.note}`;
+    }
+  }
 }
 function hexagramTitle(meta){
   return meta.number?`第${meta.number}卦 · ${meta.name}`:meta.name;
@@ -2189,6 +2345,22 @@ function getMeihuaDescription(){
     '说明：以上是抽第一张牌时锁定的结构化取数，后续追问沿用同一卦；请将其作为传统文化角度的自我反思，不作确定预言。',
   ].join('\n');
 }
+function getTraditionalDescription(){
+  const value=traditionalSession;
+  if(!value||value.layer==='meihua')return '';
+  const lines=[`传统资料层：${value.layerLabel||TRADITIONAL_LAYER_LABELS.all}（网站本地确定性计算）`];
+  if(value.qimen){
+    lines.push('【奇门遁甲资料观照】',describeQimen(value.qimen));
+    const grid=value.qimen.palaceGrid||{};
+    const qimenCells=QIMEN_GRID_ORDER.map(palace=>{const cell=grid[palace]||{};return `${palace}宫${cell.trigram||''}/${cell.groundStem||'—'}/${cell.star||'—'}/${cell.door||'—'}/${cell.god||'—'}`;}).join('；');
+    lines.push(`九宫盘摘要：${qimenCells}`);
+  }
+  if(value.bazhai){
+    lines.push('【八宅风水资料观照】',describeBazhai(value.bazhai));
+  }
+  lines.push('说明：奇门节气为近似日、八宅方向需实际测量；两者都是传统文化的观察镜头，不能替代现实证据或专业建议。');
+  return lines.filter(Boolean).join('\n');
+}
 function buildLocalSynthesis(){
   const revCount=sessionDraws.filter(d=>d.reversed).length;
   const upCount=sessionDraws.length-revCount;
@@ -2244,6 +2416,8 @@ function showSettlement(){
     <div style="margin-bottom:12px;color:#f0dab1;font-family:'Songti SC','STSong',serif;font-size:13px;letter-spacing:2px">◇ 牌阵整体观照</div>
     ${buildLocalSynthesis()}`;
   renderMeihuaPanel();
+  beginTraditionalSession(new Date(meihuaSession?.capturedAt||Date.now()),traditionalRequest);
+  renderTraditionalPanels();
   document.getElementById('aiReadingTitle').textContent=meihuaSession?.inputs?'本卦重点分析':'牌面重点分析';
   const readingQuestion=document.getElementById('readingQuestion');
   readingQuestion.textContent=userQuestion;readingQuestion.hidden=!userQuestion;
@@ -2287,11 +2461,24 @@ function resetSession(){
   if(meihuaObservationCertainty)meihuaObservationCertainty.textContent='';
   const meihuaTrace=document.getElementById('meihuaTraceText');
   if(meihuaTrace)meihuaTrace.textContent='';
+  const traditionalPanel=document.getElementById('traditionalPanel');
+  if(traditionalPanel)traditionalPanel.hidden=true;
+  document.getElementById('qimenGrid')?.replaceChildren();
+  document.getElementById('qimenFocus')?.replaceChildren();
+  document.getElementById('qimenSummary')?.replaceChildren();
+  document.getElementById('qimenTrace')?.replaceChildren();
+  document.getElementById('bazhaiPositions')?.replaceChildren();
   userQuestion='';
   document.getElementById('questionInput').value='';
   castRequest={mode:'time'};
   const castMode=document.getElementById('castMode');
   if(castMode){castMode.value='auto';updateCastModeUI();}
+  const traditionalLayer=document.getElementById('traditionalLayer');
+  if(traditionalLayer){traditionalLayer.value='all';updateTraditionalLayerUI();}
+  const houseFacing=document.getElementById('houseFacingInput');
+  if(houseFacing)houseFacing.value='';
+  const resultFacing=document.getElementById('resultHouseFacing');
+  if(resultFacing)resultFacing.value='';
   ['castNum1','castNum2','castNum3','castCountInput','castDetailInput'].forEach(id=>{
     const field=document.getElementById(id);if(field)field.value='';
   });
@@ -2301,6 +2488,8 @@ function resetSession(){
   currentReadingHistoryId=null;
   sessionDraws=[];
   meihuaSession=null;
+  traditionalRequest={layer:'all',facing:''};
+  traditionalSession=null;
   retiredMeshes.forEach(m=>{scene.remove(m);m.geometry.dispose();});
   retiredMeshes=[];
   deck=buildDeck();
@@ -2426,7 +2615,7 @@ async function requestAIReading(){
   try{
     const resp=await fetch('/api/tarot-reading',{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({question:userQuestion,cards:getCardsDescription(),meihua:getMeihuaDescription()})
+      body:JSON.stringify({question:userQuestion,cards:getCardsDescription(),meihua:getMeihuaDescription(),traditional:getTraditionalDescription()})
     });
     if(!resp.ok){
       let message=`智能解读暂时不可用（${resp.status}）`;
@@ -2489,7 +2678,7 @@ async function requestFollowUp(rawQuestion){
   try{
     const resp=await fetch('/api/tarot-reading',{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({question:userQuestion,cards:getCardsDescription(),meihua:getMeihuaDescription(),followUp,conversation:priorConversation})
+      body:JSON.stringify({question:userQuestion,cards:getCardsDescription(),meihua:getMeihuaDescription(),traditional:getTraditionalDescription(),followUp,conversation:priorConversation})
     });
     if(!resp.ok){
       let message=`智能解读暂时不可用（${resp.status}）`;
@@ -2518,9 +2707,10 @@ function getReadingText(){
   const question=userQuestion?`问题：${userQuestion}\n\n`:'';
   const cards=sessionDraws.map((d,i)=>`${POSITION_LABELS[i]||`第${i+1}张`}：${d.card.name}（${d.reversed?'逆位':'正位'}）— ${d.reversed?d.card.rev:d.card.up}`).join('\n');
   const meihua=getMeihuaDescription();
+  const traditional=getTraditionalDescription();
   const ai=document.getElementById('aiContent').innerText.trim();
   const followups=document.getElementById('followupThread').innerText.trim();
-  return `塔罗解读\n\n${question}${cards}${meihua?`\n\n同步起卦（梅花易数）\n${meihua}`:''}${ai?`\n\n${ai}`:''}${followups?`\n\n继续追问\n${followups}`:''}\n\n仅供娱乐与自我反思。\n${location.origin}${location.pathname}`;
+  return `塔罗解读\n\n${question}${cards}${meihua?`\n\n同步起卦（梅花易数）\n${meihua}`:''}${traditional?`\n\n传统资料层\n${traditional}`:''}${ai?`\n\n${ai}`:''}${followups?`\n\n继续追问\n${followups}`:''}\n\n仅供娱乐与自我反思。\n${location.origin}${location.pathname}`;
 }
 let posterBlob=null;
 let posterObjectUrl='';
@@ -2811,6 +3001,25 @@ castModeField?.addEventListener('change',updateCastModeUI);
 // Keep the conditional fields and hint in sync whenever the control emits input.
 castModeField?.addEventListener('input',updateCastModeUI);
 updateCastModeUI();
+function updateTraditionalLayerUI(){
+  const layer=document.getElementById('traditionalLayer')?.value||'all';
+  const facingField=document.getElementById('houseFacingField');
+  const hint=document.getElementById('traditionalLayerHint');
+  if(facingField)facingField.hidden=!['all','bazhai'].includes(layer);
+  if(hint){
+    const hints={
+      all:'奇门按抽牌确认时刻生成；八宅需要你明确提供房屋主要朝向，不会替你猜。',
+      qimen:'只生成奇门资料观照，按抽牌确认时刻锁定；节气临界日请用万年历复核。',
+      bazhai:'只生成八宅空间观照；请提供主要朝向，系统会自动取相反方向为坐向。',
+      meihua:'不加载奇门和八宅资料，只保留梅花易数与塔罗。',
+    };
+    hint.textContent=hints[layer]||hints.all;
+  }
+}
+const traditionalLayerField=document.getElementById('traditionalLayer');
+traditionalLayerField?.addEventListener('change',updateTraditionalLayerUI);
+traditionalLayerField?.addEventListener('input',updateTraditionalLayerUI);
+updateTraditionalLayerUI();
 document.getElementById('questionConfirm').onclick=()=>{
   const request=collectCastRequest();
   const errorMessage=document.getElementById('castError');
@@ -2823,12 +3032,32 @@ document.getElementById('questionConfirm').onclick=()=>{
   }
   if(errorMessage){errorMessage.hidden=true;errorMessage.textContent='';}
   castRequest=request;
+  traditionalRequest={
+    layer:document.getElementById('traditionalLayer')?.value||'all',
+    facing:document.getElementById('houseFacingInput')?.value||'',
+  };
+  traditionalSession=null;
   closeHistoryPanel();
   userQuestion=document.getElementById('questionInput').value.trim();
   currentReadingSaved=false;
   document.getElementById('questionOverlay').classList.add('hidden');
   spawnPile();
 };
+document.getElementById('resultHouseFacing')?.addEventListener('change',event=>{
+  const facing=event.target.value||'';
+  traditionalRequest.facing=facing;
+  if(traditionalSession?.bazhai){
+    traditionalSession.facing=facing;
+    traditionalSession.bazhai=deriveBazhai({facingDirection:facing});
+    renderTraditionalPanels();
+    const saved=historyList.find(item=>item.id===currentReadingHistoryId);
+    if(saved){
+      saved.traditional=serializeTraditional();
+      localStorage.setItem(HISTORY_KEY,JSON.stringify(historyList));
+      renderHistory();
+    }
+  }
+});
 document.getElementById('questionInput').addEventListener('keydown',e=>{
   if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();document.getElementById('questionConfirm').click();}
 });
