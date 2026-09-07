@@ -163,6 +163,19 @@ button:focus-visible,textarea:focus-visible,input:focus-visible,summary:focus-vi
 .baseChangeNote{margin-top:13px;padding-top:12px;border-top:1px dashed var(--paper-line)}
 .baseChangeNote>span{display:block;color:#975d32;font:600 11px var(--sans);letter-spacing:1px}
 .baseChangeNote p{margin-top:6px}
+.baseClassic{margin-top:13px;border-top:1px solid var(--paper-line);padding-top:12px}
+.baseClassic>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:30px;cursor:pointer;list-style:none;color:var(--ink-muted);font-size:13px;line-height:1.5}
+.baseClassic>summary::-webkit-details-marker{display:none}
+.baseClassic>summary::before{content:'＋';display:inline-block;flex:0 0 18px;color:var(--amber);font-size:17px;line-height:1}
+.baseClassic[open]>summary::before{content:'－'}
+.baseClassic>summary span{color:var(--ink)}
+.baseClassic>summary small{margin-left:auto;color:#975d32;font-size:11px;white-space:nowrap}
+.classicTextGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:13px}
+.classicTextBlock{padding:13px 14px;border:1px solid var(--paper-line);border-radius:12px;background:rgba(255,255,255,.4)}
+.classicTextBlock>span{display:block;color:#975d32;font:600 11px var(--sans);letter-spacing:1px}
+.classicTextBlock p{margin:7px 0 0;color:var(--ink);font:15px/1.8 var(--serif)}
+.classicTextMoving{border-color:rgba(191,125,67,.34);background:rgba(191,125,67,.07)}
+.classicTextNotice{margin:10px 0 0;color:var(--ink-muted);font-size:11px;line-height:1.7}
 .meihuaSupporting,.meihuaTrace,.tarotReference{margin-top:13px;border-top:1px solid var(--paper-line);padding-top:12px}
 .meihuaSupporting summary,.meihuaTrace summary,.tarotReference>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:30px;cursor:pointer;list-style:none;color:var(--ink-muted);font-size:13px;line-height:1.5}
 .meihuaSupporting summary::-webkit-details-marker,.meihuaTrace summary::-webkit-details-marker,.tarotReference>summary::-webkit-details-marker{display:none}
@@ -190,6 +203,7 @@ button:focus-visible,textarea:focus-visible,input:focus-visible,summary:focus-vi
   .baseQuestionBridge{padding:14px 13px}.baseQuestionBridge p{font-size:14px;line-height:1.7}
   .baseReadingChange>strong{font-size:15px}
   .baseTrigrams{grid-template-columns:1fr;gap:8px}.baseTrigrams>div{padding:11px 12px}
+  .baseClassic>summary{font-size:14px}.baseClassic>summary small{font-size:10px}.classicTextGrid{grid-template-columns:1fr;gap:8px}.classicTextBlock{padding:12px 13px}.classicTextBlock p{font-size:15px;line-height:1.75}
   .meihuaSupporting summary,.meihuaTrace summary,.tarotReference>summary{font-size:14px}
   .meihuaSupporting summary span{font-size:10px}.tarotReference>summary>span{display:block}.tarotReference>summary small{display:block;margin-top:2px}.tarotReference #settleCards{display:grid;grid-template-columns:1fr;gap:10px}.tarotReference .settleCard{max-width:none}
   .readingSectionHead{padding-top:16px}.readingSectionHead h3{font-size:23px}.readingQuestion:not([hidden]){font-size:14px}

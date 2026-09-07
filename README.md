@@ -26,6 +26,7 @@ https://peas-47.netlify.app/
 - Three.js、MediaPipe、牌图全部由本站托管，运行时不依赖境外 CDN
 - 抽第一张牌确认时同步锁定梅花易数时间卦：展示本卦、动爻、互卦、变卦与体用关系；同一牌阵的后续追问沿用同一卦
 - 结果页以“本卦先读”为主线：先给六爻图、本卦主题、白话导读、问题落点、动爻变化提示；动爻 / 互卦 / 体用和塔罗牌面参照可按需展开
+- 原典对照区载入对应卦辞和本次动爻辞，和本站现代说明分开标注；其余传篇通过逐卦原文入口查看
 - 起卦方式可选：按抽牌时间、三个数字、射覆、静物取象、人物取象、失物占、声音占、物数占、测字与外应记录；自动模式会识别“用三个数字起卦”等明确表述
 - 射覆与取象结果会单列颜色、形状、材质、大小手感、方向及候选物品，并明确标注为可核对线索，不把候选当成事实
 
@@ -45,6 +46,7 @@ https://peas-47.netlify.app/
 | `netlify/functions/tarot-reading.mjs` | AI 解读代理、输入校验与限流配置 |
 | `scripts/meihua-display.mjs` | 农历/时辰读取、六十四卦名称映射、各类起卦与取象展示数据 |
 | `scripts/meihua-insight.mjs` | 64 卦本站白话导读、上下卦取象、动爻变化提示与逐卦原文链接 |
+| `scripts/zhouyi-text.mjs` | 六十四卦卦辞与爻辞原文对照数据，供本卦和动爻展示 |
 | `books/meihua-yishu-wikisource/meihua-numeric-cast/scripts/meihua.mjs` | 可复核的梅花易数时间卦计算核心 |
 | `manifest.webmanifest` / `service-worker.js` | PWA 安装信息与离线缓存策略 |
 | `assets/cards/` | 本地 78 张 Rider–Waite 牌图 |

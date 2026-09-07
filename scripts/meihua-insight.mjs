@@ -1,4 +1,5 @@
 import { hexagramMeta, movingLineLabel, trigram } from './meihua-display.mjs';
+import { hexagramText, movingLineText } from './zhouyi-text.mjs';
 
 // Site-authored reading notes, not quotations or translations of a judgement.
 // Classical theme references and editorial scope: knowledge/rules/zhouyi.md.
@@ -123,6 +124,7 @@ export function primaryHexagramInsight(cast) {
   const lines = [...lower.lines, ...upper.lines];
   const changed = hexagramMeta(cast.changed?.upper, cast.changed?.lower);
   const changedNote = HEXAGRAM_NOTES.find(item => item.number === changed.number);
+  const classical = hexagramText(base.number);
   const describe = (index, position) => ({
     title: `${position}卦 · ${trigram(index).name}为${QUALITIES[index][0]}`,
     text: QUALITIES[index][1],
@@ -139,6 +141,11 @@ export function primaryHexagramInsight(cast) {
       title: LINE_GUIDANCE[cast.movingLine - 1][0],
       text: LINE_GUIDANCE[cast.movingLine - 1][1],
     },
+    classical: classical ? {
+      guaCi: classical.guaCi,
+      movingYao: movingLineText(base.number, cast.movingLine),
+      yong: classical.yong || '',
+    } : null,
     change: `${movingLineLabel(cast.movingLine)}由${lines[cast.movingLine - 1] ? '阳转阴' : '阴转阳'}，得到${changed.name}。${changedNote ? `变卦的导读主题是“${changedNote.theme}”。` : ''}`,
     relation: RELATION_NOTES[cast.relation] || '',
   };

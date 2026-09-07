@@ -660,7 +660,7 @@ body::after{
   .qHint{display:none;}
 }
 </style>
-<link rel="stylesheet" href="./emil-redesign.css?v=20260907-context-lens">
+<link rel="stylesheet" href="./emil-redesign.css?v=20260907-classic-text">
 </head>
 <body>
 <canvas id="c"></canvas>
@@ -806,7 +806,7 @@ body::after{
         <p id="meihuaSummary" class="meihuaSummary"></p>
         <pre id="meihuaTraceText"></pre>
       </details>
-      <p id="meihuaSource">卦名按周易六十四卦次序标注；原文可打开底本查看。</p>
+      <p id="meihuaSource">本站白话导读与经文原典分开标注；原典对照区显示卦辞和本次动爻辞。</p>
       <a id="meihuaSourceLink" class="meihuaSourceLink" href="https://ctext.org/book-of-changes/zh" target="_blank" rel="noopener noreferrer">对照本卦卦辞与爻辞 ↗</a>
     </section>
     <section id="aiReading" aria-labelledby="aiReadingTitle">
@@ -2077,6 +2077,16 @@ function renderMeihuaPanel(){
   }
   document.getElementById('meihuaModeBadge').textContent=modeLabel;
   document.getElementById('meihuaTitle').textContent=insight?insight.name:'本卦解读';
+  const classicalMarkup=insight?.classical?`
+    <details class="baseClassic">
+      <summary><span>原典对照</span><small>卦辞 · ${escapeHTML(movingLineLabel(value.movingLine))}</small></summary>
+      <div class="classicTextGrid">
+        <div class="classicTextBlock"><span>卦辞 · 经文</span><p>${escapeHTML(insight.classical.guaCi)}</p></div>
+        <div class="classicTextBlock classicTextMoving"><span>${escapeHTML(movingLineLabel(value.movingLine))} · 经文</span><p>${escapeHTML(insight.classical.movingYao)}</p></div>
+        ${insight.classical.yong?`<div class="classicTextBlock"><span>用爻 · 经文</span><p>${escapeHTML(insight.classical.yong)}</p></div>`:''}
+      </div>
+      <p class="classicTextNotice">这里显示的是经文原文；上面的白话导读是本站现代说明。</p>
+    </details>`:'';
   document.getElementById('meihuaBaseReading').innerHTML=insight?`
     <div class="baseReadingHero">
       <figure class="hexagramFigure"><div class="hexagramLines" role="img" aria-label="${escapeHTML(insight.name)}，自下而上六爻，${escapeHTML(movingLineLabel(value.movingLine))}为动爻">
@@ -2087,7 +2097,8 @@ function renderMeihuaPanel(){
     <div class="baseReadingFocus"><span>用白话读这一卦</span><p>${escapeHTML(insight.focus)}</p></div>
     ${userQuestion?`<div class="baseQuestionBridge"><span>放回你的问题</span><p class="baseQuestionText">${escapeHTML(userQuestion.slice(0,180))}</p><p>${escapeHTML(questionLens(userQuestion))}</p></div>`:''}
     <div class="baseTrigrams"><div><strong>${escapeHTML(insight.upper.title)}</strong><span>${escapeHTML(insight.upper.text)}</span></div><div><strong>${escapeHTML(insight.lower.title)}</strong><span>${escapeHTML(insight.lower.text)}</span></div></div>
-    <div class="baseReadingChange"><span>动爻落点</span><strong>${escapeHTML(insight.moving.title)}</strong><p>${escapeHTML(insight.moving.text)}</p><div class="baseChangeNote"><span>卦变方向</span><p>${escapeHTML(insight.change)}</p></div>${insight.relation?`<p>${escapeHTML(insight.relation)}</p>`:''}</div>`:'';
+    <div class="baseReadingChange"><span>动爻落点</span><strong>${escapeHTML(insight.moving.title)}</strong><p>${escapeHTML(insight.moving.text)}</p><div class="baseChangeNote"><span>卦变方向</span><p>${escapeHTML(insight.change)}</p></div>${insight.relation?`<p>${escapeHTML(insight.relation)}</p>`:''}</div>
+    ${classicalMarkup}`:'';
   document.getElementById('meihuaSummary').innerHTML=`${modeSummary}体卦为<strong>${escapeHTML(body.name)}</strong>，用卦为<strong>${escapeHTML(use.name)}</strong>，两者关系为<strong>${escapeHTML(relationText)}</strong>；后续追问沿用这一卦，不重新起卦。`;
   document.getElementById('meihuaGrid').innerHTML=`
     <div class="meihuaCell"><span>本卦</span><strong>${escapeHTML(hexagramTitle(base))}</strong><small>上${escapeHTML(upper.name)} · 下${escapeHTML(lower.name)}</small></div>
@@ -2136,7 +2147,7 @@ function renderMeihuaPanel(){
     `规则档案：${value.profile||MEIHUA_PROFILE} · ${value.mutualFrom==='changed'?'纯卦互卦取变卦':'互卦取本卦'}`,
     calendar.note||'',
   ].filter(Boolean).join('\n');
-  document.getElementById('meihuaSource').textContent='白话为本站卦意导读；对应卦辞、爻辞请打开原文对照。';
+  document.getElementById('meihuaSource').textContent='本站白话导读与经文原典分开标注；原典对照区显示卦辞和本次动爻辞。';
   document.getElementById('meihuaSourceLink').href=insight?.sourceUrl||ZHOUYI_SOURCE_URL;
   panel.hidden=false;
 }
@@ -2172,8 +2183,9 @@ function getMeihuaDescription(){
     userQuestion?`问题落点提示：${questionLens(userQuestion)}`:'',
     `动爻：${movingLineLabel(value.movingLine)}；互卦：${hexagramTitle(mutual)}；变卦：${hexagramTitle(changed)}`,
     `体用：体${body.name}（${body.element}）／用${use.name}（${use.element}），关系：${value.relation||'—'}`,
+    insight?.classical?`原典对照（经文，不是本站白话）：${insight.classical.guaCi}；${movingLineLabel(value.movingLine)}：${insight.classical.movingYao}`:'',
     observationLine,
-    `本卦原文链接：${insight?.sourceUrl||ZHOUYI_SOURCE_URL}（本次没有载入对应卦辞、爻辞原文，不可编造引文）`,
+    `本卦原文链接：${insight?.sourceUrl||ZHOUYI_SOURCE_URL}（页面已载入卦辞与动爻辞；其他传篇请打开原文对照）`,
     '说明：以上是抽第一张牌时锁定的结构化取数，后续追问沿用同一卦；请将其作为传统文化角度的自我反思，不作确定预言。',
   ].join('\n');
 }

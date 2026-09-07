@@ -61,6 +61,7 @@ function sse(text) {
   await page.locator(".followupChip").first().click();
   await page.waitForFunction(() => document.querySelectorAll(".followupTurn").length === 2);
   await page.locator(".meihuaSupporting summary").click();
+  await page.locator(".baseClassic summary").click();
 
   const result = await page.evaluate(() => {
     const text = (id) => document.querySelector(id)?.textContent?.trim() || "";
@@ -72,6 +73,7 @@ function sse(text) {
       baseReading: text("#meihuaBaseReading"),
       lineCount: document.querySelectorAll("#meihuaBaseReading .hexagramLine").length,
       supportingOpen: Boolean(document.querySelector(".meihuaSupporting")?.open),
+      classicOpen: Boolean(document.querySelector(".baseClassic")?.open),
       tarotReferenceOpen: Boolean(document.querySelector("#tarotReference")?.open),
       aiTitle: text("#aiReadingTitle"),
       question: text("#readingQuestion"),
@@ -101,9 +103,14 @@ function sse(text) {
     !result.baseReading.includes("本卦主题") ||
     !result.baseReading.includes("用白话读这一卦") ||
     !result.baseReading.includes("放回你的问题") ||
-    !result.baseReading.includes("二爻 · 承接") ||
+    !result.baseReading.includes("动爻落点") ||
+    !/[初二三四五上]爻 · /.test(result.baseReading) ||
+    !result.baseReading.includes("原典对照") ||
+    !result.baseReading.includes("卦辞 · 经文") ||
+    !result.baseReading.includes("经文") ||
     result.lineCount !== 6 ||
     !result.supportingOpen ||
+    !result.classicOpen ||
     result.tarotReferenceOpen ||
     result.mobileOverflow ||
     result.aiTitle !== "本卦重点分析" ||
