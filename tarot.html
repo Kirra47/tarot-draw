@@ -3303,6 +3303,9 @@ async function initOfflineSupport(){
     if(location.protocol==='file:')showAppNotice({title:'请通过本地服务器打开',detail:'直接打开文件无法安装或使用离线缓存',sticky:true});
     return;
   }
+  // A reload while offline does not reliably emit the `offline` event again.
+  // Surface the status immediately so the notice is actionable above the entry dialog.
+  if(!navigator.onLine)showNetworkStatus();
   try{
     pwaRegistration=await navigator.serviceWorker.register('./service-worker.js',{scope:'./',updateViaCache:'none'});
     pwaRegistration.update().catch(()=>{});
