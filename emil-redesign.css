@@ -103,3 +103,29 @@ button:focus-visible,textarea:focus-visible,input:focus-visible,summary:focus-vi
 @media(prefers-reduced-motion:reduce){
   .qCard,#settlePanel,#histPanel,#appNotice,#questionOverlay,#vCursorInner,button{transition-duration:1ms!important}.qOrb::after,.readingOrb::before,.readingOrb::after,.readingDots span,.aiThinking .dots span,#aiCursor{animation:none!important}
 }
+
+/* Casting modes: the controls stay quiet until a mode needs extra input. */
+.castModeLabel{display:flex;align-items:center;justify-content:space-between;margin:22px 0 9px;color:var(--ink);font-size:15px;font-weight:600}
+.castModeLabel small,.castExtraField label small{color:var(--ink-muted);font:12px var(--sans);font-weight:400}
+#castMode{width:100%;min-height:48px;padding:11px 40px 11px 14px;border:1px solid var(--paper-line);border-radius:12px;background:rgba(255,255,255,.56);color:var(--ink);font:15px var(--sans);outline:none;transition:border-color 180ms ease,box-shadow 180ms ease,background-color 180ms ease}
+#castMode:focus{border-color:rgba(191,125,67,.74);background:rgba(255,255,255,.82);box-shadow:0 0 0 4px rgba(191,125,67,.1)}
+.castModeHint{margin:9px 0 14px;color:var(--ink-muted);font-size:12px;line-height:1.7}
+.castExtraField{margin:12px 0 18px}.castExtraField[hidden]{display:none}
+.castExtraField>label{display:block;margin:0 0 8px;color:var(--ink);font-size:13px;font-weight:600}.castExtraField>label small{display:block;margin-top:3px}
+.threeNumberRow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.threeNumberRow input,#castCountInput,#castDetailInput{width:100%;min-height:48px;padding:11px 13px;border:1px solid var(--paper-line);border-radius:11px;background:rgba(255,255,255,.56);color:var(--ink);font:15px var(--sans);outline:none;box-sizing:border-box;transition:border-color 180ms ease,box-shadow 180ms ease,background-color 180ms ease}
+#castDetailInput{min-height:74px;resize:vertical;font-family:var(--serif);line-height:1.6}
+.threeNumberRow input:focus,#castCountInput:focus,#castDetailInput:focus{border-color:rgba(191,125,67,.74);background:rgba(255,255,255,.82);box-shadow:0 0 0 4px rgba(191,125,67,.1)}
+.threeNumberRow input::placeholder,#castCountInput::placeholder,#castDetailInput::placeholder{color:#918a80}
+.meihuaObservation{margin:17px 0 3px;padding:17px 16px;border:1px solid rgba(191,125,67,.24);border-radius:14px;background:rgba(191,125,67,.055)}
+.meihuaObservationHead h4{margin:5px 0 0;color:var(--ink);font:500 19px/1.35 var(--serif)}
+.meihuaObservation>p{margin:9px 0;color:var(--ink-muted);font-size:13px;line-height:1.75}
+.meihuaObservationGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.meihuaObservationCell{min-height:65px;padding:10px 11px;border:1px solid rgba(191,125,67,.18);border-radius:10px;background:rgba(255,255,255,.44)}
+.meihuaObservationCell span{display:block;color:#975d32;font-size:11px}.meihuaObservationCell strong{display:block;margin-top:4px;color:var(--ink);font:500 14px/1.5 var(--serif)}
+.meihuaObservation>p:last-child{margin-bottom:0;color:#8c542d;font-size:11px}
+@media(max-width:720px){
+  .castModeLabel{margin-top:20px;font-size:15px}.castModeLabel small{font-size:11px}#castMode{min-height:50px;font-size:16px}.castModeHint{font-size:12px}
+  .castExtraField{margin-bottom:19px}.castExtraField>label{font-size:14px}.threeNumberRow{gap:7px}.threeNumberRow input,#castCountInput,#castDetailInput{min-height:50px;font-size:16px}
+  .meihuaObservation{padding:15px 13px}.meihuaObservationGrid{gap:7px}.meihuaObservationCell{padding:9px 10px}.meihuaObservationCell strong{font-size:14px}
+}

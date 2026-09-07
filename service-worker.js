@@ -1,4 +1,4 @@
-const CACHE_VERSION = "astral-tarot-v11-meihua-20260907";
+const CACHE_VERSION = "astral-tarot-v12-meihua-modes-20260907";
 const CORE_CACHE = `${CACHE_VERSION}-core`;
 const ASSET_CACHE = `${CACHE_VERSION}-assets`;
 

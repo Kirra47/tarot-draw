@@ -25,10 +25,12 @@ https://peas-47.netlify.app/
 - 首次完整访问后，基础抽牌与 78 张牌面可离线使用；桌面快捷入口可直达新观测或个人档案
 - Three.js、MediaPipe、牌图全部由本站托管，运行时不依赖境外 CDN
 - 抽第一张牌确认时同步锁定梅花易数时间卦：展示本卦、动爻、互卦、变卦与体用关系；同一牌阵的后续追问沿用同一卦
+- 起卦方式可选：按抽牌时间、三个数字、射覆、静物取象、人物取象、失物占、声音占、物数占、测字与外应记录；自动模式会识别“用三个数字起卦”等明确表述
+- 射覆与取象结果会单列颜色、形状、材质、大小手感、方向及候选物品，并明确标注为可核对线索，不把候选当成事实
 
 ## 传统文化资料库（第一批）
 
-《周易》、梅花易数、道德经、庄子与四柱八字的来源清单位于 [`knowledge/`](knowledge/)。梅花试点已形成[五个技能与阅读说明](books/meihua-yishu-wikisource/INDEX.md)，并安装到本项目 `.agents/skills/`。网站使用 `mh-ws-1` 规则档案做确定性时间序数起卦，前端只展示结构化卦象与可追溯取数过程，原文通过周易底本链接查看；30 条行为盲测与 384 组结构检查通过。运行 `node scripts/verify-meihua.mjs` 可复核数值检查。
+《周易》、梅花易数、道德经、庄子与四柱八字的来源清单位于 [`knowledge/`](knowledge/)。梅花试点已形成[五个技能与阅读说明](books/meihua-yishu-wikisource/INDEX.md)，并安装到本项目 `.agents/skills/`。网站使用 `mh-ws-1` 规则档案做确定性起卦，前端展示结构化卦象、取数过程与取象候选，原文通过周易底本链接查看；30 条行为盲测与 384 组结构检查通过。运行 `node scripts/verify-meihua.mjs` 与 `node scripts/verify-meihua-modes.mjs` 可复核数值与模式检查。
 
 ## 文件说明
 
@@ -40,7 +42,7 @@ https://peas-47.netlify.app/
 | `tarot-bg.jpg` | 背景图（备用） |
 | `netlify.toml` | Netlify 部署配置 |
 | `netlify/functions/tarot-reading.mjs` | AI 解读代理、输入校验与限流配置 |
-| `scripts/meihua-display.mjs` | 农历/时辰读取、六十四卦名称映射与页面展示数据 |
+| `scripts/meihua-display.mjs` | 农历/时辰读取、六十四卦名称映射、各类起卦与取象展示数据 |
 | `books/meihua-yishu-wikisource/meihua-numeric-cast/scripts/meihua.mjs` | 可复核的梅花易数时间卦计算核心 |
 | `manifest.webmanifest` / `service-worker.js` | PWA 安装信息与离线缓存策略 |
 | `assets/cards/` | 本地 78 张 Rider–Waite 牌图 |

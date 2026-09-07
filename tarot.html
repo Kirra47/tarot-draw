@@ -734,6 +734,37 @@ body::after{
         <button class="spreadOption active" type="button" role="radio" aria-checked="true" data-count="3"><b>03</b><span><strong>三牌·当下路径</strong><em>过去 · 现在 · 未来</em></span></button>
         <button class="spreadOption" type="button" role="radio" aria-checked="false" data-count="5"><b>05</b><span><strong>五牌·深层观照</strong><em>路径 · 行动 · 潜在影响</em></span></button>
       </div>
+      <label class="castModeLabel" for="castMode"><span>选择起卦方式</span><small>默认自动识别</small></label>
+      <select id="castMode">
+        <option value="auto">自动识别（推荐）</option>
+        <option value="time">按抽牌确认时刻</option>
+        <option value="three">三个数字起卦</option>
+        <option value="shooting">射覆（隐藏物品）</option>
+        <option value="object">静物取象</option>
+        <option value="person">人物取象</option>
+        <option value="lost">失物占</option>
+        <option value="sound">声音占</option>
+        <option value="count">物数占</option>
+        <option value="text">测字起卦</option>
+        <option value="omen">外应记录（辅助）</option>
+      </select>
+      <p id="castModeHint" class="castModeHint">写明“三个数字起卦”时，会优先用你给的数字；否则按第一张牌确认时刻起卦。</p>
+      <div id="threeNumberFields" class="castExtraField" hidden>
+        <label for="castNum1">三个数字 <small>第一个取上卦，第二个取下卦，第三个取动爻</small></label>
+        <div class="threeNumberRow">
+          <input id="castNum1" type="number" min="1" inputmode="numeric" placeholder="上卦">
+          <input id="castNum2" type="number" min="1" inputmode="numeric" placeholder="下卦">
+          <input id="castNum3" type="number" min="1" inputmode="numeric" placeholder="动爻">
+        </div>
+      </div>
+      <div id="castDetailField" class="castExtraField" hidden>
+        <label id="castDetailLabel" for="castDetailInput">取象材料 <small>用于记录现场事实</small></label>
+        <textarea id="castDetailInput" maxlength="240" rows="2" placeholder="例如：桌边一个没有说明名称的物件"></textarea>
+      </div>
+      <div id="castCountField" class="castExtraField" hidden>
+        <label id="castCountLabel" for="castCountInput">数量 / 次数 <small>必须是可核对的整数</small></label>
+        <input id="castCountInput" type="number" min="1" max="1000000" inputmode="numeric" placeholder="请输入数量或声音次数">
+      </div>
       <button id="questionConfirm"><span>开始抽牌</span><b aria-hidden="true">↗</b></button>
       <button id="questionArchive" type="button" aria-controls="histPanel" aria-expanded="false">⌛ 打开观测档案</button>
       <p class="qHint">可以留空进行综合观测。塔罗用于自我探索与娱乐，不替代专业建议。</p>
@@ -757,6 +788,17 @@ body::after{
       </div>
       <p id="meihuaSummary"></p>
       <div id="meihuaGrid" class="meihuaGrid"></div>
+      <section id="meihuaObservation" class="meihuaObservation" aria-labelledby="meihuaObservationTitle" hidden>
+        <div class="meihuaObservationHead">
+          <div>
+            <span id="meihuaObservationKicker" class="meihuaKicker">物象取象</span>
+            <h4 id="meihuaObservationTitle">可核对的候选线索</h4>
+          </div>
+        </div>
+        <p id="meihuaObservationLead"></p>
+        <div id="meihuaObservationGrid" class="meihuaObservationGrid"></div>
+        <p id="meihuaObservationCertainty"></p>
+      </section>
       <details class="meihuaTrace">
         <summary>展开取数过程</summary>
         <pre id="meihuaTraceText"></pre>
@@ -820,9 +862,10 @@ body::after{
 <script type="module">
 import * as THREE from 'three';
 import {
+  CAST_MODE_LABELS,
   MEIHUA_PROFILE,
   ZHOUYI_SOURCE_URL,
-  castFromMoment,
+  castByMode,
   hexagramMeta,
   movingLineLabel,
   trigram,
@@ -900,6 +943,7 @@ let userQuestion='';
 let currentReadingSaved=false;
 let currentReadingHistoryId=null;
 let meihuaSession=null;
+let castRequest={mode:'time'};
 
 // ═══════════════════════════════════════════════════════════════
 // LOCAL RWS IMAGE SOURCE
@@ -1478,7 +1522,7 @@ function updateDrawUI(){
 }
 function confirmDraw(){
   if(gameState!=='revealed')return;
-  if(sessionDraws.length===0)beginMeihuaSession(new Date());
+  if(sessionDraws.length===0)beginMeihuaSession(new Date(),castRequest);
   sessionDraws.push({card:revealedCard,reversed:revealedReversed});
   deck=deck.filter(c=>c.id!==revealedCard.id);
   document.getElementById('deckCount').textContent=`牌库 ${deck.length}`;
@@ -1749,7 +1793,11 @@ function historyItem(item){
   if(item.meihua?.inputs){
     const mh=hexagramMeta(item.meihua.upper,item.meihua.lower);
     const mhMeta=document.createElement('div');mhMeta.className='histMeihua';
-    mhMeta.textContent=`同步起卦：${hexagramTitle(mh)} · ${movingLineLabel(item.meihua.movingLine)} · ${item.meihua.relation||'体用待观'}`;
+    mhMeta.textContent=`${item.meihua.modeLabel||'同步起卦'}：${hexagramTitle(mh)} · ${movingLineLabel(item.meihua.movingLine)} · ${item.meihua.relation||'体用待观'}`;
+    if(item.meihua.observation?.features?.length){
+      const first=item.meihua.observation.features.slice(0,2).map(feature=>`${feature.label}：${feature.value}`).join('；');
+      if(first)mhMeta.textContent+=` · ${first}`;
+    }
     details.appendChild(mhMeta);
   }
   if(item.aiReading||item.followUps?.length){
@@ -1817,7 +1865,7 @@ function historyMatches(item,query){
   if(!query)return true;
   const followups=(item.followUps||[]).map(turn=>turn.content).join(' ');
   const cards=(item.cards||[]).map(card=>`${card.name||''} ${card.meaning||''}`).join(' ');
-  const meihua=item.meihua?`${item.meihua.relation||''} ${item.meihua.upper||''} ${item.meihua.lower||''} ${item.meihua.movingLine||''}`:'';
+  const meihua=item.meihua?`${item.meihua.modeLabel||''} ${item.meihua.relation||''} ${item.meihua.upper||''} ${item.meihua.lower||''} ${item.meihua.movingLine||''} ${(item.meihua.observation?.features||[]).map(feature=>`${feature.label} ${feature.value}`).join(' ')}`:'';
   return `${item.question||''} ${cards} ${meihua} ${followups} ${item.aiReading||''}`.toLocaleLowerCase('zh-CN').includes(query);
 }
 function renderHistory(){
@@ -1935,10 +1983,10 @@ const SUIT_THEMES={
 function escapeHTML(value){
   return String(value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 }
-function beginMeihuaSession(moment=new Date()){
+function beginMeihuaSession(moment=new Date(),request=castRequest){
   if(meihuaSession)return meihuaSession;
   try{
-    meihuaSession={...castFromMoment(moment),capturedAt:moment.toISOString()};
+    meihuaSession={...castByMode({...request,moment}),capturedAt:moment.toISOString()};
   }catch(error){
     console.error('Meihua cast error:',error);
     meihuaSession={status:'error',error:String(error?.message||error)};
@@ -1948,7 +1996,15 @@ function beginMeihuaSession(moment=new Date()){
 function serializeMeihua(value=meihuaSession){
   if(!value||!value.inputs)return null;
   return {
-    profile:value.profile||MEIHUA_PROFILE,method:value.method,inputs:{...value.inputs},trace:{...value.trace},
+    profile:value.profile||MEIHUA_PROFILE,method:value.method,mode:value.mode||'time',
+    modeLabel:value.modeLabel||CAST_MODE_LABELS[value.mode]||'抽牌时间',
+    sourceInput:value.sourceInput?JSON.parse(JSON.stringify(value.sourceInput)):null,
+    observation:value.observation?{
+      mode:value.observation.mode,title:value.observation.title,lead:value.observation.lead,
+      features:Array.isArray(value.observation.features)?value.observation.features.map(item=>({label:item.label,value:item.value})):[],
+      certainty:value.observation.certainty,
+    }:null,
+    inputs:{...value.inputs},trace:{...value.trace},
     upper:value.upper,lower:value.lower,movingLine:value.movingLine,
     changed:value.changed?{...value.changed}:null,mutual:value.mutual?{...value.mutual}:null,
     mutualFrom:value.mutualFrom,mutualPolicy:value.mutualPolicy,body:value.body,use:value.use,
@@ -1977,6 +2033,8 @@ function renderMeihuaPanel(){
     panel.hidden=false;
     document.getElementById('meihuaSummary').textContent='同步起卦暂时未完成，仍可使用上方塔罗观照。';
     document.getElementById('meihuaGrid').replaceChildren();
+    const observationPanel=document.getElementById('meihuaObservation');
+    if(observationPanel)observationPanel.hidden=true;
     document.getElementById('meihuaTraceText').textContent=value.error||'未知错误';
     return;
   }
@@ -1988,27 +2046,69 @@ function renderMeihuaPanel(){
   const movingPosition=value.movingLine<=3?'下卦':'上卦';
   const calendar=value.calendar||{};
   const relationText=value.relation||'—';
+  const mode=value.mode||'time';
+  const modeLabel=value.modeLabel||CAST_MODE_LABELS[mode]||'抽牌时间';
+  const source=value.sourceInput||{};
   const statusNote=calendar.status==='fallback'?'（当前浏览器未提供农历接口，已用公历简式演示）':'';
-  document.getElementById('meihuaSummary').innerHTML=`在第一张牌确认的瞬间，以<strong>${escapeHTML(calendar.display||'此刻')}</strong>起卦${statusNote}。体卦为<strong>${escapeHTML(body.name)}</strong>，用卦为<strong>${escapeHTML(use.name)}</strong>，两者关系为<strong>${escapeHTML(relationText)}</strong>；后续追问沿用这一卦，不重新起卦。`;
+  let modeSummary=`在第一张牌确认的瞬间，以<strong>${escapeHTML(calendar.display||'此刻')}</strong>起卦${statusNote}。`;
+  if(mode==='three'){
+    const nums=Array.isArray(source.numbers)?source.numbers:[];
+    modeSummary=`本次采用<strong>三个数字起卦</strong>（${nums.map(escapeHTML).join('、')||'已记录'}）；抽牌时间只作记录。`;
+  }else if(mode==='sound'||mode==='count'){
+    modeSummary=`本次采用<strong>${escapeHTML(modeLabel)}</strong>，以${mode==='sound'?'声音次数':'物品数量'}取数；当下时支为<strong>${escapeHTML(calendar.hourBranchName||'—')}</strong>。`;
+  }else if(mode!=='time'&&mode!=='shooting'){
+    modeSummary=`本次采用<strong>${escapeHTML(modeLabel)}</strong>${source.text?`，已记录“${escapeHTML(source.text)}”`:''}。`;
+  }else if(mode==='shooting'){
+    modeSummary=`本次采用<strong>射覆</strong>，以抽牌确认时刻起卦${statusNote}；下面给出可核对的物象候选。`;
+  }
+  document.getElementById('meihuaModeBadge').textContent=modeLabel;
+  document.getElementById('meihuaSummary').innerHTML=`${modeSummary}体卦为<strong>${escapeHTML(body.name)}</strong>，用卦为<strong>${escapeHTML(use.name)}</strong>，两者关系为<strong>${escapeHTML(relationText)}</strong>；后续追问沿用这一卦，不重新起卦。`;
   document.getElementById('meihuaGrid').innerHTML=`
     <div class="meihuaCell"><span>本卦</span><strong>${escapeHTML(hexagramTitle(base))}</strong><small>上${escapeHTML(upper.name)} · 下${escapeHTML(lower.name)}</small></div>
     <div class="meihuaCell"><span>动爻</span><strong>${escapeHTML(movingLineLabel(value.movingLine))}</strong><small>动爻在${escapeHTML(movingPosition)}</small></div>
     <div class="meihuaCell"><span>互卦</span><strong>${escapeHTML(hexagramTitle(mutual))}</strong><small>取二、三、四爻与三、四、五爻</small></div>
     <div class="meihuaCell"><span>变卦</span><strong>${escapeHTML(hexagramTitle(changed))}</strong><small>只改变${escapeHTML(movingLineLabel(value.movingLine))}</small></div>
     <div class="meihuaCell meihuaRelation"><span>体 · 用</span><strong>${escapeHTML(body.name)} · ${escapeHTML(use.name)}</strong><small>${escapeHTML(relationText)} · ${escapeHTML(body.element)} / ${escapeHTML(use.element)}</small></div>`;
+  const observation=value.observation;
+  const observationPanel=document.getElementById('meihuaObservation');
+  if(observationPanel){
+    const features=Array.isArray(observation?.features)?observation.features.filter(item=>item&&item.label):[];
+    observationPanel.hidden=!features.length;
+    if(features.length){
+      document.getElementById('meihuaObservationKicker').textContent=observation.title||modeLabel;
+      document.getElementById('meihuaObservationTitle').textContent=mode==='shooting'?'可核对的候选物象':'可核对的候选线索';
+      document.getElementById('meihuaObservationLead').textContent=observation.lead||'';
+      document.getElementById('meihuaObservationGrid').innerHTML=features.map(item=>`<div class="meihuaObservationCell"><span>${escapeHTML(item.label)}</span><strong>${escapeHTML(item.value||'—')}</strong></div>`).join('');
+      document.getElementById('meihuaObservationCertainty').textContent=observation.certainty||'';
+    }else{
+      document.getElementById('meihuaObservationGrid').replaceChildren();
+    }
+  }
   const inputs=value.inputs||{};
   const trace=value.trace||{};
+  const inputTrace=mode==='three'
+    ? `三个数字：${Array.isArray(source.numbers)?source.numbers.join('、'):'—'}`
+    : mode==='sound'||mode==='count'
+      ? `现场${mode==='sound'?'声音次数':'物品数量'}：${source.count||'—'} · 取时支：${calendar.hourBranchName||'—'}`
+      : source.text
+        ? `取象材料：${source.text}`
+        : '取数材料：抽牌确认时刻';
+  const calendarNumberTrace=Number.isInteger(inputs.yearBranch)
+    ? `年支 ${inputs.yearBranch} · 月 ${inputs.month} · 日 ${inputs.day} · 时支 ${inputs.hourBranch}`
+    : '';
   document.getElementById('meihuaTraceText').textContent=[
+    `起卦方式：${modeLabel}`,
+    inputTrace,
     `历法：${calendar.display||'—'}${calendar.status==='ok'?'（农历）':'（公历简式）'}`,
     `时区：${calendar.timeZone||'—'} · 时辰：${calendar.hourBranchName||'—'}（${String(calendar.hour??'—').padStart(2,'0')}:${String(calendar.minute??'—').padStart(2,'0')}）`,
-    `年支 ${inputs.yearBranch||'—'} · 月 ${inputs.month||'—'} · 日 ${inputs.day||'—'} · 时支 ${inputs.hourBranch||'—'}`,
+    calendarNumberTrace,
     `上卦取数：${trace.upperTotal||'—'} → ${value.upper}（${upper.name}）`,
     `下卦取数：${trace.lowerTotal||'—'} → ${value.lower}（${lower.name}）`,
     `动爻取数：${trace.movingTotal||'—'} → ${value.movingLine}（${movingLineLabel(value.movingLine)}）`,
     `规则档案：${value.profile||MEIHUA_PROFILE} · ${value.mutualFrom==='changed'?'纯卦互卦取变卦':'互卦取本卦'}`,
     calendar.note||'',
   ].filter(Boolean).join('\n');
-  document.getElementById('meihuaSource').textContent=`卦名按周易六十四卦次序标注；这里只展示可追溯的结构化取数，不替代经典原文或现实判断。`;
+  document.getElementById('meihuaSource').textContent=`${modeLabel}已与牌面同步；物象内容是可核对的候选提示，不替代经典原文或现实判断。`;
   document.getElementById('meihuaSourceLink').href=ZHOUYI_SOURCE_URL;
   panel.hidden=false;
 }
@@ -2020,12 +2120,25 @@ function getMeihuaDescription(){
   const mutual=hexagramMeta(value.mutual?.upper,value.mutual?.lower);
   const upper=trigram(value.upper),lower=trigram(value.lower);
   const body=trigram(value.body),use=trigram(value.use);
+  const source=value.sourceInput||{};
+  const observation=value.observation;
+  const inputLine=value.mode==='three'
+    ? `输入记录：三个数字 ${Array.isArray(source.numbers)?source.numbers.join('、'):'—'}（抽牌时间只作记录）`
+    : value.mode==='sound'||value.mode==='count'
+      ? `输入记录：${value.mode==='sound'?'声音次数':'物品数量'} ${source.count||'—'}；时支 ${value.calendar?.hourBranchName||'—'}`
+      : source.text?`输入记录：${source.text}`:'输入记录：抽牌确认时刻';
+  const observationLine=observation?.features?.length
+    ? `物象候选：${observation.features.map(item=>`${item.label}=${item.value}`).join('；')}`
+    : '';
   return [
     `规则档案：${value.profile||MEIHUA_PROFILE}（网站本地确定性计算）`,
+    `起卦方式：${value.modeLabel||CAST_MODE_LABELS[value.mode]||'抽牌时间'}`,
+    inputLine,
     `起卦时刻：${value.calendar?.display||'—'}；时区：${value.calendar?.timeZone||'—'}`,
     `本卦：${hexagramTitle(base)}（上${upper.name}，下${lower.name}）`,
     `动爻：${movingLineLabel(value.movingLine)}；互卦：${hexagramTitle(mutual)}；变卦：${hexagramTitle(changed)}`,
     `体用：体${body.name}（${body.element}）／用${use.name}（${use.element}），关系：${value.relation||'—'}`,
+    observationLine,
     `周易底本：${ZHOUYI_SOURCE_URL}`,
     '说明：以上是抽第一张牌时锁定的结构化取数，后续追问沿用同一卦；请将其作为传统文化角度的自我反思，不作确定预言。',
   ].join('\n');
@@ -2110,10 +2223,24 @@ function resetSession(){
   if(meihuaPanel)meihuaPanel.hidden=true;
   const meihuaGrid=document.getElementById('meihuaGrid');
   if(meihuaGrid)meihuaGrid.replaceChildren();
+  const meihuaObservation=document.getElementById('meihuaObservation');
+  if(meihuaObservation)meihuaObservation.hidden=true;
+  const meihuaObservationGrid=document.getElementById('meihuaObservationGrid');
+  if(meihuaObservationGrid)meihuaObservationGrid.replaceChildren();
+  const meihuaObservationLead=document.getElementById('meihuaObservationLead');
+  if(meihuaObservationLead)meihuaObservationLead.textContent='';
+  const meihuaObservationCertainty=document.getElementById('meihuaObservationCertainty');
+  if(meihuaObservationCertainty)meihuaObservationCertainty.textContent='';
   const meihuaTrace=document.getElementById('meihuaTraceText');
   if(meihuaTrace)meihuaTrace.textContent='';
   userQuestion='';
   document.getElementById('questionInput').value='';
+  castRequest={mode:'time'};
+  const castMode=document.getElementById('castMode');
+  if(castMode){castMode.value='auto';updateCastModeUI();}
+  ['castNum1','castNum2','castNum3','castCountInput','castDetailInput'].forEach(id=>{
+    const field=document.getElementById(id);if(field)field.value='';
+  });
   isAIStreaming=false;
   resetFollowups();
   currentReadingSaved=false;
@@ -2290,7 +2417,7 @@ function buildLocalFollowUp(query){
   const firstMeaning=first?(first.reversed?first.card.rev:first.card.up):'此刻的起点';
   const meihuaNote=meihuaSession?.inputs?(()=>{
     const base=hexagramMeta(meihuaSession.upper,meihuaSession.lower);
-    return `同步起卦仍沿用${hexagramTitle(base)}，${movingLineLabel(meihuaSession.movingLine)}不变。`;
+    return `${meihuaSession.modeLabel||'同步起卦'}仍沿用${hexagramTitle(base)}，${movingLineLabel(meihuaSession.movingLine)}不变。`;
   })():'';
   const action=/做|行动|选择|下一步|怎么办/.test(query)
     ?`把“${lastMeaning}”缩小成一个今天或本周能完成的小动作，并在行动后记录真实反馈。`
@@ -2377,7 +2504,7 @@ function posterMeihuaLabel(){
   const value=serializeMeihua();
   if(!value)return '';
   const base=hexagramMeta(value.upper,value.lower);
-  return `同步起卦 · ${base.number?`第${base.number}卦`:base.name} · ${movingLineLabel(value.movingLine)}`;
+  return `${value.modeLabel||'同步起卦'} · ${base.number?`第${base.number}卦`:base.name} · ${movingLineLabel(value.movingLine)}`;
 }
 async function createReadingPoster(showQuestion=true){
   if(!sessionDraws.length)throw new Error('请先完成一次牌面观测');
@@ -2513,7 +2640,119 @@ document.querySelectorAll('.spreadOption').forEach(button=>{
     });
   });
 });
+function normalizeDigits(value){
+  return String(value||'').replace(/[０-９]/g,ch=>String.fromCharCode(ch.charCodeAt(0)-0xfee0));
+}
+function explicitThreeNumbers(value){
+  const normalized=normalizeDigits(value);
+  const numbers=[...normalized.matchAll(/\d{1,9}/g)].map(match=>Number(match[0]));
+  const hasThreePhrase=/三个?数字|三数|数字起卦|用数字起卦/.test(normalized);
+  const hasThreeSeparated=/\d{1,9}\s*[、,，\/%\s]+\d{1,9}\s*[、,，\/%\s]+\d{1,9}/.test(normalized);
+  if(!hasThreePhrase&&!hasThreeSeparated)return null;
+  if(numbers.length<3)return {error:'你指定了三个数字起卦，请补齐三个正整数。'};
+  return {mode:'three',numbers:numbers.slice(0,3),auto:true};
+}
+function inferCastMode(question){
+  const explicit=explicitThreeNumbers(question);
+  if(explicit)return explicit;
+  if(/射覆|手里(?:握|拿|捏)|握着什么|拿着什么|什么东西|什么物件|什么物品/.test(question))return {mode:'shooting',auto:true};
+  if(/外应|十应|突然看到|突然听到|现场应象/.test(question))return {mode:'omen',auto:true};
+  if(/失物|丢了|丢失|找不到|遗失|在哪里/.test(question))return {mode:'lost',auto:true};
+  if(/声音|敲了|敲击|几声|响了/.test(question))return {mode:'sound',auto:true};
+  if(/测字|拆字/.test(question))return {mode:'text',auto:true,text:question};
+  return {mode:'time',auto:true};
+}
+function collectCastRequest(){
+  const selected=document.getElementById('castMode')?.value||'auto';
+  const question=document.getElementById('questionInput')?.value.trim()||'';
+  const detail=document.getElementById('castDetailInput')?.value.trim()||'';
+  const count=Number(document.getElementById('castCountInput')?.value);
+  if(selected==='auto'){
+    const inferred=inferCastMode(question);
+    if(inferred.error)return inferred;
+    if(inferred.mode==='three')return inferred;
+    if(inferred.mode==='sound'||inferred.mode==='count'){
+      if(!Number.isSafeInteger(count)||count<1){
+        const inlineNumbers=[...normalizeDigits(question).matchAll(/\d{1,9}/g)].map(match=>Number(match[0]));
+        if(inlineNumbers.length) return {...inferred,count:inlineNumbers.at(-1)};
+        return {error:'声音占或物数占需要填写可核对的次数 / 数量，请在下拉框中明确选择。'};
+      }
+      return {...inferred,count};
+    }
+    if(inferred.mode==='text'){
+      const material=detail||question.replace(/.*?(?:测字|拆字)[:：\s]*/,'').trim()||question;
+      if([...material].filter(ch=>!(/\s/u.test(ch))).length<2)return {error:'测字起卦至少需要两个字。'};
+      return {...inferred,text:material};
+    }
+    if(['object','person','lost','omen'].includes(inferred.mode))return {...inferred,text:detail||question};
+    return {mode:inferred.mode};
+  }
+  if(selected==='three'){
+    const numbers=[1,2,3].map(index=>Number(document.getElementById(`castNum${index}`)?.value));
+    if(!numbers.every(number=>Number.isSafeInteger(number)&&number>=1))return {error:'三个数字都要填写正整数。'};
+    return {mode:'three',numbers};
+  }
+  if(selected==='sound'||selected==='count'){
+    if(!Number.isSafeInteger(count)||count<1)return {error:selected==='sound'?'请填写声音次数。':'请填写物品数量。'};
+    return {mode:selected,count};
+  }
+  if(['shooting','object','person','lost','text','omen'].includes(selected)){
+    const material=detail||question;
+    const chars=[...material].filter(char=>!(/\s/u.test(char)));
+    if(selected==='shooting')return {mode:selected,text:material};
+    if(chars.length<2)return {error:selected==='text'?'测字起卦至少需要两个字。':'请补充两字以上的现场描述，方便记录取象材料。'};
+    return {mode:selected,text:material};
+  }
+  return {mode:selected};
+}
+function updateCastModeUI(){
+  const selected=document.getElementById('castMode')?.value||'auto';
+  const numbers=document.getElementById('threeNumberFields');
+  const detail=document.getElementById('castDetailField');
+  const count=document.getElementById('castCountField');
+  if(numbers)numbers.hidden=selected!=='three';
+  if(detail)detail.hidden=!['shooting','object','person','lost','text','omen'].includes(selected);
+  if(count)count.hidden=!['sound','count'].includes(selected);
+  const label=document.getElementById('castDetailLabel');
+  const input=document.getElementById('castDetailInput');
+  const countLabel=document.getElementById('castCountLabel');
+  const countInput=document.getElementById('castCountInput');
+  const hint=document.getElementById('castModeHint');
+  const copy={
+    shooting:['隐藏物品线索','例如：只记录手感、声音或现场问题，不要先揭示答案'],
+    object:['描述眼前的物件','例如：桌上一个圆形、偏硬、没有说明名称的物件'],
+    person:['描述人物外在','例如：衣着颜色、姿态、身边环境或携带物件'],
+    lost:['描述失物线索','例如：最后见到的地点、外形、材质和附近环境'],
+    text:['输入要测的字 / 短句','至少两个字；字义只作为问题语境'],
+    omen:['记录现场外应','例如：突然出现的声音、颜色、人物、方向或动作'],
+  }[selected];
+  if(label&&copy)label.innerHTML=`${copy[0]} <small>现场记录</small>`;
+  if(input&&copy)input.placeholder=copy[1];
+  if(countLabel)countLabel.innerHTML=`${selected==='sound'?'声音次数':'物品数量'} <small>必须是可核对的整数</small>`;
+  if(countInput)countInput.placeholder=selected==='sound'?'例如：敲了 3 声':'例如：现场有 5 件';
+  if(hint){
+    const hints={
+      auto:'写明“三个数字起卦”时，会优先用你给的数字；否则按第一张牌确认时刻起卦。',
+      time:'只以第一张牌确认的时刻起卦；后续追问沿用同一卦。',
+      three:'第一个数字取上卦，第二个取下卦，第三个取动爻；抽牌时间只作记录。',
+      shooting:'适合“他手里握着什么”这类问题；结果会给出颜色、形状、材质、大小手感和候选物品。',
+      object:'记录眼前物件，再从卦象给出可核对的颜色、轮廓、材质和候选。',
+      person:'从衣着、姿态、身边物件和方向取象，只提供外在候选线索。',
+      lost:'优先得到方向、环境、形态和先查位置；请以现实核对为准。',
+      sound:'把声音次数作为起卦数字，同时记录声音的听感和方向。',
+      count:'把物品数量作为上卦数字，再以当下时支取下卦。',
+      text:'按字数分组起卦；如果要用三个数字，请改选“三个数字起卦”。',
+      omen:'外应是辅助记录，不改变主流程；把突发的人、声、色、方向留档再交叉核对。',
+    };
+    hint.textContent=hints[selected]||hints.auto;
+  }
+}
+document.getElementById('castMode')?.addEventListener('change',updateCastModeUI);
+updateCastModeUI();
 document.getElementById('questionConfirm').onclick=()=>{
+  const request=collectCastRequest();
+  if(request.error){showHint(request.error,4500);return;}
+  castRequest=request;
   closeHistoryPanel();
   userQuestion=document.getElementById('questionInput').value.trim();
   currentReadingSaved=false;
