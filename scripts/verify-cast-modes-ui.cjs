@@ -10,18 +10,32 @@ function sse(text) {
 
 async function finishThreeCards(page) {
   async function selectAndConfirmCard() {
-    for (let attempt = 0; attempt < 4; attempt += 1) {
+    const directPoints = [[650, 420], [620, 420], [680, 420], [650, 390], [650, 460]];
+    for (const [x, y] of directPoints) {
+      await page.mouse.move(x, y);
+      await page.waitForTimeout(120);
+      await page.mouse.click(x, y);
+      const shown = await page.locator("#cardInfo").waitFor({ state: "visible", timeout: 3_000 }).then(() => true).catch(() => false);
+      if (shown) {
+        await page.mouse.click(x, y);
+        await page.locator("#cardInfo").waitFor({ state: "hidden", timeout: 5_000 });
+        return;
+      }
+    }
+    await page.waitForFunction(() => document.querySelector("#c")?.style.cursor === "pointer", null, { timeout: 15_000 }).catch(() => {});
+    for (let attempt = 0; attempt < 12; attempt += 1) {
       let target = null;
       for (let y = 160; y <= 720 && !target; y += 32) {
         for (let x = 100; x <= 1180; x += 32) {
           await page.mouse.move(x, y);
+          await page.waitForTimeout(20);
           if (await page.locator("#c").evaluate((canvas) => canvas.style.cursor === "pointer")) {
             target = { x, y };
             break;
           }
         }
       }
-      if (!target) { await page.waitForTimeout(300); continue; }
+      if (!target) { await page.waitForTimeout(600); continue; }
       await page.mouse.click(target.x, target.y);
       const shown = await page.locator("#cardInfo").waitFor({ state: "visible", timeout: 5_000 }).then(() => true).catch(() => false);
       if (!shown) continue;
