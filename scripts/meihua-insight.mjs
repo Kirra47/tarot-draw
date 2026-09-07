@@ -90,6 +90,30 @@ const RELATION_NOTES = {
   体克用: '体克用可作为主动处理事务的观察线索，也需要核对能力与代价。',
 };
 
+const LINE_GUIDANCE = [
+  ['初爻 · 起步', '先看事情的起点、基础条件和第一步是否站得住。'],
+  ['二爻 · 承接', '先看你如何承接眼前的回应、资源或责任，再决定是否继续加力。'],
+  ['三爻 · 转折', '推进已经遇到转折，先检查节奏与边界，避免只凭惯性向前。'],
+  ['四爻 · 进入', '注意自己正在进入怎样的位置或合作关系，先确认规则和支持。'],
+  ['五爻 · 核心', '把注意力放在最关键的选择与责任上，用可兑现的行动验证判断。'],
+  ['上爻 · 收束', '事情接近一个阶段的边界，先判断如何收尾、退让或把经验带走。'],
+];
+
+const QUESTION_LENSES = [
+  [/他|她|关系|感情|喜欢|朋友|家人|对象/u, '先观察关系中的回应、边界与实际行动，不把卦象当作对方内心的确定答案。'],
+  [/工作|事业|项目|学习|考试|论文|研究|面试/u, '先把目标拆成当前能推进的一步，检查资源、分工和反馈是否跟得上。'],
+  [/钱|财|收入|投资|买|卖|价格|收益/u, '先核对真实的资源、风险与可承受边界，不用卦象替代财务判断。'],
+  [/找|丢|哪里|手里|什么东西|物品|射覆|静物/u, '先把颜色、形状、材质和位置当作候选线索，逐项回到现场核对。'],
+  [/选|要不要|该不该|决定|未来|结果|怎么办|下一步/u, '先列出可选行动与现实证据，看哪一步能产生清晰反馈。'],
+];
+
+export function questionLens(question) {
+  const value = String(question || '').trim();
+  if (!value) return '先抓住一个可观察的现实环节，再用本卦主题检验自己的理解。';
+  return QUESTION_LENSES.find(([pattern]) => pattern.test(value))?.[1]
+    || '先抓住一个可观察的现实环节，再用本卦主题检验自己的理解。';
+}
+
 export function primaryHexagramInsight(cast) {
   if (!cast) return null;
   const base = hexagramMeta(cast.upper, cast.lower);
@@ -110,6 +134,11 @@ export function primaryHexagramInsight(cast) {
       position: index + 1, yang: Boolean(yang), moving: index + 1 === cast.movingLine,
       label: index === 0 ? `初${yang ? '九' : '六'}` : index === 5 ? `上${yang ? '九' : '六'}` : `${yang ? '九' : '六'}${['', '二', '三', '四', '五'][index]}`,
     })),
+    moving: {
+      position: movingLineLabel(cast.movingLine),
+      title: LINE_GUIDANCE[cast.movingLine - 1][0],
+      text: LINE_GUIDANCE[cast.movingLine - 1][1],
+    },
     change: `${movingLineLabel(cast.movingLine)}由${lines[cast.movingLine - 1] ? '阳转阴' : '阴转阳'}，得到${changed.name}。${changedNote ? `变卦的导读主题是“${changedNote.theme}”。` : ''}`,
     relation: RELATION_NOTES[cast.relation] || '',
   };

@@ -149,12 +149,20 @@ button:focus-visible,textarea:focus-visible,input:focus-visible,summary:focus-vi
 .baseReadingCopy p{margin:0;color:var(--ink-muted);font:15px/1.9 var(--serif)}
 .baseReadingFocus{margin-top:13px;padding:16px 17px;border-left:3px solid var(--amber);border-radius:0 12px 12px 0;background:rgba(191,125,67,.08)}
 .baseReadingFocus p,.baseReadingChange p{margin:7px 0 0;color:var(--ink);font:500 15px/1.8 var(--serif)}
+.baseQuestionBridge{margin-top:13px;padding:15px 16px;border:1px solid rgba(142,179,162,.3);border-radius:13px;background:rgba(142,179,162,.09)}
+.baseQuestionBridge>span{display:block;color:#4d7b6b;font:600 11px var(--sans);letter-spacing:1px}
+.baseQuestionBridge p{margin:7px 0 0;color:var(--ink-muted);font:14px/1.75 var(--serif)}
+.baseQuestionBridge .baseQuestionText{color:var(--ink);font-weight:500}
 .baseTrigrams{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:13px}
 .baseTrigrams>div{padding:12px 13px;border:1px solid var(--paper-line);border-radius:12px;background:rgba(255,255,255,.4)}
 .baseTrigrams strong{display:block;color:var(--ink);font:600 14px/1.45 var(--serif)}
 .baseTrigrams span{display:block;margin-top:4px;color:var(--ink-muted);font-size:12px;line-height:1.65}
 .baseReadingChange{margin-top:13px;padding-top:14px;border-top:1px solid var(--paper-line)}
+.baseReadingChange>strong{display:block;margin-top:7px;color:var(--ink);font:600 16px/1.5 var(--serif)}
 .baseReadingChange p{font-size:14px;font-weight:400;color:var(--ink-muted)}
+.baseChangeNote{margin-top:13px;padding-top:12px;border-top:1px dashed var(--paper-line)}
+.baseChangeNote>span{display:block;color:#975d32;font:600 11px var(--sans);letter-spacing:1px}
+.baseChangeNote p{margin-top:6px}
 .meihuaSupporting,.meihuaTrace,.tarotReference{margin-top:13px;border-top:1px solid var(--paper-line);padding-top:12px}
 .meihuaSupporting summary,.meihuaTrace summary,.tarotReference>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:30px;cursor:pointer;list-style:none;color:var(--ink-muted);font-size:13px;line-height:1.5}
 .meihuaSupporting summary::-webkit-details-marker,.meihuaTrace summary::-webkit-details-marker,.tarotReference>summary::-webkit-details-marker{display:none}
@@ -179,6 +187,8 @@ button:focus-visible,textarea:focus-visible,input:focus-visible,summary:focus-vi
   .hexagramFigure{max-width:230px;justify-self:start;padding:13px 12px}
   .baseReadingCopy h4{font-size:23px}.baseReadingCopy p{font-size:15px;line-height:1.85}
   .baseReadingFocus{padding:14px 14px}.baseReadingFocus p,.baseReadingChange p{font-size:15px;line-height:1.75}
+  .baseQuestionBridge{padding:14px 13px}.baseQuestionBridge p{font-size:14px;line-height:1.7}
+  .baseReadingChange>strong{font-size:15px}
   .baseTrigrams{grid-template-columns:1fr;gap:8px}.baseTrigrams>div{padding:11px 12px}
   .meihuaSupporting summary,.meihuaTrace summary,.tarotReference>summary{font-size:14px}
   .meihuaSupporting summary span{font-size:10px}.tarotReference>summary>span{display:block}.tarotReference>summary small{display:block;margin-top:2px}.tarotReference #settleCards{display:grid;grid-template-columns:1fr;gap:10px}.tarotReference .settleCard{max-width:none}

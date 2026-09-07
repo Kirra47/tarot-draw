@@ -660,7 +660,7 @@ body::after{
   .qHint{display:none;}
 }
 </style>
-<link rel="stylesheet" href="./emil-redesign.css?v=20260907-base-reading">
+<link rel="stylesheet" href="./emil-redesign.css?v=20260907-context-lens">
 </head>
 <body>
 <canvas id="c"></canvas>
@@ -879,7 +879,7 @@ import {
   movingLineLabel,
   trigram,
 } from './scripts/meihua-display.mjs';
-import { primaryHexagramInsight } from './scripts/meihua-insight.mjs';
+import { primaryHexagramInsight, questionLens } from './scripts/meihua-insight.mjs';
 
 // ═══════════════════════════════════════════════════════════════
 // TAROT DECK DATA
@@ -2085,8 +2085,9 @@ function renderMeihuaPanel(){
       <div class="baseReadingCopy"><span>本卦主题</span><h4>${escapeHTML(insight.theme)}</h4><p>${escapeHTML(insight.meaning)}</p></div>
     </div>
     <div class="baseReadingFocus"><span>用白话读这一卦</span><p>${escapeHTML(insight.focus)}</p></div>
+    ${userQuestion?`<div class="baseQuestionBridge"><span>放回你的问题</span><p class="baseQuestionText">${escapeHTML(userQuestion.slice(0,180))}</p><p>${escapeHTML(questionLens(userQuestion))}</p></div>`:''}
     <div class="baseTrigrams"><div><strong>${escapeHTML(insight.upper.title)}</strong><span>${escapeHTML(insight.upper.text)}</span></div><div><strong>${escapeHTML(insight.lower.title)}</strong><span>${escapeHTML(insight.lower.text)}</span></div></div>
-    <div class="baseReadingChange"><span>变化看哪里</span><p>${escapeHTML(insight.change)}</p>${insight.relation?`<p>${escapeHTML(insight.relation)}</p>`:''}</div>`:'';
+    <div class="baseReadingChange"><span>动爻落点</span><strong>${escapeHTML(insight.moving.title)}</strong><p>${escapeHTML(insight.moving.text)}</p><div class="baseChangeNote"><span>卦变方向</span><p>${escapeHTML(insight.change)}</p></div>${insight.relation?`<p>${escapeHTML(insight.relation)}</p>`:''}</div>`:'';
   document.getElementById('meihuaSummary').innerHTML=`${modeSummary}体卦为<strong>${escapeHTML(body.name)}</strong>，用卦为<strong>${escapeHTML(use.name)}</strong>，两者关系为<strong>${escapeHTML(relationText)}</strong>；后续追问沿用这一卦，不重新起卦。`;
   document.getElementById('meihuaGrid').innerHTML=`
     <div class="meihuaCell"><span>本卦</span><strong>${escapeHTML(hexagramTitle(base))}</strong><small>上${escapeHTML(upper.name)} · 下${escapeHTML(lower.name)}</small></div>
@@ -2168,6 +2169,7 @@ function getMeihuaDescription(){
     `本卦：${hexagramTitle(base)}（上${upper.name}，下${lower.name}）`,
     insight?`本卦导读（本站现代说明，非卦辞原文）：主题“${insight.theme}”；${insight.meaning} 可反思：${insight.focus}`:'',
     insight?`上下卦取象：${insight.upper.title}，${insight.upper.text}；${insight.lower.title}，${insight.lower.text}`:'',
+    userQuestion?`问题落点提示：${questionLens(userQuestion)}`:'',
     `动爻：${movingLineLabel(value.movingLine)}；互卦：${hexagramTitle(mutual)}；变卦：${hexagramTitle(changed)}`,
     `体用：体${body.name}（${body.element}）／用${use.name}（${use.element}），关系：${value.relation||'—'}`,
     observationLine,

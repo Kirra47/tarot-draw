@@ -1,11 +1,11 @@
-const CACHE_VERSION = "astral-tarot-v14-base-reading-20260907";
+const CACHE_VERSION = "astral-tarot-v15-context-lens-20260907";
 const CORE_CACHE = `${CACHE_VERSION}-core`;
 const ASSET_CACHE = `${CACHE_VERSION}-assets`;
 
 const CORE_ASSETS = [
   "./",
   "./tarot.html",
-  "./emil-redesign.css?v=20260907-base-reading",
+  "./emil-redesign.css?v=20260907-context-lens",
   "./tarot-bg.png",
   "./manifest.webmanifest",
   "./assets/icons/tarot-icon.svg",

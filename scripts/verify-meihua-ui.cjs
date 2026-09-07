@@ -29,6 +29,7 @@ function sse(text) {
     });
   });
   await page.goto(`${baseUrl}/tarot.html`, { waitUntil: "networkidle", timeout: 30_000 });
+  await page.fill("#questionInput", "我最近的项目该怎么推进？");
   await page.locator("#questionConfirm").click();
 
   async function selectAndConfirmCard() {
@@ -99,11 +100,14 @@ function sse(text) {
     !result.baseHexagram ||
     !result.baseReading.includes("本卦主题") ||
     !result.baseReading.includes("用白话读这一卦") ||
+    !result.baseReading.includes("放回你的问题") ||
+    !result.baseReading.includes("二爻 · 承接") ||
     result.lineCount !== 6 ||
     !result.supportingOpen ||
     result.tarotReferenceOpen ||
     result.mobileOverflow ||
     result.aiTitle !== "本卦重点分析" ||
+    !result.question.includes("项目") ||
     result.cells.length !== 5 ||
     !result.summary.includes("第一张牌") ||
     !result.summary.includes("体卦") ||
