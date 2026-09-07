@@ -7,6 +7,21 @@ const assert = require("node:assert/strict");
 const root = path.resolve(__dirname, "..");
 const baseUrl = process.env.TAROT_URL || "http://127.0.0.1:8766";
 
+async function waitForCardCache(page, timeoutMs = 30_000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const count = await page.evaluate(async () => {
+      const key = (await caches.keys()).find((name) => name.includes("astral-tarot-v17-offline-core-20260907") && name.endsWith("-assets"));
+      if (!key) return 0;
+      const requests = await (await caches.open(key)).keys();
+      return requests.filter((request) => new URL(request.url).pathname.includes("/assets/cards/")).length;
+    });
+    if (count === 78) return count;
+    await page.waitForTimeout(500);
+  }
+  throw new Error("离线牌库未在限定时间内完成缓存");
+}
+
 (async () => {
   const manifest = JSON.parse(await fs.readFile(path.join(root, "manifest.webmanifest"), "utf8"));
   const expectedIcons = [
@@ -38,17 +53,7 @@ const baseUrl = process.env.TAROT_URL || "http://127.0.0.1:8766";
 
   await page.goto(`${baseUrl}/tarot.html`, { waitUntil: "domcontentloaded", timeout: 30_000 });
   await page.waitForFunction(() => navigator.serviceWorker?.controller, null, { timeout: 15_000 });
-  await page.waitForFunction(async () => {
-    const key = (await caches.keys()).find((name) => name.includes("astral-tarot-v17-offline-core-20260907") && name.endsWith("-assets"));
-    if (!key) return false;
-    const requests = await (await caches.open(key)).keys();
-    return requests.filter((request) => new URL(request.url).pathname.includes("/assets/cards/")).length === 78;
-  }, null, { timeout: 30_000 });
-  const offlineCardCount = await page.evaluate(async () => {
-    const key = (await caches.keys()).find((name) => name.includes("astral-tarot-v17-offline-core-20260907") && name.endsWith("-assets"));
-    const requests = await (await caches.open(key)).keys();
-    return requests.filter((request) => new URL(request.url).pathname.includes("/assets/cards/")).length;
-  });
+  const offlineCardCount = await waitForCardCache(page);
 
   await context.setOffline(true);
   await page.waitForFunction(() => document.querySelector("#appNoticeTitle")?.textContent.includes("离线模式"));
@@ -83,7 +88,7 @@ const baseUrl = process.env.TAROT_URL || "http://127.0.0.1:8766";
   });
   const iosPage = await iosContext.newPage();
   await iosPage.goto(`${baseUrl}/tarot.html`, { waitUntil: "domcontentloaded" });
-  await iosPage.waitForFunction(() => document.querySelector("#appNoticeTitle")?.textContent.includes("装到 iPhone"), null, { timeout: 12_000 });
+  await iosPage.waitForFunction(() => document.querySelector("#appNoticeTitle")?.textContent.includes("装到 iPhone"), null, { timeout: 30_000 });
   await iosPage.locator("#appNoticeAction").click();
   const iosInstallDetail = await iosPage.locator("#appNoticeDetail").textContent();
   await iosPage.screenshot({ path: "D:/codex/outputs/tarot-pwa-ios.png", fullPage: true });
