@@ -663,7 +663,7 @@ body::after{
   .qHint{display:none;}
 }
 </style>
-  <link rel="stylesheet" href="./emil-redesign.css?v=20260924-ai-cors-3">
+  <link rel="stylesheet" href="./emil-redesign.css?v=20260924-settings-layout-4">
 <style id="reading-mode-critical">
 .readingModeSection{margin:0 0 28px;min-width:0}
 .readingModeHeading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px}
@@ -706,6 +706,24 @@ body::after{
   #advancedSetup{margin:2px 0 12px}.advancedSetupBody{padding-bottom:12px}
 }
 @media(max-width:380px){.qIntro{flex-basis:168px;height:168px;min-height:168px}.qIntro>.qKicker{top:62px}.qIntro>#questionTitle{top:82px;font-size:28px}.qIntro>.qSub{top:123px;font-size:11px}.qForm{padding-left:16px;padding-right:16px}.readingModeOption{min-height:46px}}
+/* The legacy inline rules above are intentionally kept for the reading controls.
+   Give the settings card a stronger, scoped selector so it cannot fall back to
+   the old cramped flex row. */
+#questionOverlay #advancedSetup{margin:12px 0 16px;border:0;border-radius:16px;overflow:hidden;background:transparent}
+#questionOverlay #advancedSetup>summary{position:relative;display:grid;grid-template-columns:42px minmax(0,1fr) minmax(120px,auto) 24px;grid-template-areas:"icon copy meta chevron";align-items:center;gap:12px;min-height:76px;padding:13px 15px;border:1px solid rgba(172,119,67,.62);border-radius:16px;background:linear-gradient(112deg,#292720 0%,#393229 100%);box-shadow:0 7px 20px rgba(38,29,20,.14),inset 0 1px rgba(255,255,255,.08);color:#fff8ed;cursor:pointer;list-style:none;transition:transform 150ms cubic-bezier(.23,1,.32,1),border-color 180ms ease,background-color 180ms ease,box-shadow 180ms ease}
+#questionOverlay #advancedSetup>summary::after{content:none}
+#questionOverlay #advancedSetup>summary:active{transform:scale(.985)}
+#questionOverlay #advancedSetup>summary:focus-visible{outline:2px solid #a66a38;outline-offset:3px}
+#questionOverlay #advancedSetup[open]>summary{border-color:#ae7643;border-bottom-right-radius:0;border-bottom-left-radius:0;background:linear-gradient(112deg,#332d24 0%,#44372a 100%);box-shadow:none}
+#questionOverlay #advancedSetup[open]>summary::after{content:none}
+#questionOverlay #advancedSetup .advancedSetupBody{display:grid;gap:12px;padding:13px;border:1px solid rgba(172,119,67,.36);border-top:0;border-radius:0 0 16px 16px;background:rgba(255,250,242,.76)}
+#questionOverlay #entrySettingLine{display:block;max-width:190px;overflow:hidden;color:#fff8ed;font:12px/1.45 "PingFang SC","Microsoft YaHei",sans-serif;white-space:nowrap;text-overflow:ellipsis}
+@media(max-width:560px){
+  #questionOverlay #advancedSetup{margin:10px 0 14px}
+  #questionOverlay #advancedSetup>summary{grid-template-columns:38px minmax(0,1fr) 24px;grid-template-areas:"icon copy chevron" "icon meta chevron";gap:3px 10px;min-height:76px;padding:11px 12px}
+  #questionOverlay #advancedSetup .advancedSetupBody{gap:9px;padding:9px}
+  #questionOverlay #entrySettingLine{max-width:min(65vw,260px);font-size:12px}
+}
 </style>
 </head>
 <body>
@@ -1051,6 +1069,16 @@ import { describeQimen, deriveQimenCast, QIMEN_GRID_ORDER } from './scripts/qime
 
 // Keep the private sibling-Site request CORS-simple: the API parses the JSON body but authenticates the exact Origin server-side.
 const AI_READING_ENDPOINT = 'https://astral-tarot-ai-924.bull686.chatgpt.site/api/tarot-reading';
+function explainAIConnectionError(error){
+  const message=String(error?.message||'');
+  if(location.protocol==='file:'&&/failed to fetch|load failed|networkerror/i.test(message)){
+    return '当前是 file:// 本地文件预览，浏览器会拦截 AI 连接。请用 http://127.0.0.1:8888/tarot.html 或已部署的网址打开。';
+  }
+  if(/failed to fetch|load failed|networkerror/i.test(message)){
+    return '浏览器未能读取 AI 服务响应。请检查网络；如果是双击本地文件打开，请改用 http://127.0.0.1:8888/tarot.html 或已部署的网址。';
+  }
+  return message||'连接解读服务失败，请稍后重试。';
+}
 
 // ═══════════════════════════════════════════════════════════════
 // TAROT DECK DATA
@@ -3086,7 +3114,7 @@ async function requestQimenAI({auto=false}={}){
     if(token!==aiSessionToken)return;
     console.error('Qimen AI reading error:',err);
     if(!streamedText)contentDiv.replaceChildren();
-    const error=document.createElement('p');error.className='qimenAiError';error.textContent=`${streamedText?'连接中断，已收到的解释保留。':''}${err.message}。你仍可以展开下方九宫盘查看原始资料。`;
+    const error=document.createElement('p');error.className='qimenAiError';error.textContent=`${streamedText?'连接中断，已收到的解释保留。':''}${explainAIConnectionError(err)}。你仍可以展开下方九宫盘查看原始资料。`;
     contentDiv.appendChild(error);
     if(button)button.textContent='重试解释';
   }finally{
@@ -3150,7 +3178,7 @@ async function requestAIReading(){
     if(streamedText)initialAIReading=streamedText;
     persistAIHistory();
     const status=document.createElement('div');status.className='aiStreamStatus';
-    status.append(document.createTextNode(`${streamedText?'连接中断，已收到的文字保留在上面。':'这次没有连上解读服务。'}${err.message}；本次牌和卦不会改变。`));
+    status.append(document.createTextNode(`${streamedText?'连接中断，已收到的文字保留在上面。':'这次没有连上解读服务。'}${explainAIConnectionError(err)}；本次牌和卦不会改变。`));
     contentDiv.appendChild(status);
   }finally{
     releaseAIController(controller);
@@ -3199,7 +3227,7 @@ async function requestAIDetail(){
     if(token!==aiSessionToken)return;
     if(streamedText)aiDetailReading=streamedText;
     const status=document.createElement('div');status.className='aiDetailStatus';
-    status.append(document.createTextNode(`${streamedText?'连接中断，已收到的内容保留。':'详细分析暂时没有生成。'}${error.message}；短解和本次结果仍在。`));content.appendChild(status);
+    status.append(document.createTextNode(`${streamedText?'连接中断，已收到的内容保留。':'详细分析暂时没有生成。'}${explainAIConnectionError(error)}；短解和本次结果仍在。`));content.appendChild(status);
     if(streamedText)persistAIHistory();
     button.textContent='重试详细分析';
   }finally{
@@ -3253,7 +3281,7 @@ async function requestFollowUp(rawQuestion,{retry=false,pending=null}={}){
     if(token!==aiSessionToken)return;
     pending.turn.querySelector('small').textContent='解读未完成';
     const status=document.createElement('div');status.className='aiStreamStatus';
-    status.append(document.createTextNode(`${streamedText?'连接中断，已收到的文字保留。':'这条追问没有连上解读服务。'}${error.message}；原牌和卦没有改变。`));
+    status.append(document.createTextNode(`${streamedText?'连接中断，已收到的文字保留。':'这条追问没有连上解读服务。'}${explainAIConnectionError(error)}；原牌和卦没有改变。`));
     const retryButton=document.createElement('button');retryButton.type='button';retryButton.className='aiRetryInline';retryButton.textContent='重试这条';
     retryButton.addEventListener('click',()=>{status.remove();void requestFollowUp(followUp,{retry:true,pending});});
     status.appendChild(retryButton);pending.body.appendChild(status);
