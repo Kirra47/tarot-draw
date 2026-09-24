@@ -61,13 +61,23 @@ export const handleTarotReading = async (request, runtimeEnvironment) => {
   if (contentLength > 16384) return json(413, { error: "请求内容过长。" });
 
   const fetchSite = request.headers.get("sec-fetch-site");
-  if (fetchSite === "cross-site") return json(403, { error: "不允许跨站调用。" });
-
   const origin = request.headers.get("origin");
   const host = request.headers.get("host");
+  const allowedOrigins = String(runtimeEnvironment?.TAROT_ALLOWED_ORIGINS || "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+  if (origin && allowedOrigins.length && !allowedOrigins.includes(origin)) {
+    return json(403, { error: "来源验证失败。" });
+  }
+  if (fetchSite === "cross-site" && !allowedOrigins.length) {
+    return json(403, { error: "不允许跨站调用。" });
+  }
   if (origin && host) {
     try {
-      if (new URL(origin).host !== host) return json(403, { error: "来源验证失败。" });
+      if (!allowedOrigins.length && new URL(origin).host !== host) {
+        return json(403, { error: "来源验证失败。" });
+      }
     } catch {
       return json(403, { error: "来源验证失败。" });
     }

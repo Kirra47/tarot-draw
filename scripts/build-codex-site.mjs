@@ -28,15 +28,9 @@ for (const filename of [
 }
 
 await mkdir(join(dist, ".openai"), { recursive: true });
-await mkdir(join(dist, "server"), { recursive: true });
 await writeFile(
   join(dist, ".openai", "hosting.json"),
   `${JSON.stringify({ project_id: hosting.project_id }, null, 2)}\n`,
 );
-await cp(join(root, "worker", "index.js"), join(dist, "server", "index.js"));
-await cp(
-  join(root, "netlify", "functions", "tarot-reading.mjs"),
-  join(dist, "server", "tarot-reading.mjs"),
-);
 
-console.log(`Built Codex Site worker and ${["assets", "books", "knowledge", "scripts", "vendor"].length} static asset groups.`);
+console.log(`Built Codex Site static assets from ${["assets", "books", "knowledge", "scripts", "vendor"].length} asset groups.`);

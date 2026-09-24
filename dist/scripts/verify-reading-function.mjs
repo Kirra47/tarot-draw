@@ -61,18 +61,35 @@ assert.equal(upstreamCalls[1].body.enable_search, false);
 const workerReading = await siteWorker.fetch(request({
   question: "Codex Site 接口验证",
   cards: "【现在】星星 - 正位",
-}), { DASHSCOPE_API_KEY: "worker-test-key" });
+}), {
+  DASHSCOPE_API_KEY: "worker-test-key",
+  TAROT_ALLOWED_ORIGINS: "https://tarot.test",
+});
 assert.equal(workerReading.status, 200);
 assert.equal(upstreamCalls[2].body.model, "qwen3.8-flash");
+assert.equal(workerReading.headers.get("access-control-allow-origin"), "https://tarot.test");
+assert.equal(workerReading.headers.get("access-control-allow-credentials"), "true");
 
-const workerAsset = await siteWorker.fetch(new Request("https://tarot.test/tarot.html"), {
-  ASSETS: { fetch: async () => new Response("静态页面") },
-});
-assert.equal(await workerAsset.text(), "静态页面");
+const preflight = await siteWorker.fetch(new Request("https://tarot.test/api/tarot-reading", {
+  method: "OPTIONS",
+  headers: {
+    origin: "https://tarot.test",
+    host: "tarot.test",
+    "access-control-request-method": "POST",
+    "access-control-request-headers": "content-type",
+  },
+}), { TAROT_ALLOWED_ORIGINS: "https://tarot.test" });
+assert.equal(preflight.status, 204);
+assert.equal(preflight.headers.get("access-control-allow-origin"), "https://tarot.test");
+
+const rejectedOrigin = await siteWorker.fetch(request({ cards: "星星" }, {
+  origin: "https://attacker.test",
+}), { TAROT_ALLOWED_ORIGINS: "https://tarot.test" });
+assert.equal(rejectedOrigin.status, 403);
 
 const unconfiguredWorker = await siteWorker.fetch(request({
   cards: "【现在】星星 - 正位",
-}), { DASHSCOPE_API_KEY: "" });
+}), { DASHSCOPE_API_KEY: "", TAROT_ALLOWED_ORIGINS: "https://tarot.test" });
 assert.equal(unconfiguredWorker.status, 503);
 
 const crossSite = await tarotReading(request(
@@ -93,7 +110,8 @@ console.log(JSON.stringify({
   model: upstreamCalls[0].body.model,
   followupRoles: upstreamCalls[1].body.messages.map((message) => message.role),
   codexWorkerEndpoint: workerReading.status,
-  staticAssetFallback: true,
+  credentialedCorsPreflight: preflight.status,
+  rejectedOriginStatus: rejectedOrigin.status,
   unconfiguredKeyStatus: unconfiguredWorker.status,
   forgedSystemMessageRemoved: true,
   crossSiteStatus: crossSite.status,

@@ -663,7 +663,7 @@ body::after{
   .qHint{display:none;}
 }
 </style>
-  <link rel="stylesheet" href="./emil-redesign.css?v=20260924-settings-2">
+  <link rel="stylesheet" href="./emil-redesign.css?v=20260924-ai-cors-3">
 <style id="reading-mode-critical">
 .readingModeSection{margin:0 0 28px;min-width:0}
 .readingModeHeading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px}
@@ -1048,6 +1048,9 @@ import {
 import { primaryHexagramInsight, questionLens } from './scripts/meihua-insight.mjs';
 import { describeBazhai, deriveBazhai } from './scripts/bazhai-insight.mjs';
 import { describeQimen, deriveQimenCast, QIMEN_GRID_ORDER } from './scripts/qimen-insight.mjs';
+
+// Keep the private sibling-Site request CORS-simple: the API parses the JSON body but authenticates the exact Origin server-side.
+const AI_READING_ENDPOINT = 'https://astral-tarot-ai-924.bull686.chatgpt.site/api/tarot-reading';
 
 // ═══════════════════════════════════════════════════════════════
 // TAROT DECK DATA
@@ -3063,8 +3066,8 @@ async function requestQimenAI({auto=false}={}){
   let streamedText='';
   const controller=makeAIController();
   try{
-    const resp=await fetch('/api/tarot-reading',{
-      method:'POST',headers:{'Content-Type':'application/json'},
+    const resp=await fetch(AI_READING_ENDPOINT,{
+      method:'POST',credentials:'include',headers:{'Content-Type':'text/plain'},
       signal:controller.signal,
       body:JSON.stringify({readingMode,question:userQuestion,cards:getCardsDescription(),meihua:getMeihuaDescription(),traditional:getTraditionalDescription(),focus:'qimen'})
     });
@@ -3115,15 +3118,15 @@ async function requestAIReading(){
   const controller=makeAIController();
   let textDiv=null,streamedText='';
   try{
-    const resp=await fetch('/api/tarot-reading',{
-      method:'POST',headers:{'Content-Type':'application/json'},
+    const resp=await fetch(AI_READING_ENDPOINT,{
+      method:'POST',credentials:'include',headers:{'Content-Type':'text/plain'},
       signal:controller.signal,
       body:JSON.stringify({readingMode,question:userQuestion,questionType:castRequest.questionType||'general',depth:'brief',cards:getCardsDescription(),meihua:getMeihuaDescription(),traditional:getTraditionalDescription()})
     });
     if(!resp.ok){
       let message=`智能解读暂时不可用（${resp.status}）`;
       try{const data=await resp.json();if(data.error)message=data.error;}catch{}
-      if(['127.0.0.1','localhost'].includes(location.hostname)&&[404,405,501].includes(resp.status))message='当前是静态预览，不运行 AI；请使用 Netlify Dev 或部署后的正式网址测试';
+      if(['127.0.0.1','localhost'].includes(location.hostname)&&[401,403].includes(resp.status))message='本地预览暂时无法访问私有 AI 服务，请从线上网址打开';
       throw new Error(message);
     }
     if(token!==aiSessionToken)return;
@@ -3180,8 +3183,8 @@ async function requestAIDetail(){
   const controller=makeAIController();
   let streamedText='';
   try{
-    const resp=await fetch('/api/tarot-reading',{
-      method:'POST',headers:{'Content-Type':'application/json'},
+    const resp=await fetch(AI_READING_ENDPOINT,{
+      method:'POST',credentials:'include',headers:{'Content-Type':'text/plain'},
       signal:controller.signal,
       body:JSON.stringify({readingMode,question:userQuestion,questionType:castRequest.questionType||'general',depth:'detail',brief:initialAIReading,cards:getCardsDescription(),meihua:getMeihuaDescription(),traditional:getTraditionalDescription()})
     });
@@ -3230,15 +3233,15 @@ async function requestFollowUp(rawQuestion,{retry=false,pending=null}={}){
   const controller=makeAIController();
   const priorConversation=aiConversation.slice(-7);
   try{
-    const resp=await fetch('/api/tarot-reading',{
-      method:'POST',headers:{'Content-Type':'application/json'},
+    const resp=await fetch(AI_READING_ENDPOINT,{
+      method:'POST',credentials:'include',headers:{'Content-Type':'text/plain'},
       signal:controller.signal,
       body:JSON.stringify({readingMode,question:userQuestion,questionType:castRequest.questionType||'general',cards:getCardsDescription(),meihua:getMeihuaDescription(),traditional:getTraditionalDescription(),followUp,conversation:priorConversation})
     });
     if(!resp.ok){
       let message=`智能解读暂时不可用（${resp.status}）`;
       try{const data=await resp.json();if(data.error)message=data.error;}catch{}
-      if(['127.0.0.1','localhost'].includes(location.hostname)&&[404,405,501].includes(resp.status))message='当前是静态预览，不运行 AI；请使用 Netlify Dev 或部署后的正式网址测试';
+      if(['127.0.0.1','localhost'].includes(location.hostname)&&[401,403].includes(resp.status))message='本地预览暂时无法访问私有 AI 服务，请从线上网址打开';
       throw new Error(message);
     }
     if(token!==aiSessionToken)return;
