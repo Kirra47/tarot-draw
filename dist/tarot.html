@@ -663,7 +663,7 @@ body::after{
   .qHint{display:none;}
 }
 </style>
-  <link rel="stylesheet" href="./emil-redesign.css?v=20260924-settings-layout-4">
+  <link rel="stylesheet" href="./emil-redesign.css?v=20260924-settings-scroll-5">
 <style id="reading-mode-critical">
 .readingModeSection{margin:0 0 28px;min-width:0}
 .readingModeHeading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px}
@@ -716,14 +716,15 @@ body::after{
 #questionOverlay #advancedSetup>summary:focus-visible{outline:2px solid #a66a38;outline-offset:3px}
 #questionOverlay #advancedSetup[open]>summary{border-color:#ae7643;border-bottom-right-radius:0;border-bottom-left-radius:0;background:linear-gradient(112deg,#332d24 0%,#44372a 100%);box-shadow:none}
 #questionOverlay #advancedSetup[open]>summary::after{content:none}
-#questionOverlay #advancedSetup .advancedSetupBody{display:grid;gap:12px;padding:13px;border:1px solid rgba(172,119,67,.36);border-top:0;border-radius:0 0 16px 16px;background:rgba(255,250,242,.76)}
+#questionOverlay #advancedSetup .advancedSetupBody{display:grid;gap:12px;max-height:min(54dvh,520px);overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y pinch-zoom;scrollbar-width:thin;scrollbar-color:rgba(101,80,58,.38) transparent;padding:13px;border:1px solid rgba(172,119,67,.36);border-top:0;border-radius:0 0 16px 16px;background:rgba(255,250,242,.76)}
 #questionOverlay #entrySettingLine{display:block;max-width:190px;overflow:hidden;color:#fff8ed;font:12px/1.45 "PingFang SC","Microsoft YaHei",sans-serif;white-space:nowrap;text-overflow:ellipsis}
 @media(max-width:560px){
   #questionOverlay #advancedSetup{margin:10px 0 14px}
   #questionOverlay #advancedSetup>summary{grid-template-columns:38px minmax(0,1fr) 24px;grid-template-areas:"icon copy chevron" "icon meta chevron";gap:3px 10px;min-height:76px;padding:11px 12px}
-  #questionOverlay #advancedSetup .advancedSetupBody{gap:9px;padding:9px}
+  #questionOverlay #advancedSetup .advancedSetupBody{max-height:min(48dvh,420px);gap:9px;padding:9px}
   #questionOverlay #entrySettingLine{max-width:min(65vw,260px);font-size:12px}
 }
+@media(max-width:720px){#questionOverlay #advancedSetup .advancedSetupBody{max-height:min(48dvh,420px)}}
 </style>
 </head>
 <body>
