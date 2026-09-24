@@ -663,7 +663,7 @@ body::after{
   .qHint{display:none;}
 }
 </style>
-  <link rel="stylesheet" href="./emil-redesign.css?v=20260924-settings-overlap-6">
+  <link rel="stylesheet" href="./emil-redesign.css?v=20260924-local-ai-proxy-7">
 <style id="reading-mode-critical">
 .readingModeSection{margin:0 0 28px;min-width:0}
 .readingModeHeading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px}
@@ -1073,8 +1073,12 @@ import { primaryHexagramInsight, questionLens } from './scripts/meihua-insight.m
 import { describeBazhai, deriveBazhai } from './scripts/bazhai-insight.mjs';
 import { describeQimen, deriveQimenCast, QIMEN_GRID_ORDER } from './scripts/qimen-insight.mjs';
 
-// Keep the private sibling-Site request CORS-simple: the API parses the JSON body but authenticates the exact Origin server-side.
-const AI_READING_ENDPOINT = 'https://astral-tarot-ai-924.bull686.chatgpt.site/api/tarot-reading';
+// Localhost uses the same-origin Node proxy so its DashScope key stays server-side.
+// Deployed pages continue to call the private Codex AI Site.
+const isLocalTarotServer=['127.0.0.1','localhost','::1'].includes(location.hostname);
+const AI_READING_ENDPOINT=isLocalTarotServer
+  ? `${location.origin}/api/tarot-reading`
+  : 'https://astral-tarot-ai-924.bull686.chatgpt.site/api/tarot-reading';
 function explainAIConnectionError(error){
   const message=String(error?.message||'');
   if(location.protocol==='file:'&&/failed to fetch|load failed|networkerror/i.test(message)){

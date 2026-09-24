@@ -1,11 +1,11 @@
-const CACHE_VERSION = "astral-tarot-v44-settings-overlap-20260924";
+const CACHE_VERSION = "astral-tarot-v45-local-ai-proxy-20260924";
 const CORE_CACHE = `${CACHE_VERSION}-core`;
 const ASSET_CACHE = `${CACHE_VERSION}-assets`;
 
 const CORE_ASSETS = [
   "./",
   "./tarot.html",
-  "./emil-redesign.css?v=20260924-settings-overlap-6",
+  "./emil-redesign.css?v=20260924-local-ai-proxy-7",
   "./tarot-bg.png",
   "./manifest.webmanifest",
   "./assets/icons/tarot-icon.svg",
