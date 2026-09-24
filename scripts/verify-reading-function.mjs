@@ -32,8 +32,10 @@ const initial = await tarotReading(request({
 assert.equal(initial.status, 200);
 assert.equal(upstreamCalls[0].body.model, "qwen3.8-flash");
 assert.equal(upstreamCalls[0].body.enable_thinking, false);
-assert.deepEqual(upstreamCalls[0].body.messages.map((message) => message.role), ["system", "user"]);
-assert.match(upstreamCalls[0].body.messages[1].content, /第49卦/);
+assert.deepEqual(upstreamCalls[0].body.messages.map((message) => message.role), ["system", "system", "user"]);
+assert.match(upstreamCalls[0].body.messages[1].content, /首次短解/);
+assert.match(upstreamCalls[0].body.messages[2].content, /第49卦/);
+assert.equal(upstreamCalls[0].body.max_tokens, 450);
 
 const followup = await tarotReading(request({
   question: "我的方向",

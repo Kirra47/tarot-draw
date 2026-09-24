@@ -663,7 +663,7 @@ body::after{
   .qHint{display:none;}
 }
 </style>
-  <link rel="stylesheet" href="./emil-redesign.css?v=20260909-hero-composition-2">
+  <link rel="stylesheet" href="./emil-redesign.css?v=20260924-light-reading-1">
 <style id="reading-mode-critical">
 .readingModeSection{margin:0 0 28px;min-width:0}
 .readingModeHeading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px}
@@ -680,10 +680,32 @@ body::after{
 .readingModeOption:active{transform:scale(.97)}.readingModeOption:focus-visible{outline:2px solid #885329;outline-offset:3px}
 .readingModeNote{display:flex;align-items:flex-start;gap:9px;margin-top:13px;padding:0 3px;min-height:46px}.readingModeNoteDot{flex-shrink:0;width:5px;height:5px;margin-top:10px;border-radius:50%;background:#975d32}.readingModeHint{margin:0;color:#63594d;font:14px/1.75 "PingFang SC","Microsoft YaHei",sans-serif;text-align:left}
 .qIntro{isolation:isolate}.qIntro>#cubeBg{position:absolute;top:4%;left:0;right:0;bottom:auto;width:100%;height:42%;z-index:0;opacity:.76}.qIntro>.qKicker,.qIntro>#questionTitle,.qIntro>.qSub,.qIntro>.ritualLegend{z-index:1}
+.readingModePicker{gap:5px;padding:4px;border-radius:15px}.readingModeOption{min-height:60px;padding:9px 8px;border-radius:11px;align-items:center;text-align:center}.readingModeOption .readingModeIcon,.readingModeOption em{display:none}.readingModeOption strong{margin:0;font-size:15px}.readingModeCheck{right:6px;top:6px;width:15px;height:15px;font-size:9px}.readingModeNote{min-height:0;margin-top:5px}.readingModeNoteDot{margin-top:8px}.readingModeHint{font-size:12px;line-height:1.5}
+#questionArchive{display:none!important}.qHint{text-align:left}.readingModeSection{margin-bottom:12px}
+#advancedSetup{margin:4px 0 15px;border-top:1px solid rgba(48,42,35,.13);border-bottom:1px solid rgba(48,42,35,.13)}#advancedSetup>summary{min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:12px;list-style:none;cursor:pointer;color:#51483e;font-size:14px;font-weight:600}#advancedSetup>summary::-webkit-details-marker{display:none}#advancedSetup>summary::after{content:'＋';color:#975d32;font-size:18px;font-weight:400}#advancedSetup[open]>summary::after{content:'－'}#entrySettingLine{max-width:65%;overflow:hidden;color:var(--ink-muted);font-size:11px;font-weight:400;white-space:nowrap;text-overflow:ellipsis}.advancedSetupBody{padding:2px 0 15px}.drawStyleOptions{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin:0 0 14px;color:var(--ink-muted);font-size:13px}.drawStyleOptions>span{margin-right:auto;color:var(--ink);font-weight:600}.drawStyleOption{min-height:36px;padding:7px 12px;border:1px solid var(--paper-line);border-radius:999px;background:rgba(255,255,255,.36);color:var(--ink-muted);font:13px var(--sans);cursor:pointer}.drawStyleOption.active{border-color:var(--amber);background:rgba(191,125,67,.1);color:#8c542d}.drawStyleOption:focus-visible{outline:2px solid #885329;outline-offset:2px}
+.readingSnapshot{margin:0 0 16px;padding:14px 16px;border:1px solid var(--paper-line);border-radius:14px;background:rgba(255,255,255,.48);color:var(--ink)}#snapshotQuestion{margin:0 0 8px;color:var(--ink-muted);font:13px/1.55 var(--sans)}#snapshotLocalReading{margin:0 0 10px;color:#51483e;font:16px/1.7 var(--serif)}#snapshotFacts{display:flex;flex-wrap:wrap;gap:7px}.snapshotFact{padding:6px 9px;border:1px solid rgba(191,125,67,.22);border-radius:999px;background:rgba(255,255,255,.42);color:#6c5844;font-size:13px;line-height:1.4}.traditionalDetails,.aiDetailPanel{margin:15px 0;border:1px solid var(--paper-line);border-radius:13px;background:rgba(255,255,255,.3);color:#8c542d}.traditionalDetails>summary,.aiDetailPanel>summary{min-height:48px;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;list-style:none;cursor:pointer;font-size:14px;font-weight:600}.traditionalDetails>summary::-webkit-details-marker,.aiDetailPanel>summary::-webkit-details-marker{display:none}.traditionalDetails>summary::after,.aiDetailPanel>summary::after{content:'＋';color:var(--amber);font-size:18px;font-weight:400}.traditionalDetails[open]>summary::after,.aiDetailPanel[open]>summary::after{content:'－'}.traditionalDetails>summary span,.aiDetailPanel>summary span{color:var(--ink-muted);font-size:11px;font-weight:400}.traditionalDetails #traditionalPanel{margin:0;border:0;border-top:1px solid var(--paper-line);border-radius:0;box-shadow:none}.aiDetailPanel{padding-bottom:12px}.aiDetailPanel>summary{margin-bottom:0}.aiDetailPanel #aiDetailContent{padding:0 16px;color:var(--ink-muted);font-size:15px;line-height:1.85}.aiDetailPanel #aiDetailRetryBtn{margin:6px 15px 0;padding:9px 13px;border:1px solid var(--paper-line);border-radius:9px;background:rgba(255,255,255,.55);color:#8c542d;font:13px var(--sans);cursor:pointer}.aiDetailStatus,.aiStreamStatus{margin:10px 0;padding:10px 12px;border-left:2px solid var(--amber);background:rgba(191,125,67,.07);color:#6f6255;font-size:13px;line-height:1.65}.aiRetryInline{display:inline-flex;margin-left:7px;padding:4px 8px;border:1px solid var(--paper-line);border-radius:7px;background:rgba(255,255,255,.7);color:#8c542d;font:12px var(--sans);cursor:pointer}#aiContent .aiShortText{font-size:16px;line-height:1.9}#aiContent .aiShortText p{margin:0 0 8px}
 @media(max-width:1199px) and (min-width:768px){.qIntro>#cubeBg{opacity:.66}}
-@media(max-width:767px){.qIntro>#cubeBg{top:28px;height:34%;opacity:.6}}
-@media(max-width:420px){.readingModePicker{gap:4px;padding:5px;border-radius:17px}.readingModeOption{min-height:128px;padding:16px 8px 13px;border-radius:12px}.readingModeOption strong{font-size:16px}.readingModeOption em{font-size:12px}.readingModeCheck{right:8px;top:8px;width:16px;height:16px;font-size:10px}.readingModeHint{font-size:14px}}
-@media(max-width:360px){.readingModeOption{padding-left:6px;padding-right:6px}}
+@media(max-width:767px){
+  .qIntro{flex:0 0 184px;height:184px;min-height:184px;padding:0 20px}
+  .qIntro>#cubeBg{top:0;left:12%;width:76%;height:100%;opacity:.36}
+  .qIntro>.qKicker,.qIntro>#questionTitle,.qIntro>.qSub{left:20px}
+  .qIntro>.qKicker{top:71px;margin:0;font-size:10px;letter-spacing:1.5px}
+  .qIntro>#questionTitle{top:91px;margin:0;font-size:30px;line-height:1.2}
+  .qIntro>.qSub{top:135px;margin:0;font-size:12px;line-height:1.5}
+  .qIntro>.ritualLegend{display:none}
+  .qForm{padding:18px 19px calc(26px + env(safe-area-inset-bottom))}
+  #questionInput{min-height:82px;margin-bottom:15px;padding:12px 14px;font-size:15px;line-height:1.6}
+  .readingModeHeading{margin-bottom:7px}.readingModeHeading h3{font-size:14px}.readingModeHeading>span{font-size:11px}
+  .readingModePicker{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:4px}
+  .readingModeOption{min-height:48px;padding:7px 5px}.readingModeOption strong{font-size:14px}
+  .readingModeCheck{right:4px;top:4px;width:13px;height:13px}
+  .readingModeNote{display:none}
+  .spreadPicker{grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px}.spreadOption{min-height:60px;padding:9px 8px;grid-template-columns:32px 1fr;gap:7px}.spreadOption>b{padding-right:6px;font-size:16px}.spreadOption strong{font-size:13px}.spreadOption em{display:none}
+  #questionConfirm{min-height:52px;margin-top:3px;padding:13px 16px;font-size:15px}
+  #questionArchive,.qHint{display:none}
+  #advancedSetup{margin:2px 0 12px}.advancedSetupBody{padding-bottom:12px}
+}
+@media(max-width:380px){.qIntro{flex-basis:168px;height:168px;min-height:168px}.qIntro>.qKicker{top:62px}.qIntro>#questionTitle{top:82px;font-size:28px}.qIntro>.qSub{top:123px;font-size:11px}.qForm{padding-left:16px;padding-right:16px}.readingModeOption{min-height:46px}}
 </style>
 </head>
 <body>
@@ -702,16 +724,16 @@ body::after{
     </div>
   </header>
   <nav id="headerActions" aria-label="仪式控制">
-    <button id="histToggle" class="uiBtn" aria-controls="histPanel" aria-expanded="false"><span aria-hidden="true">⌛</span> 观测档案</button>
+    <button id="histToggle" class="uiBtn" aria-controls="histPanel" aria-expanded="false"><span aria-hidden="true">⌛</span> 历史</button>
     <button id="modeBtn" class="uiBtn" aria-label="切换鼠标或摄像头手势模式"><span aria-hidden="true">◇</span> 启用手势</button>
   </nav>
 </div>
-<div id="histPanel" aria-label="观测记录">
-  <div id="histHeader"><span><small>观测存档</small>个人观测档案</span><div id="histTools"><button id="histExport">导出</button><button id="histClear">清空</button><button id="histClose" aria-label="关闭个人观测档案">×</button></div></div>
+<div id="histPanel" aria-label="历史记录">
+  <div id="histHeader"><span><small>仅保存在本机</small>历史记录</span><div id="histTools"><button id="histExport">导出</button><button id="histClear">清空</button><button id="histClose" aria-label="关闭历史记录">×</button></div></div>
   <section id="archiveInsights" aria-label="长期观测概览">
     <div class="archivePrivacy"><b>本机保存</b><span>仅保存在此浏览器</span></div>
     <div class="archiveStats">
-      <div class="archiveStat"><b id="archiveReadingCount">0</b><span>观测次数</span></div>
+      <div class="archiveStat"><b id="archiveReadingCount">0</b><span>记录次数</span></div>
       <div class="archiveStat"><b id="archiveCardCount">0</b><span>累计牌面</span></div>
       <div class="archiveStat"><b id="archiveUprightRate">—</b><span>正位比例</span></div>
     </div>
@@ -720,9 +742,9 @@ body::after{
       <div class="archiveSignal"><small>元素倾向</small><strong id="archiveElement">等待积累</strong></div>
     </div>
     <div id="archiveWeek" class="archiveWeek" aria-label="近七日观测活跃度"></div>
-    <input id="historySearch" type="search" maxlength="60" autocomplete="off" placeholder="搜索问题、牌名或追问…" aria-label="搜索个人观测档案">
+    <input id="historySearch" type="search" maxlength="60" autocomplete="off" placeholder="搜索问题、牌名或追问…" aria-label="搜索历史记录">
   </section>
-  <div id="histItems"><div id="histEmpty" style="padding:28px 20px;text-align:center;">还没有完成过一次观测</div></div>
+  <div id="histItems"><div id="histEmpty" style="padding:28px 20px;text-align:center;">还没有记录</div></div>
 </div>
 <div id="cardInfo">
   <div class="cardInfoKicker">刚刚显现的牌</div>
@@ -754,7 +776,7 @@ body::after{
       <label class="fieldLabel" for="questionInput"><span>你想问什么？</span><small>选填</small></label>
       <textarea id="questionInput" maxlength="240" placeholder="例如：这段关系接下来会怎样？" rows="4"></textarea>
       <section class="readingModeSection" aria-labelledby="readingModeTitle">
-        <div class="readingModeHeading"><h3 id="readingModeTitle">怎么看？</h3><span>选一种</span></div>
+        <div class="readingModeHeading"><h3 id="readingModeTitle">方式</h3><span>可随时切换</span></div>
         <div class="readingModePicker" role="radiogroup" aria-labelledby="readingModeTitle" aria-describedby="readingModeHint">
           <button class="readingModeOption" type="button" role="radio" aria-checked="false" aria-label="单塔罗牌" tabindex="-1" data-reading-mode="tarot">
             <svg class="readingModeIcon" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="m8 7-4 1 4 21 7-1"/><rect x="10" y="3" width="17" height="24" rx="3"/><path d="m18.5 9 1.6 4.4 4.4 1.6-4.4 1.6-1.6 4.4-1.6-4.4-4.4-1.6 4.4-1.6Z"/></svg>
@@ -764,79 +786,107 @@ body::after{
             <svg class="readingModeIcon" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M6 5h20M6 9.5h7m6 0h7M6 14h20M6 18.5h7m6 0h7M6 23h20M6 27.5h7m6 0h7"/></svg>
             <strong>起卦</strong><em>只看卦象</em><span class="readingModeCheck" aria-hidden="true">✓</span>
           </button>
-          <button class="readingModeOption active" type="button" role="radio" aria-checked="true" aria-label="塔罗加起卦，二合一" tabindex="0" data-reading-mode="combo">
+          <button class="readingModeOption" type="button" role="radio" aria-checked="false" aria-label="塔罗加起卦，二合一" tabindex="-1" data-reading-mode="combo">
             <svg class="readingModeIcon" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect x="3" y="6" width="16" height="22" rx="3"/><path d="m11 11 1.2 3.8L16 16l-3.8 1.2L11 21l-1.2-3.8L6 16l3.8-1.2ZM22 5h7m-6 5h6m-6 5h2m3 0h1M23 20h6"/></svg>
             <strong>二合一</strong><em>牌面和卦象</em><span class="readingModeCheck" aria-hidden="true">✓</span>
           </button>
         </div>
-        <div class="readingModeNote"><span class="readingModeNoteDot" aria-hidden="true"></span><p id="readingModeHint" class="readingModeHint" aria-live="polite">牌面和卦象一起看。</p></div>
+        <div class="readingModeNote"><span class="readingModeNoteDot" aria-hidden="true"></span><p id="readingModeHint" class="readingModeHint" aria-live="polite">按时间起卦。</p></div>
       </section>
-      <div class="spreadLabel"><span>选择牌阵</span><small>一次只选一种</small></div>
-      <div class="spreadPicker" role="radiogroup" aria-label="选择牌阵">
-        <button class="spreadOption active" type="button" role="radio" aria-checked="true" data-count="3"><b>03</b><span><strong>三牌·当下路径</strong><em>过去 · 现在 · 未来</em></span></button>
-        <button class="spreadOption" type="button" role="radio" aria-checked="false" data-count="5"><b>05</b><span><strong>五牌·深层观照</strong><em>路径 · 行动 · 潜在影响</em></span></button>
-      </div>
-      <div id="divinationOptions">
-      <label class="castModeLabel" for="castMode"><span>选择起卦方式</span><small>默认自动识别</small></label>
-      <select id="castMode">
-        <option value="auto">自动识别（推荐）</option>
-        <option value="time">按抽牌确认时刻</option>
-        <option value="three">三个数字起卦</option>
-        <option value="shooting">射覆（隐藏物品）</option>
-        <option value="object">静物取象</option>
-        <option value="person">人物取象</option>
-        <option value="lost">失物占</option>
-        <option value="sound">声音占</option>
-        <option value="count">物数占</option>
-        <option value="text">测字起卦</option>
-        <option value="omen">外应记录（辅助）</option>
-      </select>
-      <p id="castModeHint" class="castModeHint">写明“三个数字起卦”时，会优先用你给的数字；否则按第一张牌确认时刻起卦。</p>
-      <label class="traditionalLabel" for="traditionalLayer"><span>传统资料层</span><small>可选</small></label>
-      <select id="traditionalLayer">
-        <option value="all">梅花 + 奇门 + 八宅</option>
-        <option value="qimen">梅花 + 奇门</option>
-        <option value="bazhai">梅花 + 八宅</option>
-        <option value="meihua">只看梅花易数</option>
-      </select>
-      <p id="traditionalLayerHint" class="castModeHint">奇门按抽牌确认时刻生成；八宅需要你明确提供房屋主要朝向，不会替你猜。</p>
-      <div id="houseFacingField" class="castExtraField">
-        <label for="houseFacingInput">房屋主要朝向 <small>站在宅中心面向主要出入口</small></label>
-        <select id="houseFacingInput">
-          <option value="">未提供（只显示八宅规则说明）</option>
-          <option value="北">北</option><option value="东北">东北</option><option value="东">东</option><option value="东南">东南</option>
-          <option value="南">南</option><option value="西南">西南</option><option value="西">西</option><option value="西北">西北</option>
-        </select>
-      </div>
-      <div id="threeNumberFields" class="castExtraField" hidden>
-        <label for="castNum1">三个数字 <small>第一个取上卦，第二个取下卦，第三个取动爻</small></label>
-        <div class="threeNumberRow">
-          <input id="castNum1" type="number" min="1" inputmode="numeric" placeholder="上卦">
-          <input id="castNum2" type="number" min="1" inputmode="numeric" placeholder="下卦">
-          <input id="castNum3" type="number" min="1" inputmode="numeric" placeholder="动爻">
+      <details id="advancedSetup">
+        <summary><span>更多设置</span><small id="entrySettingLine">起卦 · 按时间 · 只看梅花</small></summary>
+        <div class="advancedSetupBody">
+          <div id="spreadSettings">
+            <div class="spreadLabel"><span>抽几张</span><small>默认三张</small></div>
+            <div class="spreadPicker" role="radiogroup" aria-label="选择牌阵">
+              <button class="spreadOption active" type="button" role="radio" aria-checked="true" data-count="3"><b>03</b><span><strong>三张</strong><em>过去 · 现在 · 未来</em></span></button>
+              <button class="spreadOption" type="button" role="radio" aria-checked="false" data-count="5"><b>05</b><span><strong>五张</strong><em>加入行动与潜在影响</em></span></button>
+            </div>
+          </div>
+          <div id="drawStyleOptions" class="drawStyleOptions" role="radiogroup" aria-label="抽牌方式">
+            <span>抽牌方式</span>
+            <button type="button" class="drawStyleOption active" role="radio" aria-checked="true" data-draw-style="quick">快速抽取</button>
+            <button type="button" class="drawStyleOption" role="radio" aria-checked="false" data-draw-style="manual">亲手抽牌</button>
+          </div>
+          <div id="divinationOptions">
+            <label class="castModeLabel" for="castMode"><span>起卦方法</span><small>默认按时间</small></label>
+            <select id="castMode">
+              <option value="auto">自动（明确给数字时优先用数字）</option>
+              <option value="time">按时间</option>
+              <option value="three">三个数字</option>
+              <option value="sound">按声音次数</option>
+              <option value="count">按物品数量</option>
+              <option value="text">按字起卦</option>
+            </select>
+            <p id="castModeHint" class="castModeHint">写明“三个数字起卦”并给出数字，就按数字起卦。</p>
+            <label class="castModeLabel" for="questionType"><span>问题类型</span><small>与起卦方法分开</small></label>
+            <select id="questionType">
+              <option value="auto">自动识别</option>
+              <option value="general">一般问题</option>
+              <option value="shooting">射覆 · 猜隐藏物</option>
+              <option value="object">眼前物件</option>
+              <option value="person">人物外在</option>
+              <option value="lost">寻找失物</option>
+              <option value="sound">声音</option>
+              <option value="count">物品数量</option>
+              <option value="text">测字</option>
+              <option value="omen">现场外应</option>
+            </select>
+            <p id="questionTypeHint" class="castModeHint">例如：用 5、7、8 起卦，看看我手里有什么。</p>
+            <label class="traditionalLabel" for="traditionalLayer"><span>附加分析</span><small>默认关闭</small></label>
+            <select id="traditionalLayer">
+              <option value="meihua">只看梅花易数</option>
+              <option value="qimen">加上奇门</option>
+              <option value="bazhai">加上八宅</option>
+              <option value="all">奇门和八宅都加</option>
+            </select>
+            <p id="traditionalLayerHint" class="castModeHint">需要时再加入奇门或八宅资料。</p>
+            <div id="houseFacingField" class="castExtraField" hidden>
+              <label for="houseFacingInput">房屋主要朝向 <small>站在宅中心面向主要出入口</small></label>
+              <select id="houseFacingInput">
+                <option value="">未提供（只显示八宅规则说明）</option>
+                <option value="北">北</option><option value="东北">东北</option><option value="东">东</option><option value="东南">东南</option>
+                <option value="南">南</option><option value="西南">西南</option><option value="西">西</option><option value="西北">西北</option>
+              </select>
+            </div>
+            <div id="threeNumberFields" class="castExtraField" hidden>
+              <label for="castNum1">三个数字 <small>依次取上卦、下卦、动爻</small></label>
+              <div class="threeNumberRow">
+                <input id="castNum1" type="number" min="1" inputmode="numeric" placeholder="上卦">
+                <input id="castNum2" type="number" min="1" inputmode="numeric" placeholder="下卦">
+                <input id="castNum3" type="number" min="1" inputmode="numeric" placeholder="动爻">
+              </div>
+            </div>
+            <div id="castDetailField" class="castExtraField" hidden>
+              <label id="castDetailLabel" for="castDetailInput">现场材料 <small>按实际情况记录</small></label>
+              <textarea id="castDetailInput" maxlength="240" rows="2" placeholder="例如：只记录手感、声音，不先说物品名称"></textarea>
+            </div>
+            <div id="castCountField" class="castExtraField" hidden>
+              <label id="castCountLabel" for="castCountInput">数量 / 次数 <small>填写可核对的整数</small></label>
+              <input id="castCountInput" type="number" min="1" max="1000000" inputmode="numeric" placeholder="请输入数量或声音次数">
+            </div>
+          </div>
         </div>
-      </div>
-      <div id="castDetailField" class="castExtraField" hidden>
-        <label id="castDetailLabel" for="castDetailInput">取象材料 <small>用于记录现场事实</small></label>
-        <textarea id="castDetailInput" maxlength="240" rows="2" placeholder="例如：桌边一个没有说明名称的物件"></textarea>
-      </div>
-      <div id="castCountField" class="castExtraField" hidden>
-        <label id="castCountLabel" for="castCountInput">数量 / 次数 <small>必须是可核对的整数</small></label>
-        <input id="castCountInput" type="number" min="1" max="1000000" inputmode="numeric" placeholder="请输入数量或声音次数">
-      </div>
-      </div>
+      </details>
       <p id="castError" class="castError" role="alert" hidden></p>
-      <button id="questionConfirm" type="button"><span>开始塔罗＋起卦</span><b aria-hidden="true">↗</b></button>
+      <button id="questionConfirm" type="button"><span>起一卦</span><b aria-hidden="true">↗</b></button>
       <button id="questionArchive" type="button" aria-controls="histPanel" aria-expanded="false">⌛ 打开观测档案</button>
       <p class="qHint">问题可以留空。塔罗与传统起卦仅用于自我探索与娱乐，不替代专业建议。</p>
     </section>
   </div>
 </div>
-<button id="settleBtn" class="uiBtn" style="display:none;"><span>结束抽牌</span><b>生成观测 ↗</b></button>
+<button id="settleBtn" class="uiBtn" style="display:none;"><span>结束抽牌</span><b>查看结果 ↗</b></button>
 <div id="drawCount" style="display:none;"></div>
 <div id="settleOverlay" role="dialog" aria-modal="true" aria-labelledby="settleTitle">
   <div id="settlePanel">
     <h2 id="settleTitle">本次卦象与牌面</h2>
+    <section id="readingSnapshot" class="readingSnapshot" aria-label="本次结果摘要">
+      <p id="snapshotQuestion"></p>
+      <p id="snapshotLocalReading"></p>
+      <div id="snapshotFacts"></div>
+    </section>
+    <details id="meihuaDetails" class="traditionalDetails" hidden>
+      <summary>查看本卦分析 <span>动爻 · 变卦 · 原典</span></summary>
     <section id="meihuaPanel" aria-labelledby="meihuaTitle" hidden>
       <div class="meihuaPanelHead">
         <div>
@@ -869,6 +919,9 @@ body::after{
       <p id="meihuaSource">本站白话导读与经文原典分开标注；原典对照区显示卦辞和本次动爻辞。</p>
       <a id="meihuaSourceLink" class="meihuaSourceLink" href="https://ctext.org/book-of-changes/zh" target="_blank" rel="noopener noreferrer">对照本卦卦辞与爻辞 ↗</a>
     </section>
+    </details>
+    <details id="traditionalDetails" class="traditionalDetails" hidden>
+      <summary>查看奇门 / 八宅 <span>附加资料</span></summary>
     <section id="traditionalPanel" aria-labelledby="traditionalTitle" hidden>
       <div class="traditionalPanelHead">
         <div><span class="traditionalKicker">资料层 · 奇门与八宅</span><h3 id="traditionalTitle">把时间与空间放回问题</h3></div>
@@ -905,8 +958,9 @@ body::after{
       </section>
       <p class="traditionalDisclaimer">两层资料都只提供传统文化视角：奇门的节气日为近似值，八宅需实际测量；现实证据、建筑规范与专业建议优先。</p>
     </section>
+    </details>
     <section id="aiReading" aria-labelledby="aiReadingTitle">
-      <div class="readingSectionHead"><span>结合你的问题</span><h3 id="aiReadingTitle">本卦重点分析</h3><p id="readingQuestion" hidden></p></div>
+      <div class="readingSectionHead"><span>AI 解读</span><h3 id="aiReadingTitle">本卦重点分析</h3><p id="readingQuestion" hidden></p></div>
       <div id="aiReadingHeader">
         <div class="readingOrb"></div>
         <span class="readingLabel">正在结合本卦与问题解读</span>
@@ -914,18 +968,23 @@ body::after{
       </div>
       <div id="aiContent"></div>
       <div id="aiProgressBar" style="display:none"><div id="aiProgressFill"></div></div>
-      <button id="aiRetryBtn">重新解读</button>
+      <button id="aiRetryBtn">重试短解</button>
+      <details id="aiDetailPanel" class="aiDetailPanel">
+        <summary>看详细分析 <span>点击后生成</span></summary>
+        <div id="aiDetailContent"></div>
+        <button id="aiDetailRetryBtn" type="button">生成详细分析</button>
+      </details>
       <section id="followupPanel" aria-label="继续追问当前卦象与牌阵">
         <div class="followupKicker"><span>围绕这一卦继续问</span><span id="followupCount">0 / 4</span></div>
         <div id="followupThread" role="log" aria-live="polite"></div>
         <div id="followupSuggestions">
-          <button class="followupChip" type="button">本卦最想提醒我什么？</button>
+          <button class="followupChip" type="button">本卦重点是什么？</button>
           <button class="followupChip" type="button">动爻对应的问题在哪里？</button>
-          <button class="followupChip" type="button">塔罗和卦象有哪些异同？</button>
+          <button class="followupChip" type="button">牌和卦有什么不同？</button>
         </div>
         <form id="followupForm">
-          <input id="followupInput" maxlength="180" autocomplete="off" placeholder="围绕本卦、动爻或牌面继续问…" aria-label="围绕当前卦象与牌阵继续追问">
-          <button id="followupSubmit" type="submit">继续观照 ↗</button>
+          <input id="followupInput" maxlength="180" autocomplete="off" placeholder="接着问…" aria-label="接着问">
+          <button id="followupSubmit" type="submit">发送追问 ↗</button>
         </form>
       </section>
     </section>
@@ -937,7 +996,7 @@ body::after{
     <div id="readingActions">
       <button id="shareReadingBtn" class="uiBtn">生成分享海报</button>
       <button id="copyReadingBtn" class="uiBtn">复制内容</button>
-      <button id="settleClose" class="uiBtn">开启新的观测 ↗</button>
+      <button id="settleClose" class="uiBtn">再问一次 ↗</button>
     </div>
     <p id="readingDisclaimer">观测仅供娱乐与自我反思，请结合现实信息独立判断。</p>
   </div>
@@ -1039,13 +1098,32 @@ function displayCardName(value){
 }
 let deck=buildDeck();
 const HISTORY_KEY='tarot-reading-history-v3';
+const PREFERENCE_KEY='tarot-ui-preferences-v1';
 let historyList=[];
 try{historyList=JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]');}catch{historyList=[];}
 if(!Array.isArray(historyList))historyList=[];
+let savedPreferences={};
+try{
+  const stored=JSON.parse(localStorage.getItem(PREFERENCE_KEY)||'{}');
+  if(stored&&typeof stored==='object'&&!Array.isArray(stored))savedPreferences=stored;
+}catch{}
+const allowedPreference=(value,choices,fallback)=>choices.includes(value)?value:fallback;
+function savePreferences(){
+  const values={
+    readingMode,
+    targetDraws,
+    drawStyle,
+    castMode:document.getElementById('castMode')?.value||'auto',
+    traditionalLayer:document.getElementById('traditionalLayer')?.value||'meihua',
+  };
+  savedPreferences=values;
+  try{localStorage.setItem(PREFERENCE_KEY,JSON.stringify(values));}catch{}
+}
 // Session draw tracking (3 min, 5 max)
 const MIN_DRAWS=3, MAX_DRAWS=5;
-let targetDraws=3;
-let readingMode='combo';
+let targetDraws=Number(savedPreferences.targetDraws)===5?5:3;
+let readingMode=allowedPreference(savedPreferences.readingMode,['tarot','gua','combo'],'gua');
+let drawStyle=allowedPreference(savedPreferences.drawStyle,['quick','manual'],'quick');
 const READING_MODE_LABELS=Object.freeze({tarot:'单塔罗牌',gua:'单起卦',combo:'塔罗＋起卦'});
 const POSITION_LABELS=['过去 / 根源','现在 / 核心','未来 / 方向','建议 / 行动','潜意识 / 隐藏'];
 let sessionDraws=[]; // {card, reversed} for current reading session
@@ -1053,8 +1131,8 @@ let userQuestion='';
 let currentReadingSaved=false;
 let currentReadingHistoryId=null;
 let meihuaSession=null;
-let castRequest={mode:'time'};
-let traditionalRequest={layer:'all',facing:''};
+let castRequest={mode:'time',questionType:'general'};
+let traditionalRequest={layer:allowedPreference(savedPreferences.traditionalLayer,['meihua','qimen','bazhai','all'],'meihua'),facing:''};
 let traditionalSession=null;
 
 // ═══════════════════════════════════════════════════════════════
@@ -2131,16 +2209,17 @@ function historyItem(item){
     traditionalMeta.textContent=[item.traditional.layerLabel||'传统资料层',qimenLabel,bazhaiLabel].filter(Boolean).join(' · ');
     details.appendChild(traditionalMeta);
   }
-  if(item.aiReading||item.followUps?.length){
+  if(item.aiReading||item.aiDetail||item.followUps?.length){
     const dialogue=document.createElement('div');dialogue.className='histDialogue';
     const followUpQuestions=(item.followUps||[]).filter(turn=>turn.role==='user').map(turn=>turn.content);
-    dialogue.innerHTML=`<strong>深层观照已保存</strong>${followUpQuestions.length?` · ${followUpQuestions.length} 次追问`:''}`;
+    dialogue.innerHTML=`<strong>AI 解读已保存</strong>${followUpQuestions.length?` · ${followUpQuestions.length} 次追问`:''}`;
     const transcript=document.createElement('details');transcript.className='histTranscript';
-    const transcriptSummary=document.createElement('summary');transcriptSummary.textContent='展开完整观照';
+    const transcriptSummary=document.createElement('summary');transcriptSummary.textContent='展开解读与追问';
     const transcriptBody=document.createElement('div');transcriptBody.className='histTranscriptBody';
     if(item.aiReading){
-      const initial=document.createElement('div');initial.textContent=`【初次深层观照】\n${item.aiReading}`;transcriptBody.appendChild(initial);
+      const initial=document.createElement('div');initial.textContent=`【短解${item.aiReadingStatus==='partial'?' · 未完成':''}】\n${item.aiReading}`;transcriptBody.appendChild(initial);
     }
+    if(item.aiDetail){const detail=document.createElement('div');detail.style.marginTop='10px';detail.textContent=`【详细分析】\n${item.aiDetail}`;transcriptBody.appendChild(detail);}
     (item.followUps||[]).forEach(turn=>{
       const row=document.createElement('div');row.style.marginTop='10px';
       row.textContent=`【${turn.role==='user'?'你的追问':'继续观照'}】\n${turn.content}`;transcriptBody.appendChild(row);
@@ -2209,7 +2288,7 @@ function renderHistory(){
   if(!filtered.length){
     const empty=document.createElement('div');empty.id='histEmpty';
     empty.style.cssText='padding:20px;text-align:center;color:#4a5878;font-size:13px;';
-    empty.textContent=historyList.length?'没有找到匹配的观测':'还没有完成过一次观测';items.appendChild(empty);return;
+    empty.textContent=historyList.length?'没有找到匹配的记录':'还没有记录';items.appendChild(empty);return;
   }
   [...filtered].reverse().forEach(item=>items.appendChild(historyItem(item)));
 }
@@ -2318,7 +2397,7 @@ function escapeHTML(value){
 function beginMeihuaSession(moment=new Date(),request=castRequest){
   if(meihuaSession)return meihuaSession;
   try{
-    meihuaSession={...castByMode({...request,moment}),capturedAt:moment.toISOString()};
+    meihuaSession={...castByMode({...request,moment}),questionType:request.questionType||'general',capturedAt:moment.toISOString()};
   }catch(error){
     console.error('Meihua cast error:',error);
     meihuaSession={status:'error',error:String(error?.message||error)};
@@ -2328,7 +2407,7 @@ function beginMeihuaSession(moment=new Date(),request=castRequest){
 function serializeMeihua(value=meihuaSession){
   if(!value||!value.inputs)return null;
   return {
-    profile:value.profile||MEIHUA_PROFILE,method:value.method,mode:value.mode||'time',
+    profile:value.profile||MEIHUA_PROFILE,method:value.method,mode:value.mode||'time',questionType:value.questionType||'general',
     modeLabel:value.modeLabel||CAST_MODE_LABELS[value.mode]||'抽牌时间',
     sourceInput:value.sourceInput?JSON.parse(JSON.stringify(value.sourceInput)):null,
     observation:value.observation?{
@@ -2594,9 +2673,11 @@ function getMeihuaDescription(){
   const observationLine=observation?.features?.length
     ? `物象候选：${observation.features.map(item=>`${item.label}=${item.value}`).join('；')}`
     : '';
+  const questionTypeLabels={general:'一般问题',shooting:'射覆',object:'眼前物件',person:'人物外在',lost:'寻找失物',sound:'声音',count:'物品数量',text:'测字',omen:'现场外应'};
   return [
     `规则档案：${value.profile||MEIHUA_PROFILE}（网站本地确定性计算）`,
     `起卦方式：${value.modeLabel||CAST_MODE_LABELS[value.mode]||'抽牌时间'}`,
+    `问题类型：${questionTypeLabels[value.questionType]||'一般问题'}（与起卦方法分开）`,
     inputLine,
     `起卦时刻：${value.calendar?.display||'—'}；时区：${value.calendar?.timeZone||'—'}`,
     `本卦：${hexagramTitle(base)}（上${upper.name}，下${lower.name}）`,
@@ -2697,16 +2778,47 @@ function showSettlement(){
   summDiv.innerHTML=isGua?buildLocalGuaSynthesis():`
     <div style="margin-bottom:12px;color:#f0dab1;font-family:'Songti SC','STSong',serif;font-size:13px;letter-spacing:2px">◇ 牌阵整体观照</div>
     ${buildLocalSynthesis()}`;
+  const snapshotQuestion=document.getElementById('snapshotQuestion');
+  snapshotQuestion.textContent=userQuestion||'本次没有填写具体问题';
+  const snapshotLocalReading=document.getElementById('snapshotLocalReading');
+  const localInsight=meihuaSession?.inputs?primaryHexagramInsight(serializeMeihua()):null;
+  snapshotLocalReading.textContent=readingMode==='tarot'?'先看牌面，再结合你的问题给出短解。':localInsight?`${localInsight.theme}：${localInsight.meaning}`:'';
+  snapshotLocalReading.hidden=!snapshotLocalReading.textContent;
+  const snapshotFacts=document.getElementById('snapshotFacts');snapshotFacts.replaceChildren();
+  if(meihuaSession?.inputs){
+    const base=hexagramMeta(meihuaSession.upper,meihuaSession.lower);
+    const fact=document.createElement('span');fact.className='snapshotFact';fact.textContent=`本卦 · ${hexagramTitle(base)}`;snapshotFacts.appendChild(fact);
+  }
+  sessionDraws.forEach((draw,index)=>{
+    const fact=document.createElement('span');fact.className='snapshotFact';
+    fact.textContent=`${POSITION_LABELS[index]||`第${index+1}张`} · ${displayCardName(draw.card)} · ${draw.reversed?'逆位':'正位'}`;
+    snapshotFacts.appendChild(fact);
+  });
+  const modeFact=document.createElement('span');modeFact.className='snapshotFact';modeFact.textContent=READING_MODE_LABELS[readingMode]||'本次结果';snapshotFacts.appendChild(modeFact);
   renderMeihuaPanel();
   beginTraditionalSession(new Date(meihuaSession?.capturedAt||Date.now()),traditionalRequest);
   renderTraditionalPanels();
+  const resultPanel=document.getElementById('settlePanel');
+  const aiSection=document.getElementById('aiReading');
+  const meihuaSection=document.getElementById('meihuaDetails');
+  if(aiSection&&meihuaSection)resultPanel.insertBefore(aiSection,meihuaSection);
+  const meihuaDetails=document.getElementById('meihuaDetails');
+  if(meihuaDetails){meihuaDetails.hidden=document.getElementById('meihuaPanel').hidden;meihuaDetails.open=false;}
+  const traditionalDetails=document.getElementById('traditionalDetails');
+  if(traditionalDetails){traditionalDetails.hidden=document.getElementById('traditionalPanel').hidden;traditionalDetails.open=false;}
+  cancelAIRequests();aiSessionToken++;
+  aiReadingStatus='pending';aiDetailReading='';isAIDetailStreaming=false;aiDetailQueued=false;
+  document.getElementById('aiDetailContent').replaceChildren();
+  document.getElementById('aiDetailPanel').open=false;
+  document.getElementById('aiDetailRetryBtn').textContent='生成详细分析';
+  document.getElementById('aiRetryBtn').style.display='none';
   document.getElementById('aiReadingTitle').textContent=isGua?'本卦重点分析':isTarot?'牌面重点分析':'牌面与本卦综合分析';
   const readingQuestion=document.getElementById('readingQuestion');
   readingQuestion.textContent=userQuestion;readingQuestion.hidden=!userQuestion;
   document.getElementById('referenceTitle').textContent=isGua?'本次起卦记录':'塔罗牌面参照';
   document.getElementById('referenceSubtitle').textContent=isGua?'查看本次起卦方式与整体观照':'展开查看每张牌和牌阵整体观照';
   document.getElementById('tarotReferenceCount').textContent=isGua?'单起卦':`${sessionDraws.length} 张牌`;
-  document.getElementById('tarotReference').open=isGua||isTarot;
+  document.getElementById('tarotReference').open=false;
   saveReadingToHistory();
   // show overlay
   overlay.classList.add('show');
@@ -2723,12 +2835,24 @@ function showSettlement(){
 function resetSession(){
   closePoster();
   if(posterObjectUrl){URL.revokeObjectURL(posterObjectUrl);posterObjectUrl='';posterBlob=null;}
+  cancelAIRequests();aiSessionToken++;isAIStreaming=false;isAIDetailStreaming=false;isFollowUpStreaming=false;aiDetailQueued=false;
   document.getElementById('settleOverlay').classList.remove('show');
   document.getElementById('aiContent').innerHTML='';
   document.getElementById('aiProgressBar').style.display='none';
   document.getElementById('aiRetryBtn').style.display='none';
   document.getElementById('aiReading').classList.remove('active');
   document.getElementById('aiReadingHeader').classList.remove('show');
+  document.getElementById('aiDetailContent').replaceChildren();
+  document.getElementById('aiDetailPanel').open=false;
+  document.getElementById('traditionalDetails').open=false;
+  document.getElementById('traditionalDetails').hidden=true;
+  document.getElementById('meihuaDetails').open=false;
+  document.getElementById('meihuaDetails').hidden=true;
+  document.getElementById('advancedSetup').open=false;
+  document.getElementById('snapshotFacts').replaceChildren();
+  document.getElementById('snapshotQuestion').textContent='';
+  document.getElementById('snapshotLocalReading').textContent='';
+  aiDetailReading='';aiReadingStatus='idle';aiDetailQueued=false;
   const meihuaPanel=document.getElementById('meihuaPanel');
   if(meihuaPanel)meihuaPanel.hidden=true;
   document.getElementById('meihuaBaseReading').replaceChildren();
@@ -2758,13 +2882,22 @@ function resetSession(){
   document.getElementById('bazhaiPositions')?.replaceChildren();
   userQuestion='';
   document.getElementById('questionInput').value='';
-  readingMode='combo';
+  readingMode=allowedPreference(savedPreferences.readingMode,['tarot','gua','combo'],'gua');
+  targetDraws=Number(savedPreferences.targetDraws)===5?5:3;
+  drawStyle=allowedPreference(savedPreferences.drawStyle,['quick','manual'],'quick');
   updateReadingModeUI();
-  castRequest={mode:'time'};
+  castRequest={mode:'time',questionType:'general'};
   const castMode=document.getElementById('castMode');
-  if(castMode){castMode.value='auto';updateCastModeUI();}
+  const questionType=document.getElementById('questionType');if(questionType)questionType.value='auto';
+  if(castMode){castMode.value=allowedPreference(savedPreferences.castMode,['auto','time','three','sound','count','text'],'auto');updateCastModeUI();}
   const traditionalLayer=document.getElementById('traditionalLayer');
-  if(traditionalLayer){traditionalLayer.value='all';updateTraditionalLayerUI();}
+  if(traditionalLayer){traditionalLayer.value=allowedPreference(savedPreferences.traditionalLayer,['meihua','qimen','bazhai','all'],'meihua');updateTraditionalLayerUI();}
+  document.querySelectorAll('.spreadOption').forEach(option=>{
+    const active=Number(option.dataset.count)===targetDraws;option.classList.toggle('active',active);option.setAttribute('aria-checked',String(active));
+  });
+  document.querySelectorAll('.drawStyleOption').forEach(option=>{
+    const active=option.dataset.drawStyle===drawStyle;option.classList.toggle('active',active);option.setAttribute('aria-checked',String(active));
+  });
   const houseFacing=document.getElementById('houseFacingInput');
   if(houseFacing)houseFacing.value='';
   const resultFacing=document.getElementById('resultHouseFacing');
@@ -2780,7 +2913,7 @@ function resetSession(){
   currentReadingHistoryId=null;
   sessionDraws=[];
   meihuaSession=null;
-  traditionalRequest={layer:'all',facing:''};
+  traditionalRequest={layer:allowedPreference(savedPreferences.traditionalLayer,['meihua','qimen','bazhai','all'],'meihua'),facing:''};
   traditionalSession=null;
   retiredMeshes.forEach(m=>{scene.remove(m);m.geometry.dispose();});
   retiredMeshes=[];
@@ -2812,10 +2945,19 @@ let isAIStreaming=false;
 let isFollowUpStreaming=false;
 let aiConversation=[];
 let initialAIReading='';
+let aiDetailReading='';
+let aiReadingStatus='idle';
+let isAIDetailStreaming=false;
+let aiDetailQueued=false;
+let aiSessionToken=0;
+const activeAIControllers=new Set();
 let followUpCount=0;
 const MAX_FOLLOWUPS=4;
 let qimenAiStreaming=false;
 let qimenAiStartedForSession=false;
+function makeAIController(){const controller=new AbortController();activeAIControllers.add(controller);return controller;}
+function releaseAIController(controller){activeAIControllers.delete(controller);}
+function cancelAIRequests(){activeAIControllers.forEach(controller=>controller.abort());activeAIControllers.clear();}
 
 function parseMD(t){
   return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
@@ -2845,7 +2987,7 @@ function resetFollowups(){
 }
 function updateFollowupControls(){
   const limitReached=followUpCount>=MAX_FOLLOWUPS;
-  const disabled=isAIStreaming||isFollowUpStreaming||limitReached;
+  const disabled=isAIStreaming||isAIDetailStreaming||isFollowUpStreaming||limitReached||aiReadingStatus!=='complete';
   document.getElementById('followupCount').textContent=`${followUpCount} / ${MAX_FOLLOWUPS}`;
   document.getElementById('followupInput').disabled=disabled;
   document.getElementById('followupSubmit').disabled=disabled;
@@ -2861,6 +3003,8 @@ function persistAIHistory(){
   const item=historyList.find(entry=>(entry.id||entry.time)===currentReadingHistoryId);
   if(!item)return;
   if(initialAIReading)item.aiReading=initialAIReading.slice(0,6000);
+  if(aiDetailReading)item.aiDetail=aiDetailReading.slice(0,9000);
+  item.aiReadingStatus=aiReadingStatus;
   item.followUps=aiConversation.slice(initialAIReading?1:0).slice(-8).map(turn=>({role:turn.role,content:turn.content.slice(0,2400)}));
   localStorage.setItem(HISTORY_KEY,JSON.stringify(historyList));
   renderHistory();
@@ -2869,16 +3013,17 @@ async function readAIStream(resp,onUpdate){
   if(!resp.body)throw new Error('浏览器不支持流式解读');
   const reader=resp.body.getReader();
   const decoder=new TextDecoder();
-  let buffer='',fullText='';
+  let buffer='',fullText='',completed=false;
   const consumeLine=line=>{
     if(!line.startsWith('data: '))return;
     const data=line.slice(6);
-    if(data==='[DONE]')return;
+    if(data==='[DONE]'){completed=true;return;}
     try{
       const json=JSON.parse(data);
       if(json.error)throw new Error(json.error.message||'解读服务返回错误');
       const content=json.choices?.[0]?.delta?.content;
       if(content){fullText+=content;onUpdate(fullText);}
+      if(json.choices?.[0]?.finish_reason)completed=true;
     }catch(error){if(!(error instanceof SyntaxError))throw error;}
   };
   while(true){
@@ -2889,6 +3034,7 @@ async function readAIStream(resp,onUpdate){
     lines.forEach(consumeLine);
   }
   if(buffer.trim())consumeLine(buffer.trim());
+  if(!completed)throw Object.assign(new Error('解读连接提前结束'),{partialText:fullText});
   return fullText.trim();
 }
 
@@ -2898,13 +3044,17 @@ async function requestQimenAI({auto=false}={}){
   const button=document.getElementById('qimenAiBtn');
   if(!qimen||!contentDiv||qimenAiStreaming)return;
   if(auto&&qimenAiStartedForSession)return;
+  const token=aiSessionToken;
   qimenAiStartedForSession=true;
   qimenAiStreaming=true;
   if(button){button.disabled=true;button.textContent='正在解释…';}
   contentDiv.innerHTML='<div class="qimenAiThinking"><span class="dots"><span></span><span></span><span></span></span><span>正在把奇门术语翻译成白话…</span></div>';
+  let streamedText='';
+  const controller=makeAIController();
   try{
     const resp=await fetch('/api/tarot-reading',{
       method:'POST',headers:{'Content-Type':'application/json'},
+      signal:controller.signal,
       body:JSON.stringify({readingMode,question:userQuestion,cards:getCardsDescription(),meihua:getMeihuaDescription(),traditional:getTraditionalDescription(),focus:'qimen'})
     });
     if(!resp.ok){
@@ -2913,14 +3063,21 @@ async function requestQimenAI({auto=false}={}){
       if(['127.0.0.1','localhost'].includes(location.hostname)&&[404,405,501].includes(resp.status))message='当前是静态预览，请使用本地 AI 服务或部署后的正式网址';
       throw new Error(message);
     }
-    const fullText=await readAIStream(resp,text=>{contentDiv.innerHTML='<p>'+parseMD(text)+'</p>';});
+    if(token!==aiSessionToken)return;
+    const fullText=await readAIStream(resp,text=>{if(token!==aiSessionToken)return;streamedText=text;contentDiv.innerHTML='<p>'+parseMD(text)+'</p>';});
+    if(token!==aiSessionToken)return;
     if(!fullText)throw new Error('解读服务没有返回内容');
     if(button)button.textContent='重新解释';
   }catch(err){
+    if(token!==aiSessionToken)return;
     console.error('Qimen AI reading error:',err);
-    contentDiv.innerHTML=`<p class="qimenAiError">${escapeHTML(err.message)}。你仍可以展开下方九宫盘查看原始资料。</p>`;
+    if(!streamedText)contentDiv.replaceChildren();
+    const error=document.createElement('p');error.className='qimenAiError';error.textContent=`${streamedText?'连接中断，已收到的解释保留。':''}${err.message}。你仍可以展开下方九宫盘查看原始资料。`;
+    contentDiv.appendChild(error);
     if(button)button.textContent='重试解释';
   }finally{
+    releaseAIController(controller);
+    if(token!==aiSessionToken)return;
     qimenAiStreaming=false;
     if(button)button.disabled=false;
   }
@@ -2932,21 +3089,25 @@ async function requestAIReading(){
   if(isAIStreaming)return;
   resetFollowups();
   isAIStreaming=true;updateFollowupControls();
+  const token=aiSessionToken;
   const contentDiv=document.getElementById('aiContent');
   const progressBar=document.getElementById('aiProgressBar');
   const progressFill=document.getElementById('aiProgressFill');
   const retryBtn=document.getElementById('aiRetryBtn');
-  contentDiv.innerHTML='';progressBar.style.display='block';progressFill.style.width='0%';retryBtn.style.display='none';
+  contentDiv.replaceChildren();progressBar.style.display='block';progressFill.style.width='0%';retryBtn.style.display='none';
+  initialAIReading='';aiReadingStatus='pending';
   document.getElementById('aiReading').classList.add('active');
   document.getElementById('aiReadingHeader').classList.add('show');
   const thinkEl=document.createElement('div');thinkEl.className='aiThinking';
-  const thinkingLabel=readingMode==='gua'?'正在把本卦和你的问题放在一起分析…':readingMode==='tarot'?'正在把牌面和你的问题放在一起分析…':'正在把牌面、卦象和你的问题放在一起分析…';
-  thinkEl.innerHTML=`<div class="dots"><span></span><span></span><span></span></div><span>${thinkingLabel}</span>`;
+  thinkEl.innerHTML='<div class="dots"><span></span><span></span><span></span></div><span>先看本次结果和你的问题…</span>';
   contentDiv.appendChild(thinkEl);
+  const controller=makeAIController();
+  let textDiv=null,streamedText='';
   try{
     const resp=await fetch('/api/tarot-reading',{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({readingMode,question:userQuestion,cards:getCardsDescription(),meihua:getMeihuaDescription(),traditional:getTraditionalDescription()})
+      signal:controller.signal,
+      body:JSON.stringify({readingMode,question:userQuestion,questionType:castRequest.questionType||'general',depth:'brief',cards:getCardsDescription(),meihua:getMeihuaDescription(),traditional:getTraditionalDescription()})
     });
     if(!resp.ok){
       let message=`智能解读暂时不可用（${resp.status}）`;
@@ -2954,65 +3115,114 @@ async function requestAIReading(){
       if(['127.0.0.1','localhost'].includes(location.hostname)&&[404,405,501].includes(resp.status))message='当前是静态预览，不运行 AI；请使用 Netlify Dev 或部署后的正式网址测试';
       throw new Error(message);
     }
+    if(token!==aiSessionToken)return;
     thinkEl.remove();
-    const textDiv=document.createElement('div');textDiv.style.cssText='margin-top:4px;';contentDiv.appendChild(textDiv);
+    textDiv=document.createElement('div');textDiv.className='aiShortText';contentDiv.appendChild(textDiv);
     const cursor=document.createElement('span');cursor.id='aiCursor';textDiv.appendChild(cursor);
     const fullText=await readAIStream(resp,text=>{
-      textDiv.innerHTML='<p>'+parseMD(text)+'</p>';textDiv.appendChild(cursor);
-      contentDiv.scrollTop=contentDiv.scrollHeight;progressFill.style.width=Math.min(95,text.length/8)+'%';
+      if(token!==aiSessionToken)return;
+      streamedText=text;textDiv.innerHTML='<p>'+parseMD(text)+'</p>';textDiv.appendChild(cursor);
+      progressFill.style.width=Math.min(95,text.length/5)+'%';
     });
-    if(!fullText)textDiv.innerHTML='<p style="color:#9a909f;text-align:center">解读未能返回内容，请检查网络或 API Key 后重试。</p>';
-    else{initialAIReading=fullText;aiConversation=[{role:'assistant',content:fullText}];persistAIHistory();}
+    if(token!==aiSessionToken)return;
+    if(!fullText)throw new Error('解读服务没有返回内容');
+    initialAIReading=fullText;aiReadingStatus='complete';aiConversation=[{role:'assistant',content:fullText}];persistAIHistory();
     progressFill.style.width='100%';
   }catch(err){
+    if(token!==aiSessionToken)return;
     console.error('AI reading error:',err);
-    contentDiv.innerHTML=`<div class="readingUnavailable"><strong>本卦导读和牌面已保留</strong><p>${escapeHTML(err.message)}。你可以先读上方本卦导读，或展开下方塔罗牌面参照。</p></div>`;
+    if(thinkEl.isConnected)thinkEl.remove();
+    aiReadingStatus=streamedText?'partial':'failed';
+    if(streamedText)initialAIReading=streamedText;
+    persistAIHistory();
+    const status=document.createElement('div');status.className='aiStreamStatus';
+    status.append(document.createTextNode(`${streamedText?'连接中断，已收到的文字保留在上面。':'这次没有连上解读服务。'}${err.message}；本次牌和卦不会改变。`));
+    contentDiv.appendChild(status);
   }finally{
+    releaseAIController(controller);
+    if(token!==aiSessionToken)return;
     isAIStreaming=false;retryBtn.style.display='inline-block';progressBar.style.display='none';
     document.getElementById('aiReading').classList.remove('active');
     document.getElementById('aiReadingHeader').classList.remove('show');
     const cursor=document.getElementById('aiCursor');if(cursor)cursor.remove();
-    showFollowups();
-    if(traditionalSession?.qimen)void requestQimenAI({auto:true});
+    if(aiReadingStatus==='complete')showFollowups();
+    else document.getElementById('followupPanel').classList.remove('show');
+    retryBtn.style.display=aiReadingStatus==='complete'?'none':'inline-block';
+    retryBtn.textContent='重试短解';
+    if(aiDetailQueued){
+      aiDetailQueued=false;
+      if(aiReadingStatus==='complete'&&document.getElementById('aiDetailPanel').open)void requestAIDetail();
+      else document.getElementById('aiDetailRetryBtn').textContent='生成详细分析';
+    }
   }
 }
 document.getElementById('aiRetryBtn').onclick=requestAIReading;
-function appendFollowupTurn(role,text,{local=false,thinking=false}={}){
-  const turn=document.createElement('div');turn.className=`followupTurn ${role}${local?' local':''}`;
-  const label=document.createElement('small');label.textContent=role==='user'?'你的追问':local?'本地牌面回应':'继续观照';
+async function requestAIDetail(){
+  if(isAIDetailStreaming)return;
+  if(isAIStreaming){aiDetailQueued=true;document.getElementById('aiDetailRetryBtn').textContent='短解完成后生成';return;}
+  isAIDetailStreaming=true;updateFollowupControls();
+  const token=aiSessionToken;
+  const content=document.getElementById('aiDetailContent');
+  const button=document.getElementById('aiDetailRetryBtn');
+  content.replaceChildren();button.disabled=true;button.textContent='正在生成…';
+  const text=document.createElement('div');text.className='aiDetailText';content.appendChild(text);
+  const controller=makeAIController();
+  let streamedText='';
+  try{
+    const resp=await fetch('/api/tarot-reading',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      signal:controller.signal,
+      body:JSON.stringify({readingMode,question:userQuestion,questionType:castRequest.questionType||'general',depth:'detail',brief:initialAIReading,cards:getCardsDescription(),meihua:getMeihuaDescription(),traditional:getTraditionalDescription()})
+    });
+    if(!resp.ok){let message=`詳細分析暫時不可用（${resp.status}）`;try{const data=await resp.json();if(data.error)message=data.error;}catch{}throw new Error(message);}
+    if(token!==aiSessionToken)return;
+    const answer=await readAIStream(resp,value=>{if(token!==aiSessionToken)return;streamedText=value;text.innerHTML=parseMD(value);});
+    if(token!==aiSessionToken)return;
+    if(!answer)throw new Error('解读服务没有返回内容');
+    aiDetailReading=answer;persistAIHistory();
+    button.textContent='重新生成详细分析';
+  }catch(error){
+    if(token!==aiSessionToken)return;
+    if(streamedText)aiDetailReading=streamedText;
+    const status=document.createElement('div');status.className='aiDetailStatus';
+    status.append(document.createTextNode(`${streamedText?'连接中断，已收到的内容保留。':'详细分析暂时没有生成。'}${error.message}；短解和本次结果仍在。`));content.appendChild(status);
+    if(streamedText)persistAIHistory();
+    button.textContent='重试详细分析';
+  }finally{
+    releaseAIController(controller);
+    if(token!==aiSessionToken)return;
+    isAIDetailStreaming=false;button.disabled=false;updateFollowupControls();
+  }
+}
+document.getElementById('aiDetailPanel').addEventListener('toggle',event=>{
+  if(event.currentTarget.open&&!aiDetailReading&&!isAIDetailStreaming)requestAIDetail();
+});
+document.getElementById('aiDetailRetryBtn').addEventListener('click',requestAIDetail);
+function appendFollowupTurn(role,text,{thinking=false}={}){
+  const turn=document.createElement('div');turn.className=`followupTurn ${role}`;
+  const label=document.createElement('small');label.textContent=role==='user'?'你的追问':'回应';
   const body=document.createElement('div');
-  body.innerHTML=thinking?'<span class="aiThinking" style="padding:0"><span class="dots"><span></span><span></span><span></span></span><span>正在沿牌阵寻找线索…</span></span>':parseMD(text);
+  body.innerHTML=thinking?'<span class="aiThinking" style="padding:0"><span class="dots"><span></span><span></span><span></span></span><span>正在回应…</span></span>':parseMD(text);
   turn.append(label,body);document.getElementById('followupThread').appendChild(turn);
   turn.scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'nearest'});
   return{turn,body};
 }
-function buildLocalFollowUp(query){
-  const last=sessionDraws[sessionDraws.length-1],first=sessionDraws[0];
-  const lastMeaning=last?(last.reversed?last.card.rev:last.card.up):'放慢速度观察';
-  const firstMeaning=first?(first.reversed?first.card.rev:first.card.up):'此刻的起点';
-  const meihuaNote=meihuaSession?.inputs?(()=>{
-    const base=hexagramMeta(meihuaSession.upper,meihuaSession.lower);
-    return `${meihuaSession.modeLabel||'同步起卦'}仍沿用${hexagramTitle(base)}，${movingLineLabel(meihuaSession.movingLine)}不变。`;
-  })():'';
-  const action=/做|行动|选择|下一步|怎么办/.test(query)
-    ?`把“${lastMeaning}”缩小成一个今天或本周能完成的小动作，并在行动后记录真实反馈。`
-    :`先比较牌阵从“${firstMeaning}”到“${lastMeaning}”的变化，看看哪一处最像你现实中的矛盾。`;
-  const modeText=readingMode==='gua'?'本卦回应':readingMode==='tarot'?'牌面回应':'牌面与卦象回应';
-  const pathText=readingMode==='gua'?`沿着${meihuaNote||'本次卦象'}继续观察`:`从“${firstMeaning}”走向“${lastMeaning}”的路径`;
-  return `**这是一段本地${modeText}。** 当前智能连接不可用，所以没有重新生成或重新起卦。${meihuaNote?`\n\n${meihuaNote}`:''}\n\n围绕“${query}”，建议${pathText}。${action}\n\n你可以继续问自己：什么证据会支持或推翻我现在的理解？`;
-}
-async function requestFollowUp(rawQuestion){
+async function requestFollowUp(rawQuestion,{retry=false,pending=null}={}){
   const followUp=String(rawQuestion||'').trim().slice(0,180);
-  if(!followUp||isFollowUpStreaming||isAIStreaming||followUpCount>=MAX_FOLLOWUPS)return;
-  isFollowUpStreaming=true;followUpCount++;
-  document.getElementById('followupInput').value='';updateFollowupControls();
-  appendFollowupTurn('user',followUp);
-  const pending=appendFollowupTurn('assistant','',{thinking:true});
+  if(!followUp||isFollowUpStreaming||isAIStreaming||isAIDetailStreaming||(!retry&&followUpCount>=MAX_FOLLOWUPS))return;
+  isFollowUpStreaming=true;
+  if(!retry){followUpCount++;document.getElementById('followupInput').value='';appendFollowupTurn('user',followUp);pending=appendFollowupTurn('assistant','',{thinking:true});}
+  else{pending.body.innerHTML='<span class="aiThinking" style="padding:0"><span class="dots"><span></span><span></span><span></span></span><span>正在重试这条追问…</span></span>';}
+  updateFollowupControls();
+  const token=aiSessionToken;
+  let streamedText='';
+  const controller=makeAIController();
   const priorConversation=aiConversation.slice(-7);
   try{
     const resp=await fetch('/api/tarot-reading',{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({readingMode,question:userQuestion,cards:getCardsDescription(),meihua:getMeihuaDescription(),traditional:getTraditionalDescription(),followUp,conversation:priorConversation})
+      signal:controller.signal,
+      body:JSON.stringify({readingMode,question:userQuestion,questionType:castRequest.questionType||'general',cards:getCardsDescription(),meihua:getMeihuaDescription(),traditional:getTraditionalDescription(),followUp,conversation:priorConversation})
     });
     if(!resp.ok){
       let message=`智能解读暂时不可用（${resp.status}）`;
@@ -3020,16 +3230,23 @@ async function requestFollowUp(rawQuestion){
       if(['127.0.0.1','localhost'].includes(location.hostname)&&[404,405,501].includes(resp.status))message='当前是静态预览，不运行 AI；请使用 Netlify Dev 或部署后的正式网址测试';
       throw new Error(message);
     }
-    const answer=await readAIStream(resp,text=>{pending.body.innerHTML=parseMD(text);});
+    if(token!==aiSessionToken)return;
+    const answer=await readAIStream(resp,text=>{if(token!==aiSessionToken)return;streamedText=text;pending.body.innerHTML=parseMD(text);});
+    if(token!==aiSessionToken)return;
     if(!answer)throw new Error('解读未能返回内容');
     aiConversation.push({role:'user',content:followUp},{role:'assistant',content:answer});
   }catch(error){
-    const fallback=buildLocalFollowUp(followUp);
-    pending.turn.classList.add('local');pending.turn.querySelector('small').textContent='本地牌面回应';
-    pending.body.innerHTML=parseMD(fallback);
-    aiConversation.push({role:'user',content:followUp},{role:'assistant',content:fallback});
-    console.warn('Follow-up reading fallback:',error);
+    if(token!==aiSessionToken)return;
+    pending.turn.querySelector('small').textContent='解读未完成';
+    const status=document.createElement('div');status.className='aiStreamStatus';
+    status.append(document.createTextNode(`${streamedText?'连接中断，已收到的文字保留。':'这条追问没有连上解读服务。'}${error.message}；原牌和卦没有改变。`));
+    const retryButton=document.createElement('button');retryButton.type='button';retryButton.className='aiRetryInline';retryButton.textContent='重试这条';
+    retryButton.addEventListener('click',()=>{status.remove();void requestFollowUp(followUp,{retry:true,pending});});
+    status.appendChild(retryButton);pending.body.appendChild(status);
+    console.warn('Follow-up reading failed:',error);
   }finally{
+    releaseAIController(controller);
+    if(token!==aiSessionToken)return;
     isFollowUpStreaming=false;updateFollowupControls();persistAIHistory();
   }
 }
@@ -3042,10 +3259,11 @@ function getReadingText(){
   const cards=sessionDraws.map((d,i)=>`${POSITION_LABELS[i]||`第${i+1}张`}：${d.card.name}（${d.reversed?'逆位':'正位'}）— ${d.reversed?d.card.rev:d.card.up}`).join('\n');
   const meihua=getMeihuaDescription();
   const traditional=getTraditionalDescription();
-  const ai=document.getElementById('aiContent').innerText.trim();
+  const ai=document.querySelector('#aiContent .aiShortText')?.innerText.trim()||'';
+  const aiDetail=document.querySelector('#aiDetailContent .aiDetailText')?.innerText.trim()||'';
   const followups=document.getElementById('followupThread').innerText.trim();
   const title=readingMode==='gua'?'单起卦观测':readingMode==='tarot'?'塔罗解读':'塔罗＋起卦综合观测';
-  return `${title}\n\n${question}${cards}${meihua?`\n\n梅花易数起卦\n${meihua}`:''}${traditional?`\n\n传统资料层\n${traditional}`:''}${ai?`\n\n${ai}`:''}${followups?`\n\n继续追问\n${followups}`:''}\n\n仅供娱乐与自我反思。\n${location.origin}${location.pathname}`;
+  return `${title}\n\n${question}${cards}${meihua?`\n\n梅花易数起卦\n${meihua}`:''}${traditional?`\n\n传统资料层\n${traditional}`:''}${ai?`\n\nAI 短解\n${ai}`:''}${aiDetail?`\n\nAI 详细分析\n${aiDetail}`:''}${followups?`\n\n继续追问\n${followups}`:''}\n\n仅供娱乐与自我反思。\n${location.origin}${location.pathname}`;
 }
 let posterBlob=null;
 let posterObjectUrl='';
@@ -3217,22 +3435,23 @@ function updateReadingModeUI(){
     option.setAttribute('aria-checked',String(active));
     option.tabIndex=active?0:-1;
   });
-  const spreadLabel=document.querySelector('.spreadLabel');
-  const spreadPicker=document.querySelector('.spreadPicker');
+  const spreadSettings=document.getElementById('spreadSettings');
+  const drawStyleOptions=document.getElementById('drawStyleOptions');
   const divinationOptions=document.getElementById('divinationOptions');
   const hint=document.getElementById('readingModeHint');
   const confirmLabel=document.querySelector('#questionConfirm span');
   const copy={
-    tarot:{hint:'选牌后解读。',button:'开始抽牌'},
-    gua:{hint:'起卦后解读。',button:'开始起卦'},
-    combo:{hint:'抽牌，同时起卦。',button:'开始塔罗＋起卦'},
+    tarot:{hint:'只看塔罗牌。',button:'开始抽牌'},
+    gua:{hint:'按时间起卦，可在更多设置中改用数字。',button:'起一卦'},
+    combo:{hint:'牌和卦一起看。',button:'开始'},
   }[mode]||{};
-  if(spreadLabel)spreadLabel.hidden=mode==='gua';
-  if(spreadPicker)spreadPicker.hidden=mode==='gua';
+  if(spreadSettings)spreadSettings.hidden=mode==='gua';
+  if(drawStyleOptions)drawStyleOptions.hidden=mode==='gua';
   if(divinationOptions)divinationOptions.hidden=mode==='tarot';
   if(hint)hint.textContent=copy.hint||'';
   if(confirmLabel)confirmLabel.textContent=copy.button||'开始观测';
   if(typeof updateCastModeUI==='function')updateCastModeUI();
+  updateEntrySettingLine();
 }
 document.querySelectorAll('.readingModeOption').forEach(button=>{
   button.addEventListener('pointerdown',()=>{
@@ -3249,9 +3468,21 @@ document.querySelectorAll('.readingModeOption').forEach(button=>{
     buttons[next].click();
   });
   button.addEventListener('click',()=>{
-    readingMode=button.dataset.readingMode||'combo';
+    readingMode=button.dataset.readingMode||'gua';
     updateReadingModeUI();
+    savePreferences();
   });
+});
+document.getElementById('castMode').value=allowedPreference(savedPreferences.castMode,['auto','time','three','sound','count','text'],'auto');
+document.getElementById('traditionalLayer').value=allowedPreference(savedPreferences.traditionalLayer,['meihua','qimen','bazhai','all'],'meihua');
+targetDraws=Number(savedPreferences.targetDraws)===5?5:3;
+document.querySelectorAll('.spreadOption').forEach(option=>{
+  const active=Number(option.dataset.count)===targetDraws;
+  option.classList.toggle('active',active);option.setAttribute('aria-checked',String(active));
+});
+document.querySelectorAll('.drawStyleOption').forEach(option=>{
+  const active=option.dataset.drawStyle===drawStyle;
+  option.classList.toggle('active',active);option.setAttribute('aria-checked',String(active));
 });
 updateReadingModeUI();
 document.querySelectorAll('.spreadOption').forEach(button=>{
@@ -3262,8 +3493,29 @@ document.querySelectorAll('.spreadOption').forEach(button=>{
       option.classList.toggle('active',active);
       option.setAttribute('aria-checked',String(active));
     });
+    savePreferences();updateEntrySettingLine();
   });
 });
+document.querySelectorAll('.drawStyleOption').forEach(button=>button.addEventListener('click',()=>{
+  drawStyle=allowedPreference(button.dataset.drawStyle,['quick','manual'],'quick');
+  document.querySelectorAll('.drawStyleOption').forEach(option=>{
+    const active=option===button;option.classList.toggle('active',active);option.setAttribute('aria-checked',String(active));
+  });
+  savePreferences();updateEntrySettingLine();
+}));
+function updateEntrySettingLine(){
+  const line=document.getElementById('entrySettingLine');if(!line)return;
+  const pieces=[];
+  if(readingMode!=='gua')pieces.push(`${targetDraws}张 · ${drawStyle==='quick'?'快速':'亲手抽'}`);
+  if(readingMode!=='tarot'){
+    const method=document.getElementById('castMode')?.value||'auto';
+    const methodLabels={auto:'自动起卦',time:'按时间',three:'三个数字',sound:'按声音',count:'按数量',text:'按字'};
+    pieces.push(methodLabels[method]||'按时间');
+    const layer=document.getElementById('traditionalLayer')?.value||'meihua';
+    pieces.push(layer==='meihua'?'只看梅花':layer==='all'?'奇门 + 八宅':layer==='qimen'?'加奇门':'加八宅');
+  }
+  line.textContent=pieces.join(' · ')||'默认设置';
+}
 function normalizeDigits(value){
   return String(value||'').replace(/[０-９]/g,ch=>String.fromCharCode(ch.charCodeAt(0)-0xfee0));
 }
@@ -3271,116 +3523,126 @@ function explicitThreeNumbers(value){
   const normalized=normalizeDigits(value);
   const numbers=[...normalized.matchAll(/\d{1,9}/g)].map(match=>Number(match[0]));
   const hasThreePhrase=/三个?数字|三数|数字起卦|用数字起卦/.test(normalized);
-  const hasThreeSeparated=/\d{1,9}\s*[、,，\/%\s]+\d{1,9}\s*[、,，\/%\s]+\d{1,9}/.test(normalized);
-  if(!hasThreePhrase&&!hasThreeSeparated)return null;
-  if(numbers.length<3)return {error:'你指定了三个数字起卦，请补齐三个正整数。'};
-  return {mode:'three',numbers:numbers.slice(0,3),auto:true};
+  const hasExplicitNumberCast=/(?:用|按|以)\s*[0-9０-９][^。！？!?；;]{0,24}(?:起卦|取卦)/.test(normalized);
+  if(!hasThreePhrase&&!hasExplicitNumberCast)return null;
+  if(numbers.length!==3)return {error:numbers.length<3?'你指定了三个数字起卦，请补齐三个正整数。':'数字起卦请只给三个整数，避免系统替你猜哪三个。'};
+  return {mode:'three',numbers,auto:true};
 }
-function inferCastMode(question){
-  const explicit=explicitThreeNumbers(question);
-  if(explicit)return explicit;
-  if(/射覆|手里(?:握|拿|捏)|握着什么|拿着什么|什么东西|什么物件|什么物品/.test(question))return {mode:'shooting',auto:true};
-  if(/外应|十应|突然看到|突然听到|现场应象/.test(question))return {mode:'omen',auto:true};
-  if(/失物|丢了|丢失|找不到|遗失|在哪里/.test(question))return {mode:'lost',auto:true};
-  if(/声音|敲了|敲击|几声|响了/.test(question))return {mode:'sound',auto:true};
-  if(/测字|拆字/.test(question))return {mode:'text',auto:true,text:question};
-  return {mode:'time',auto:true};
+function inferQuestionType(question){
+  if(/射覆|手里(?:握|拿|捏)|握着什么|拿着什么|什么东西|什么物件|什么物品/.test(question))return 'shooting';
+  if(/失物|丢了|丢失|找不到|遗失|在哪里/.test(question))return 'lost';
+  if(/声音|敲了|敲击|几声|响了/.test(question))return 'sound';
+  if(/物品数量|几件|多少件|数量/.test(question))return 'count';
+  if(/测字|拆字/.test(question))return 'text';
+  if(/外应|十应|突然看到|突然听到|现场应象/.test(question))return 'omen';
+  if(/这个物件|眼前的东西|桌上|面前的物品|这件东西/.test(question))return 'object';
+  if(/这个人|他是什么样|她是什么样|对方是什么样|人物外在/.test(question))return 'person';
+  return 'general';
+}
+function currentQuestionType(question=document.getElementById('questionInput')?.value||''){
+  const selected=document.getElementById('questionType')?.value||'auto';
+  return selected==='auto'?inferQuestionType(question):selected;
 }
 function collectCastRequest(){
-  if(readingMode==='tarot')return {mode:'none'};
-  const selected=document.getElementById('castMode')?.value||'auto';
+  if(readingMode==='tarot')return {mode:'none',questionType:'general'};
+  const method=document.getElementById('castMode')?.value||'auto';
   const question=document.getElementById('questionInput')?.value.trim()||'';
   const detail=document.getElementById('castDetailInput')?.value.trim()||'';
   const count=Number(document.getElementById('castCountInput')?.value);
-  if(selected==='auto'){
-    const inferred=inferCastMode(question);
-    if(inferred.error)return inferred;
-    if(inferred.mode==='three')return inferred;
-    if(inferred.mode==='sound'||inferred.mode==='count'){
-      if(!Number.isSafeInteger(count)||count<1){
-        const inlineNumbers=[...normalizeDigits(question).matchAll(/\d{1,9}/g)].map(match=>Number(match[0]));
-        if(inlineNumbers.length) return {...inferred,count:inlineNumbers.at(-1)};
-        return {error:'声音占或物数占需要填写可核对的次数 / 数量，请在下拉框中明确选择。'};
-      }
-      return {...inferred,count};
+  const questionType=currentQuestionType(question);
+  const explicit=explicitThreeNumbers(question);
+  if(explicit?.error)return explicit;
+  const fields=[1,2,3].map(index=>String(document.getElementById(`castNum${index}`)?.value||'').trim());
+  const anyField=fields.some(Boolean);
+  let numbers=explicit?.numbers||null;
+  if(method==='three'){
+    if(anyField){
+      if(!fields.every(Boolean))return {error:'三个数字都要填完整。'};
+      const entered=fields.map(Number);
+      if(!entered.every(number=>Number.isSafeInteger(number)&&number>=1))return {error:'三个数字都要是正整数。'};
+      if(numbers&&numbers.some((number,index)=>number!==entered[index]))return {error:'问题里写的数字与输入框不一致，请统一成同一组。'};
+      numbers=entered;
     }
-    if(inferred.mode==='text'){
-      const material=detail||question.replace(/.*?(?:测字|拆字)[:：\s]*/,'').trim()||question;
-      if([...material].filter(ch=>!(/\s/u.test(ch))).length<2)return {error:'测字起卦至少需要两个字。'};
-      return {...inferred,text:material};
-    }
-    if(['object','person','lost','omen'].includes(inferred.mode))return {...inferred,text:detail||question};
-    return {mode:inferred.mode};
+    if(!numbers)return {error:'请填三个数字，或在问题里明确写“用三个数字起卦”。'};
   }
-  if(selected==='three'){
-    const numbers=[1,2,3].map(index=>Number(document.getElementById(`castNum${index}`)?.value));
-    if(!numbers.every(number=>Number.isSafeInteger(number)&&number>=1))return {error:'三个数字都要填写正整数。'};
-    return {mode:'three',numbers};
+  if(method!=='three'&&method!=='auto'&&method!=='time')numbers=null;
+  let mode=method==='auto'?(numbers?'three':'time'):method;
+  const observationalTypes=['shooting','object','person','lost','omen'];
+  if(observationalTypes.includes(questionType))mode=questionType;
+  else if(['sound','count','text'].includes(questionType)&&method!=='three')mode=questionType;
+  const material=detail||question;
+  if(['shooting','object','person','lost','omen'].includes(mode)){
+    if(mode!=='shooting'&&[...material].filter(char=>!(/\s/u.test(char))).length<2)return {error:'请在问题或现场材料里补充两字以上的描述。'};
+    return {mode,text:material,numbers:numbers||undefined,questionType};
   }
-  if(selected==='sound'||selected==='count'){
-    if(!Number.isSafeInteger(count)||count<1)return {error:selected==='sound'?'请填写声音次数。':'请填写物品数量。'};
-    return {mode:selected,count};
+  if(mode==='sound'||mode==='count'){
+    const inlineNumbers=[...normalizeDigits(question).matchAll(/\d{1,9}/g)].map(match=>Number(match[0]));
+    const resolvedCount=Number.isSafeInteger(count)&&count>0?count:inlineNumbers.at(-1);
+    if(!Number.isSafeInteger(resolvedCount)||resolvedCount<1)return {error:mode==='sound'?'请填写声音次数，或在问题里写清次数。':'请填写物品数量，或在问题里写清数量。'};
+    return {mode,count:resolvedCount,questionType};
   }
-  if(['shooting','object','person','lost','text','omen'].includes(selected)){
-    const material=detail||question;
-    const chars=[...material].filter(char=>!(/\s/u.test(char)));
-    const explicit=explicitThreeNumbers(question);
-    if(explicit?.error)return explicit;
-    if(selected==='shooting')return {mode:selected,text:material,numbers:explicit?.numbers||undefined};
-    if(chars.length<2)return {error:selected==='text'?'测字起卦至少需要两个字。':'请补充两字以上的现场描述，方便记录取象材料。'};
-    return {mode:selected,text:material,numbers:explicit?.numbers||undefined};
+  if(mode==='text'){
+    const text=detail||question.replace(/.*?(?:测字|拆字)[:：\s]*/,'').trim()||question;
+    if([...text].filter(char=>!(/\s/u.test(char))).length<2)return {error:'测字至少需要两个字。'};
+    return {mode,text,questionType};
   }
-  return {mode:selected};
+  if(mode==='three')return {mode,numbers,questionType};
+  return {mode:'time',questionType};
 }
 function updateCastModeUI(){
-  const selected=document.getElementById('castMode')?.value||'auto';
+  const method=document.getElementById('castMode')?.value||'auto';
+  const question=document.getElementById('questionInput')?.value||'';
+  const questionType=currentQuestionType(question);
   const errorMessage=document.getElementById('castError');
   if(errorMessage){errorMessage.hidden=true;errorMessage.textContent='';}
   const numbers=document.getElementById('threeNumberFields');
   const detail=document.getElementById('castDetailField');
   const count=document.getElementById('castCountField');
-  if(numbers)numbers.hidden=selected!=='three';
-  if(detail)detail.hidden=!['shooting','object','person','lost','text','omen'].includes(selected);
-  if(count)count.hidden=!['sound','count'].includes(selected);
+  if(numbers)numbers.hidden=method!=='three';
+  const displayType=questionType==='general'&&method==='text'?'text':questionType;
+  if(detail)detail.hidden=!['shooting','object','person','lost','text','omen'].includes(displayType);
+  if(count)count.hidden=method==='three'||(!['sound','count'].includes(method)&&!['sound','count'].includes(questionType));
   const label=document.getElementById('castDetailLabel');
   const input=document.getElementById('castDetailInput');
   const countLabel=document.getElementById('castCountLabel');
   const countInput=document.getElementById('castCountInput');
   const hint=document.getElementById('castModeHint');
   const copy={
-    shooting:['隐藏物品线索','例如：只记录手感、声音或现场问题，不要先揭示答案'],
-    object:['描述眼前的物件','例如：桌上一个圆形、偏硬、没有说明名称的物件'],
-    person:['描述人物外在','例如：衣着颜色、姿态、身边环境或携带物件'],
-    lost:['描述失物线索','例如：最后见到的地点、外形、材质和附近环境'],
-    text:['输入要测的字 / 短句','至少两个字；字义只作为问题语境'],
-    omen:['记录现场外应','例如：突然出现的声音、颜色、人物、方向或动作'],
-  }[selected];
+    shooting:['隐藏物品线索','可写手感、声音；不知道名字也没关系'],
+    object:['眼前物件','例如颜色、形状、材质或大小'],
+    person:['人物外在','例如衣着、姿态、周围环境'],
+    lost:['失物线索','最后见到的地点和大致外形'],
+    text:['要测的字 / 短句','至少两个字'],
+    omen:['现场外应','记录突然出现的人、声、色或方向'],
+  }[displayType];
   if(label&&copy)label.innerHTML=`${copy[0]} <small>现场记录</small>`;
   if(input&&copy)input.placeholder=copy[1];
-  if(countLabel)countLabel.innerHTML=`${selected==='sound'?'声音次数':'物品数量'} <small>必须是可核对的整数</small>`;
-  if(countInput)countInput.placeholder=selected==='sound'?'例如：敲了 3 声':'例如：现场有 5 件';
+  const countType=displayType==='sound'||method==='sound'?'sound':'count';
+  if(countLabel)countLabel.innerHTML=`${countType==='sound'?'声音次数':'物品数量'} <small>填写可核对的整数</small>`;
+  if(countInput)countInput.placeholder=countType==='sound'?'例如：敲了 3 声':'例如：现场有 5 件';
   if(hint){
     const hints={
-      auto:readingMode==='gua'?'写明“三个数字起卦”时，会优先用你给的数字；否则按确认起卦时刻起卦。':'写明“三个数字起卦”时，会优先用你给的数字；否则按第一张牌确认时刻起卦。',
-      time:readingMode==='gua'?'只以确认起卦的时刻起卦；后续追问沿用同一卦。':'只以第一张牌确认的时刻起卦；后续追问沿用同一卦。',
-      three:'第一个数字取上卦，第二个取下卦，第三个取动爻；抽牌时间只作记录。',
-      shooting:'适合“他手里握着什么”这类问题；结果会给出颜色、形状、材质、大小手感和候选物品。',
-      object:'记录眼前物件，再从卦象给出可核对的颜色、轮廓、材质和候选。',
-      person:'从衣着、姿态、身边物件和方向取象，只提供外在候选线索。',
-      lost:'优先得到方向、环境、形态和先查位置；请以现实核对为准。',
-      sound:'把声音次数作为起卦数字，同时记录声音的听感和方向。',
-      count:'把物品数量作为上卦数字，再以当下时支取下卦。',
-      text:'按字数分组起卦；如果要用三个数字，请改选“三个数字起卦”。',
-      omen:'外应是辅助记录，不改变主流程；把突发的人、声、色、方向留档再交叉核对。',
+      auto:'写明“用三个数字起卦”并给出数字，就按数字起卦；否则按时间。',
+      time:'以本次确认时刻起卦。',
+      three:'填三个数字；问题里也写了数字时，两处必须一致。',
+      sound:'按实际声音次数起卦。',
+      count:'按现场物品数量起卦。',
+      text:'按所填文字取数。',
     };
-    hint.textContent=hints[selected]||hints.auto;
+    hint.textContent=hints[method]||hints.auto;
   }
+  const typeHint=document.getElementById('questionTypeHint');
+  if(typeHint)typeHint.textContent=questionType==='shooting'?'数字决定卦象，问题决定射覆；结果会给出可核对的颜色、形状、材质和候选。':'起卦方法与问题类型分开；例如三个数字也可以用于射覆。';
+  updateEntrySettingLine();
 }
 const castModeField=document.getElementById('castMode');
-castModeField?.addEventListener('change',updateCastModeUI);
+castModeField?.addEventListener('change',()=>{updateCastModeUI();savePreferences();});
 // Android browsers can restore a native select's value without replaying `change`.
 // Keep the conditional fields and hint in sync whenever the control emits input.
-castModeField?.addEventListener('input',updateCastModeUI);
+castModeField?.addEventListener('input',()=>{updateCastModeUI();savePreferences();});
+document.getElementById('questionType')?.addEventListener('change',updateCastModeUI);
+document.getElementById('questionType')?.addEventListener('input',updateCastModeUI);
+document.getElementById('questionInput')?.addEventListener('input',updateCastModeUI);
 updateCastModeUI();
 function updateTraditionalLayerUI(){
   const layer=document.getElementById('traditionalLayer')?.value||'all';
@@ -3389,25 +3651,45 @@ function updateTraditionalLayerUI(){
   if(facingField)facingField.hidden=!['all','bazhai'].includes(layer);
   if(hint){
     const hints={
-      all:'奇门按抽牌确认时刻生成；八宅需要你明确提供房屋主要朝向，不会替你猜。',
-      qimen:'只生成奇门资料观照，按抽牌确认时刻锁定；节气临界日请用万年历复核。',
-      bazhai:'只生成八宅空间观照；请提供主要朝向，系统会自动取相反方向为坐向。',
-      meihua:'不加载奇门和八宅资料，只保留梅花易数与塔罗。',
+      all:'结果页会附上奇门与八宅；八宅需要你提供房屋朝向。',
+      qimen:'结果页附上奇门资料；解释需你主动点击。',
+      bazhai:'结果页附上八宅资料；需要你提供房屋朝向。',
+      meihua:'日常只看梅花；奇门和八宅需要时再打开。',
     };
     hint.textContent=hints[layer]||hints.all;
   }
+  updateEntrySettingLine();
 }
 const traditionalLayerField=document.getElementById('traditionalLayer');
-traditionalLayerField?.addEventListener('change',updateTraditionalLayerUI);
-traditionalLayerField?.addEventListener('input',updateTraditionalLayerUI);
+traditionalLayerField?.addEventListener('change',()=>{updateTraditionalLayerUI();savePreferences();});
+traditionalLayerField?.addEventListener('input',()=>{updateTraditionalLayerUI();savePreferences();});
 updateTraditionalLayerUI();
+function drawQuickSpread(){
+  clearPile();
+  const moment=new Date();
+  const available=[...deck];
+  const draws=[];
+  const total=Math.min(targetDraws,available.length);
+  for(let index=0;index<total;index++){
+    const pickedIndex=Math.floor(Math.random()*available.length);
+    const [card]=available.splice(pickedIndex,1);
+    draws.push({card,reversed:Math.random()<0.5});
+  }
+  sessionDraws=draws;deck=available;
+  document.getElementById('deckCount').textContent=`牌库 ${deck.length}`;
+  updateDrawUI();
+  if(readingMode!=='tarot'&&sessionDraws.length)beginMeihuaSession(moment,castRequest);
+  gameState='idle';
+  showSettlement();
+}
 document.getElementById('questionConfirm').onclick=()=>{
   const request=collectCastRequest();
   const errorMessage=document.getElementById('castError');
   if(request.error){
     if(errorMessage){errorMessage.textContent=request.error;errorMessage.hidden=false;}
     const selected=document.getElementById('castMode')?.value||'auto';
-    const focusId=selected==='three'?'castNum1':(selected==='sound'||selected==='count'?'castCountInput':(selected==='auto'?'questionInput':'castDetailInput'));
+    const type=currentQuestionType();
+    const focusId=selected==='three'?'castNum1':(['sound','count'].includes(selected)||['sound','count'].includes(type)?'castCountInput':(['shooting','object','person','lost','omen','text'].includes(type)?'castDetailInput':'questionInput'));
     document.getElementById(focusId)?.focus();
     return;
   }
@@ -3418,6 +3700,7 @@ document.getElementById('questionConfirm').onclick=()=>{
     facing:document.getElementById('houseFacingInput')?.value||'',
   };
   traditionalSession=null;
+  savePreferences();
   closeHistoryPanel();
   userQuestion=document.getElementById('questionInput').value.trim();
   currentReadingSaved=false;
@@ -3432,6 +3715,8 @@ document.getElementById('questionConfirm').onclick=()=>{
     sessionDraws=[];
     gameState='idle';
     showSettlement();
+  }else if(drawStyle==='quick'){
+    drawQuickSpread();
   }else{
     spawnPile();
   }

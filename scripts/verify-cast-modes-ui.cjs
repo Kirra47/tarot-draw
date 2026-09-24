@@ -55,6 +55,13 @@ async function finishThreeCards(page) {
     executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe",
   });
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  await context.addInitScript(() => localStorage.setItem("tarot-ui-preferences-v1", JSON.stringify({
+    readingMode: "combo",
+    targetDraws: 3,
+    drawStyle: "manual",
+    castMode: "auto",
+    traditionalLayer: "meihua",
+  })));
   const page = await context.newPage();
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
@@ -66,6 +73,7 @@ async function finishThreeCards(page) {
   }));
 
   await page.goto(`${baseUrl}/tarot.html?mode-test=three`, { waitUntil: "networkidle", timeout: 30_000 });
+  await page.locator("#advancedSetup > summary").click();
   await page.selectOption("#castMode", "three");
   await page.fill("#castNum1", "17");
   await page.fill("#castNum2", "26");
