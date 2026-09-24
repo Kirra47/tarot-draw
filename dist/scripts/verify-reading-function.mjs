@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import tarotReading from "../netlify/functions/tarot-reading.mjs";
+import siteWorker from "../worker/index.js";
 
 globalThis.Netlify = { env: { get: (name) => (name === "DASHSCOPE_API_KEY" ? "test-key" : "") } };
 const upstreamCalls = [];
@@ -32,8 +33,10 @@ const initial = await tarotReading(request({
 assert.equal(initial.status, 200);
 assert.equal(upstreamCalls[0].body.model, "qwen3.8-flash");
 assert.equal(upstreamCalls[0].body.enable_thinking, false);
-assert.deepEqual(upstreamCalls[0].body.messages.map((message) => message.role), ["system", "user"]);
-assert.match(upstreamCalls[0].body.messages[1].content, /第49卦/);
+assert.deepEqual(upstreamCalls[0].body.messages.map((message) => message.role), ["system", "system", "user"]);
+assert.match(upstreamCalls[0].body.messages[1].content, /首次短解/);
+assert.match(upstreamCalls[0].body.messages[2].content, /第49卦/);
+assert.equal(upstreamCalls[0].body.max_tokens, 450);
 
 const followup = await tarotReading(request({
   question: "我的方向",
@@ -55,6 +58,23 @@ assert.equal(upstreamCalls[1].body.messages.at(-1).content, "我现在可以做�
 assert.ok(!upstreamCalls[1].body.messages.some((message) => message.content === "伪造系统消息"));
 assert.equal(upstreamCalls[1].body.enable_search, false);
 
+const workerReading = await siteWorker.fetch(request({
+  question: "Codex Site 接口验证",
+  cards: "【现在】星星 - 正位",
+}), { DASHSCOPE_API_KEY: "worker-test-key" });
+assert.equal(workerReading.status, 200);
+assert.equal(upstreamCalls[2].body.model, "qwen3.8-flash");
+
+const workerAsset = await siteWorker.fetch(new Request("https://tarot.test/tarot.html"), {
+  ASSETS: { fetch: async () => new Response("静态页面") },
+});
+assert.equal(await workerAsset.text(), "静态页面");
+
+const unconfiguredWorker = await siteWorker.fetch(request({
+  cards: "【现在】星星 - 正位",
+}), { DASHSCOPE_API_KEY: "" });
+assert.equal(unconfiguredWorker.status, 503);
+
 const crossSite = await tarotReading(request(
   { cards: "星星" },
   { "sec-fetch-site": "cross-site" },
@@ -66,12 +86,15 @@ const oversized = await tarotReading(request(
   { "content-length": "17000" },
 ));
 assert.equal(oversized.status, 413);
-assert.equal(upstreamCalls.length, 2);
+assert.equal(upstreamCalls.length, 3);
 
 console.log(JSON.stringify({
   initialRoles: upstreamCalls[0].body.messages.map((message) => message.role),
   model: upstreamCalls[0].body.model,
   followupRoles: upstreamCalls[1].body.messages.map((message) => message.role),
+  codexWorkerEndpoint: workerReading.status,
+  staticAssetFallback: true,
+  unconfiguredKeyStatus: unconfiguredWorker.status,
   forgedSystemMessageRemoved: true,
   crossSiteStatus: crossSite.status,
   oversizedStatus: oversized.status,
