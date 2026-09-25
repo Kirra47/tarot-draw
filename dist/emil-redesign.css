@@ -321,15 +321,18 @@ button:focus-visible,textarea:focus-visible,input:focus-visible,summary:focus-vi
 .advancedSetupChevron{grid-area:chevron;display:grid;place-items:center;width:24px;height:24px;border:1px solid rgba(230,183,120,.52);border-radius:50%;color:#e6b778;font:600 19px/1 var(--sans);transition:transform 170ms cubic-bezier(.23,1,.32,1),background-color 170ms ease}
 #advancedSetup[open]>summary{border-color:#ae7643;border-bottom-right-radius:0;border-bottom-left-radius:0;background:linear-gradient(112deg,#332d24 0%,#44372a 100%);box-shadow:none}
 #advancedSetup[open] .advancedSetupChevron{transform:rotate(180deg);background:rgba(230,183,120,.1)}
-.advancedSetupBody{display:grid;gap:12px;padding:13px;border:1px solid rgba(172,119,67,.36);border-top:0;border-radius:0 0 16px 16px;background:rgba(255,250,242,.76)}
-.advancedSettingGroup{min-width:0;padding:13px;border:1px solid rgba(101,80,58,.17);border-radius:13px;background:rgba(255,255,255,.58);transition:border-color 180ms ease,background-color 180ms ease}
-.advancedSettingGroupHead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 11px;padding:0 0 9px;border-bottom:1px solid rgba(101,80,58,.14)}
-.advancedSettingGroupHead strong{color:var(--ink);font:600 15px/1.4 var(--sans)}
+.advancedSetupBody{display:grid;gap:12px;padding:12px;border:1px solid rgba(172,119,67,.36);border-top:0;border-radius:0 0 16px 16px;background:rgba(255,250,242,.76)}
+.advancedSettingGroup{min-width:0;padding:0;overflow:hidden;border:1px solid rgba(101,80,58,.2);border-radius:14px;background:rgba(255,255,255,.48);box-shadow:inset 0 1px rgba(255,255,255,.72)}
+.advancedSettingGroupHead{min-height:48px;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0;border-bottom:1px solid rgba(101,80,58,.14)}
+.advancedSettingGroupHead strong{color:var(--ink);font:600 14px/1.45 var(--sans);letter-spacing:.01em}
 .advancedSettingGroupHead span{color:var(--ink-muted);font:12px/1.45 var(--sans);text-align:right}
+.advancedSettingGroup #spreadSettings,.advancedSettingGroup #divinationOptions{padding:12px 14px 14px}
 .advancedSettingGroup #spreadSettings{margin:0}
-.advancedSettingGroup .drawStyleOptions{margin:13px 0 0}
+.advancedSettingGroup .drawStyleOptions{margin:0;padding:12px 14px 14px;border-top:1px solid rgba(101,80,58,.13)}
 .advancedSettingGroup #divinationOptions{display:grid;gap:8px}
-.advancedSettingGroup #divinationOptions .castModeLabel,.advancedSettingGroup #divinationOptions .traditionalLabel{margin-top:4px}
+.advancedSettingGroup #divinationOptions .castModeLabel,.advancedSettingGroup #divinationOptions .traditionalLabel{margin-top:2px}
+.advancedSettingGroup .drawStyleOption{transition:transform 130ms cubic-bezier(.23,1,.32,1),color 160ms ease,background-color 160ms ease,border-color 160ms ease}
+.advancedSettingGroup .drawStyleOption:active{transform:scale(.98)}
 @media(hover:hover) and (pointer:fine){#advancedSetup>summary:hover{border-color:#c28a52;box-shadow:0 9px 24px rgba(38,29,20,.2),inset 0 1px rgba(255,255,255,.1)}}
 @media(max-width:560px){
   #advancedSetup{margin:10px 0 14px}
@@ -338,8 +341,9 @@ button:focus-visible,textarea:focus-visible,input:focus-visible,summary:focus-vi
   .advancedSetupMeta{flex-direction:row;align-items:center;justify-content:flex-start;gap:7px}
   #entrySettingLine{max-width:min(65vw,260px);font-size:12px}
   .advancedSetupBody{gap:9px;padding:9px}
-  .advancedSettingGroup{padding:11px}
-  .advancedSettingGroupHead{align-items:flex-start;flex-direction:column;gap:2px;margin-bottom:9px}
+  .advancedSettingGroupHead{min-height:0;padding:10px 12px;align-items:flex-start;flex-direction:column;gap:2px}
+  .advancedSettingGroup #spreadSettings,.advancedSettingGroup #divinationOptions{padding:10px 12px 12px}
+  .advancedSettingGroup .drawStyleOptions{padding:10px 12px 12px}
   .advancedSettingGroupHead span{text-align:left}
 }
 @media(prefers-reduced-motion:reduce){#advancedSetup>summary,.advancedSetupChevron,.advancedSettingGroup{transition:none}}
