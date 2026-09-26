@@ -51,6 +51,9 @@ self.addEventListener('fetch', (event) => {
 
 const failures = [];
 const notes = [];
+// Held outside the run so a failure can never leave a browser behind: a leaked
+// Chromium keeps the event loop alive and the process hangs instead of exiting.
+let activeBrowser = null;
 function check(label, ok, detail = '') {
   notes.push(`  ${ok ? 'ok  ' : 'FAIL'} ${label}${ok || !detail ? '' : ` — ${detail}`}`);
   if (!ok) failures.push(label);
@@ -63,7 +66,7 @@ function check(label, ok, detail = '') {
   const staleInsight = execSync(`git show ${STALE_RELEASE}:scripts/meihua-insight.mjs`, { cwd: ROOT, encoding: 'utf8' });
   check('旧模块确实缺少新导出', !/COIN_LINE_LABELS/.test(staleModule) && !/coinMovingLabel/.test(staleModule));
 
-  const browser = await chromium.launch({ headless: true, executablePath: CHROME, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+  const browser = activeBrowser = await chromium.launch({ headless: true, executablePath: CHROME, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 
   // ── Part A: prove the failure mode deterministically, with no worker involved.
   // Serving the previous release's module is enough to kill the whole page,
@@ -141,12 +144,15 @@ function check(label, ok, detail = '') {
   check('旧缓存已被清理', staleGone);
 
   if (recovered) {
-    // 4. And the app must actually work after recovery.
+    // 4. And the app must actually work after recovery. 亲手摇卦 is what opens
+    // the shaking screen, so the check has to pick it before confirming.
     await page.waitForSelector('#questionOverlay', { timeout: 15000 });
     await page.click('[data-reading-mode="gua"]');
     await page.click('#advancedSetup');
     await page.waitForSelector('#castMode', { state: 'visible' });
     await page.selectOption('#castMode', 'coin');
+    await page.waitForSelector('#drawStyleOptions', { state: 'visible' });
+    await page.click('#drawStyleOptions [data-draw-style="manual"]');
     await page.click('#settingsSheetDone');
     await page.waitForSelector('#setupOverlay', { state: 'hidden' });
     await page.click('#questionConfirm');
@@ -184,6 +190,7 @@ function check(label, ok, detail = '') {
   console.log(notes.join('\n'));
   console.error('RUN ERROR:', error && error.stack ? error.stack : error.message);
   process.exitCode = 1;
-}).finally(() => {
+}).finally(async () => {
+  try { if (activeBrowser) await activeBrowser.close(); } catch {}
   try { fs.rmSync(STALE_WORKER, { force: true }); } catch {}
 });

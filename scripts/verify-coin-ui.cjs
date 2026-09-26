@@ -70,7 +70,7 @@ function check(label, condition, detail = '') {
   return false;
 }
 
-async function openSettingsForCoin(page) {
+async function openSettingsForCoin(page, { drawStyle = 'manual' } = {}) {
   await page.click('#advancedSetup');
   await page.waitForSelector('#setupOverlay:not([hidden])', { timeout: 8000 });
   // The sheet groups live in <details>; the 起卦与补充资料 group holds #castMode.
@@ -78,6 +78,15 @@ async function openSettingsForCoin(page) {
   await page.selectOption('#castMode', 'coin');
   const applied = await page.$eval('#castMode', (el) => el.value);
   if (applied !== 'coin') throw new Error(`castMode did not switch to coin (got ${applied})`);
+  // 亲手摇卦 opens the shaking screen; 一键起卦 must not. 单起卦 only shows this
+  // choice once 铜钱摇卦 is selected.
+  await page.waitForSelector('#drawStyleOptions', { state: 'visible', timeout: 8000 });
+  await page.click(`#drawStyleOptions [data-draw-style="${drawStyle}"]`);
+  const styleApplied = await page.evaluate(() => {
+    const active = document.querySelector('#drawStyleOptions .drawStyleOption.active');
+    return active ? active.dataset.drawStyle : null;
+  });
+  if (styleApplied !== drawStyle) throw new Error(`drawStyle did not switch to ${drawStyle} (got ${styleApplied})`);
   await page.click('#settingsSheetDone');
   await page.waitForSelector('#setupOverlay', { state: 'hidden', timeout: 8000 });
 }
@@ -111,6 +120,8 @@ async function run() {
 
   const hint = await page.$eval('#castModeHint', (el) => el.textContent.trim());
   check('起卦方法提示更新为铜钱说明', hint.includes('铜钱'), hint);
+  const styleLabels = await page.$$eval('#drawStyleOptions .drawStyleOption', (nodes) => nodes.map((n) => n.textContent.trim()));
+  check('单起卦下抽牌方式改为铜钱措辞', styleLabels.includes('亲手摇卦') && styleLabels.includes('一键起卦'), styleLabels.join('/'));
 
   await page.click('#questionConfirm');
   await page.waitForSelector('#coinOverlay:not([hidden])', { timeout: 10000 });
@@ -207,7 +218,7 @@ async function run() {
   });
   check('档案标注起卦方式', aiDescription === '铜钱摇卦', String(aiDescription));
 
-  // ── B. 二合一 only offers the one-click path ─────────────────────────────
+  // ── B. 二合一 with 亲手摇卦 opens the shaking screen too ─────────────────
   const comboPage = await context.newPage();
   comboPage.on('pageerror', (error) => errors.push(`combo pageerror: ${error.message}`));
   comboPage.on('console', (message) => { if (message.type() === 'error') errors.push(`combo console: ${message.text()}`); });
@@ -215,26 +226,63 @@ async function run() {
   await comboPage.waitForSelector('#questionOverlay', { timeout: 15000 });
   await comboPage.click('[data-reading-mode="combo"]');
   await comboPage.fill('#questionInput', '这段时间该先做什么？');
-  await openSettingsForCoin(comboPage);
+  await openSettingsForCoin(comboPage, { drawStyle: 'manual' });
   await comboPage.click('#questionConfirm');
   await comboPage.waitForSelector('#coinOverlay:not([hidden])', { timeout: 10000 });
-  const manualHidden = await comboPage.$eval('#coinTossBtn', (el) => el.hidden);
-  const quickEnabled = await comboPage.$eval('#coinQuickBtn', (el) => !el.disabled);
-  check('二合一隐藏手动摇卦', manualHidden);
-  check('二合一保留一键起卦', quickEnabled);
-  await comboPage.screenshot({ path: path.join(OUTPUT, 'combo-quick-only.png') });
+  const tossUsable = await comboPage.$eval('#coinTossBtn', (el) => !el.hidden && !el.disabled);
+  check('二合一 + 亲手摇卦 打开摇卦页', tossUsable);
+  await comboPage.screenshot({ path: path.join(OUTPUT, 'combo-manual-stage.png') });
 
   await comboPage.click('#coinQuickBtn');
-  await comboPage.waitForSelector('#settleOverlay.show', { timeout: 25000 });
+  // 亲手 means the cards are drawn by hand next, so the result sheet must NOT
+  // appear yet. That is the difference between 亲手 and 一键.
+  await comboPage.waitForFunction(() => document.getElementById('coinOverlay').hidden, { timeout: 25000 });
   const comboLines = await comboPage.evaluate(() => window.coinCast.getLines());
-  check('二合一完成六爻', Array.isArray(comboLines) && comboLines.length === 6, JSON.stringify(comboLines));
-  const comboRecord = await comboPage.evaluate(() => {
+  check('二合一 + 亲手摇卦 记录六爻', Array.isArray(comboLines) && comboLines.length === 6, JSON.stringify(comboLines));
+  const comboStillDrawing = await comboPage.evaluate(() => !document.getElementById('settleOverlay').classList.contains('show'));
+  check('二合一 + 亲手：铜钱后进入手动抽牌而非直接出结果', comboStillDrawing);
+
+  // ── B2. 一键起卦 must skip the shaking screen entirely ───────────────────
+  const quickPage = await context.newPage();
+  quickPage.on('pageerror', (error) => errors.push(`quick pageerror: ${error.message}`));
+  quickPage.on('console', (message) => { if (message.type() === 'error') errors.push(`quick console: ${message.text()}`); });
+  await quickPage.goto(`${BASE}/tarot.html`, { waitUntil: 'domcontentloaded' });
+  await quickPage.waitForSelector('#questionOverlay', { timeout: 15000 });
+  await quickPage.click('[data-reading-mode="gua"]');
+  await quickPage.fill('#questionInput', '一键起一卦。');
+  await openSettingsForCoin(quickPage, { drawStyle: 'quick' });
+  const quickConfirmLabel = await quickPage.$eval('#questionConfirm span', (el) => el.textContent.trim());
+  check('一键模式下主按钮改为「一键起卦」', quickConfirmLabel.includes('一键起卦'), quickConfirmLabel);
+  await quickPage.click('#questionConfirm');
+  await quickPage.waitForSelector('#settleOverlay.show', { timeout: 20000 });
+  const stageNeverOpened = await quickPage.$eval('#coinOverlay', (el) => el.hidden);
+  check('一键起卦不打开摇卦页', stageNeverOpened);
+  const quickLines = await quickPage.evaluate(() => window.coinCast.getLines());
+  check('一键起卦仍记录六爻', Array.isArray(quickLines) && quickLines.length === 6, JSON.stringify(quickLines));
+  check('一键起卦每爻都是 6/7/8/9', Array.isArray(quickLines) && quickLines.every((v) => [6, 7, 8, 9].includes(v)), JSON.stringify(quickLines));
+  const quickMeta = await quickPage.$eval('#guaStructureMeta', (el) => el.textContent.replace(/\s+/g, ' ').trim());
+  check('一键起卦结果仍按三钱法呈现', quickMeta.includes('铜钱'), quickMeta);
+  await quickPage.screenshot({ path: path.join(OUTPUT, 'quick-settlement.png') });
+
+  // 二合一 + 一键: one click finishes the coins and the cards together.
+  const comboQuickPage = await context.newPage();
+  comboQuickPage.on('pageerror', (error) => errors.push(`combo quick pageerror: ${error.message}`));
+  comboQuickPage.on('console', (message) => { if (message.type() === 'error') errors.push(`combo quick console: ${message.text()}`); });
+  await comboQuickPage.goto(`${BASE}/tarot.html`, { waitUntil: 'domcontentloaded' });
+  await comboQuickPage.waitForSelector('#questionOverlay', { timeout: 15000 });
+  await comboQuickPage.click('[data-reading-mode="combo"]');
+  await comboQuickPage.fill('#questionInput', '一键二合一。');
+  await openSettingsForCoin(comboQuickPage, { drawStyle: 'quick' });
+  await comboQuickPage.click('#questionConfirm');
+  await comboQuickPage.waitForSelector('#settleOverlay.show', { timeout: 30000 });
+  check('二合一 + 一键：不打开摇卦页直接出结果', await comboQuickPage.$eval('#coinOverlay', (el) => el.hidden));
+  const comboQuickRecord = await comboQuickPage.evaluate(() => {
     const raw = JSON.parse(localStorage.getItem('tarot-reading-history-v3') || '[]');
     const item = raw.find((entry) => entry.readingMode === 'combo' && entry.meihua && entry.meihua.mode === 'coin');
     return item ? { mode: item.readingMode, cards: (item.cards || []).length, lineValues: item.meihua.lineValues.length } : null;
   });
-  check('二合一同时留下牌面与卦象', comboRecord && comboRecord.mode === 'combo' && comboRecord.lineValues === 6, JSON.stringify(comboRecord));
-  check('二合一确实抽到了牌面', comboRecord && comboRecord.cards > 0, JSON.stringify(comboRecord));
+  check('二合一 + 一键：同时留下牌面与卦象', comboQuickRecord && comboQuickRecord.mode === 'combo' && comboQuickRecord.lineValues === 6, JSON.stringify(comboQuickRecord));
+  check('二合一 + 一键：确实抽到了牌面', comboQuickRecord && comboQuickRecord.cards > 0, JSON.stringify(comboQuickRecord));
 
   // ── C. 单塔罗 must not be touched by the coin path ───────────────────────
   const tarotPage = await context.newPage();

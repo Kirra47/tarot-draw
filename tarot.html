@@ -3751,20 +3751,20 @@ function updateReadingModeUI(){
     option.tabIndex=active?0:-1;
   });
   const spreadSettings=document.getElementById('spreadSettings');
-  const drawStyleOptions=document.getElementById('drawStyleOptions');
   const divinationOptions=document.getElementById('divinationOptions');
   const hint=document.getElementById('readingModeHint');
   const confirmLabel=document.querySelector('#questionConfirm span');
   const copy={
     tarot:{hint:'只看塔罗牌。',button:'开始抽牌'},
-    gua:{hint:'按时间起卦，可在更多设置中改用数字。',button:'起一卦'},
+    gua:{hint:'按时间起卦；也可在更多设置里改用数字或铜钱摇卦。',button:'起一卦'},
     combo:{hint:'牌和卦一起看。',button:'开始'},
   }[mode]||{};
   if(spreadSettings)spreadSettings.hidden=mode==='gua';
-  if(drawStyleOptions)drawStyleOptions.hidden=mode==='gua';
   if(divinationOptions)divinationOptions.hidden=mode==='tarot';
   if(hint)hint.textContent=copy.hint||'';
   if(confirmLabel)confirmLabel.textContent=copy.button||'开始观测';
+  // 抽牌方式 is shown by updateCastModeUI, because 单起卦 only offers the
+  // 亲手/一键 choice when the cast itself is a hands-on one (铜钱摇卦).
   if(typeof updateCastModeUI==='function')updateCastModeUI();
   updateEntrySettingLine();
 }
@@ -3816,6 +3816,8 @@ document.querySelectorAll('.drawStyleOption').forEach(button=>button.addEventLis
   document.querySelectorAll('.drawStyleOption').forEach(option=>{
     const active=option===button;option.classList.toggle('active',active);option.setAttribute('aria-checked',String(active));
   });
+  // The main button label follows this choice as well.
+  updateDrawStyleOptionsUI();
   savePreferences();updateEntrySettingLine();
 }));
 function updateEntrySettingLine(){
@@ -3824,8 +3826,9 @@ function updateEntrySettingLine(){
   if(readingMode!=='gua')pieces.push(`${targetDraws}张 · ${drawStyle==='quick'?'快速':'亲手抽'}`);
   if(readingMode!=='tarot'){
     const method=document.getElementById('castMode')?.value||'auto';
-    const methodLabels={auto:'自动起卦',time:'按时间',three:'三个数字',sound:'按声音',count:'按数量',text:'按字'};
+    const methodLabels={auto:'自动起卦',time:'按时间',three:'三个数字',sound:'按声音',count:'按数量',text:'按字',coin:'铜钱摇卦'};
     pieces.push(methodLabels[method]||'按时间');
+    if(readingMode==='gua'&&method==='coin')pieces.push(drawStyle==='quick'?'一键起卦':'亲手摇卦');
     const layer=document.getElementById('traditionalLayer')?.value||'meihua';
     pieces.push(layer==='meihua'?'只看梅花':layer==='all'?'奇门 + 八宅':layer==='qimen'?'加奇门':'加八宅');
   }
@@ -3952,7 +3955,24 @@ function updateCastModeUI(){
   }
   const typeHint=document.getElementById('questionTypeHint');
   if(typeHint)typeHint.textContent=questionType==='shooting'?'数字决定卦象，问题决定射覆；结果会给出可核对的颜色、形状、材质和候选。':'起卦方法与问题类型分开；例如三个数字也可以用于射覆。';
+  updateDrawStyleOptionsUI();
   updateEntrySettingLine();
+}
+// 亲手 versus 一键. Cards and 铜钱摇卦 share one setting: 亲手 does the action on
+// its own screen, 一键 records the result straight away.
+function updateDrawStyleOptionsUI(){
+  const method=document.getElementById('castMode')?.value||'auto';
+  const coinCasting=readingMode==='gua'&&method==='coin';
+  const options=document.getElementById('drawStyleOptions');
+  if(options)options.hidden=readingMode==='gua'&&!coinCasting;
+  const quick=options?.querySelector('[data-draw-style="quick"]');
+  const manual=options?.querySelector('[data-draw-style="manual"]');
+  if(quick)quick.textContent=coinCasting?'一键起卦':'快速抽取';
+  if(manual)manual.textContent=coinCasting?'亲手摇卦':'亲手抽牌';
+  const confirmLabel=document.querySelector('#questionConfirm span');
+  if(confirmLabel&&readingMode==='gua'){
+    confirmLabel.textContent=coinCasting?(drawStyle==='manual'?'开始摇卦':'一键起卦'):'起一卦';
+  }
 }
 const castModeField=document.getElementById('castMode');
 castModeField?.addEventListener('change',()=>{updateCastModeUI();savePreferences();});
@@ -4012,7 +4032,6 @@ let coinStage=null;
 let coinTosses=[];       // [{faces:[0|1,0|1,0|1],total:6|7|8|9}]
 let coinFromFaces=[0,1,0];
 let coinBusy=false;
-let coinQuickOnly=false; // 二合一 only offers 一键起卦
 function coinReducedMotion(){
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
@@ -4054,8 +4073,7 @@ function coinSyncControls(){
   const quickBtn=coinEl('coinQuickBtn');
   const resetBtn=coinEl('coinResetBtn');
   if(tossBtn){
-    tossBtn.disabled=coinBusy||done||coinQuickOnly;
-    tossBtn.hidden=coinQuickOnly;
+    tossBtn.disabled=coinBusy||done;
     const label=tossBtn.querySelector('span');
     if(label)label.textContent=done?'六爻已成':coinBusy?'铜钱落定中':coinTosses.length?'继续摇卦':'摇一次';
   }
@@ -4152,21 +4170,29 @@ function coinReset(){
   const stage=initCoinStage();
   if(stage)stage.showRest([0,1,0]);
 }
-function openCoinStage({quickOnly=false}={}){
-  coinQuickOnly=quickOnly;
+function coinCastInstantly(){
+  // 一键起卦: the six lines are recorded without opening the shaking screen.
+  coinTosses=[];
+  for(let index=0;index<6;index+=1){
+    const faces=randomCoinFaces();
+    coinTosses.push({faces,total:coinFacesTotal(faces)});
+  }
+  coinFromFaces=[...coinTosses[coinTosses.length-1].faces];
+  coinRenderLines();
+  coinFinish();
+}
+function openCoinStage(){
   coinTosses=[];
   coinFromFaces=[0,1,0];
   coinBusy=false;
-  const lead=coinEl('coinLead');
-  if(lead)lead.textContent=quickOnly
-    ?'三枚铜钱一次落定六爻，随后直接进入抽牌与解读。'
-    :'三枚铜钱同时落下，从初爻起，逐爻向上。';
   const overlay=coinEl('coinOverlay');
   if(overlay)overlay.hidden=false;
   coinRenderLines();
   coinShowFaces([0,1,0]);
   coinSyncControls();
   coinSetStatus('铜钱已就位');
+  const hint=coinEl('coinRoundHint');
+  if(hint)hint.textContent='摇一次，三枚铜钱落定成一爻。';
   requestAnimationFrame(()=>{
     const stage=initCoinStage();
     if(stage){stage.resize();stage.showRest([0,1,0]);}
@@ -4237,10 +4263,11 @@ document.getElementById('questionConfirm').onclick=()=>{
   document.body.appendChild(cubeCanvas);
   resizeCubeBackground();
   document.getElementById('questionOverlay').classList.add('hidden');
-  // 三钱摇卦 needs six tossed lines before a result exists. 单起卦 allows manual
-  // tossing; 二合一 offers the one-click path only.
+  // 三钱摇卦 follows the same 亲手 / 一键 choice as cards: 亲手 opens the shaking
+  // screen, 一键 records six lines at once and goes straight on.
   if(castRequest.mode==='coin'&&readingMode!=='tarot'){
-    openCoinStage({quickOnly:readingMode==='combo'});
+    if(drawStyle==='manual')openCoinStage();
+    else coinCastInstantly();
     return;
   }
   if(readingMode==='gua'){
