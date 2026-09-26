@@ -1,4 +1,4 @@
-const CACHE_VERSION = "astral-tarot-v64-coin-cast-20260926";
+const CACHE_VERSION = "astral-tarot-v65-entry-cast-method-20260926";
 const CORE_CACHE = `${CACHE_VERSION}-core`;
 const ASSET_CACHE = `${CACHE_VERSION}-assets`;
 
