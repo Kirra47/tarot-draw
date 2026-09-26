@@ -9,6 +9,29 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="星象塔罗">
+<script>
+// Boot recovery for a stale service worker. This is a classic script on purpose:
+// it still runs when the module below fails to link, which is exactly what
+// happens when an older worker serves a cached copy of a module that no longer
+// has the exports the page imports. No app code runs in that case, so the
+// registration cannot live in the module. Here we register early, let a newer
+// worker take over, and reload once it controls us.
+(function(){
+  if(!('serviceWorker' in navigator)||location.protocol==='file:')return;
+  var hadController=Boolean(navigator.serviceWorker.controller);
+  var reloading=false;
+  navigator.serviceWorker.addEventListener('controllerchange',function(){
+    // Only reload when a worker replaced one that was already in charge; a first
+    // install also fires this and must not bounce the visitor.
+    if(!hadController||reloading)return;
+    reloading=true;
+    location.reload();
+  });
+  navigator.serviceWorker.register('./service-worker.js',{scope:'./',updateViaCache:'none'})
+    .then(function(registration){return registration.update();})
+    .catch(function(){});
+})();
+</script>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./assets/icons/tarot-icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/apple-touch-icon.png">

@@ -1,4 +1,4 @@
-const CACHE_VERSION = "astral-tarot-v63-coin-cast-20260926";
+const CACHE_VERSION = "astral-tarot-v64-coin-cast-20260926";
 const CORE_CACHE = `${CACHE_VERSION}-core`;
 const ASSET_CACHE = `${CACHE_VERSION}-assets`;
 
@@ -36,7 +36,15 @@ const CARD_ASSETS = [
 ].map((file) => `./assets/cards/${file}`);
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CORE_CACHE).then((cache) => cache.addAll(CORE_ASSETS)));
+  // Take over as soon as the new cache is populated instead of waiting for every
+  // tab to close. A worker stuck in "waiting" keeps serving the previous
+  // release's modules, and a page whose imports are newer than those modules
+  // fails to link and runs no app code at all.
+  event.waitUntil((async () => {
+    const cache = await caches.open(CORE_CACHE);
+    await cache.addAll(CORE_ASSETS);
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener("activate", (event) => {
