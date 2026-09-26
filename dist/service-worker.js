@@ -1,4 +1,4 @@
-const CACHE_VERSION = "astral-tarot-v65-entry-cast-method-20260926";
+const CACHE_VERSION = "astral-tarot-v66-prefs-sync-20260926";
 const CORE_CACHE = `${CACHE_VERSION}-core`;
 const ASSET_CACHE = `${CACHE_VERSION}-assets`;
 
@@ -68,6 +68,24 @@ async function networkFirst(request) {
   }
 }
 
+// Code assets carry hand-written ?v= version strings, but a cache-first lookup that
+// ignores the query string keeps serving the previous release's bytes after the HTML
+// starts pointing at a new ?v=, so the page renders the new structure with the old
+// stylesheet. Keep code on the network and fall back to the cache only when the
+// network is unavailable.
+const CODE_ASSET = /\.(?:css|mjs|js|html|webmanifest)$/i;
+
+async function networkFirstCode(request) {
+  const cache = await caches.open(CORE_CACHE);
+  try {
+    const response = await fetch(request, { cache: "no-store" });
+    if (response.ok) await cache.put(request, response.clone());
+    return response;
+  } catch {
+    return (await cache.match(request)) || (await cache.match(request, { ignoreSearch: true })) || Response.error();
+  }
+}
+
 async function cacheFirst(request) {
   // Core modules/styles live in CORE_CACHE; card images live in ASSET_CACHE.
   // Check both so an offline reload can execute the app shell, not just draw cards.
@@ -87,6 +105,10 @@ self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET" || url.origin !== self.location.origin || url.pathname.startsWith("/api/")) return;
   if (event.request.mode === "navigate") {
     event.respondWith(networkFirst(event.request));
+    return;
+  }
+  if (CODE_ASSET.test(url.pathname)) {
+    event.respondWith(networkFirstCode(event.request));
     return;
   }
   event.respondWith(cacheFirst(event.request));
