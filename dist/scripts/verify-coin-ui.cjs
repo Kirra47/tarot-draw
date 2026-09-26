@@ -111,6 +111,56 @@ async function run() {
     if (message.type() === 'error') errors.push(`console: ${message.text()}`);
   });
 
+  // ── A0. Entry must expose 起卦方法, and 抽牌方式 must really hide ─────────
+  // `element.hidden = true` did nothing to #drawStyleOptions because the class
+  // sets display:flex, so 亲手抽牌 showed in 单起卦 where it means nothing.
+  const entryPage = await context.newPage();
+  entryPage.on('pageerror', (error) => errors.push(`entry pageerror: ${error.message}`));
+  entryPage.on('console', (message) => { if (message.type() === 'error') errors.push(`entry console: ${message.text()}`); });
+  await entryPage.goto(`${BASE}/tarot.html`, { waitUntil: 'domcontentloaded' });
+  await entryPage.waitForSelector('#questionOverlay', { timeout: 15000 });
+  await entryPage.click('[data-reading-mode="tarot"]');
+  check('单塔罗隐藏起卦方法快捷行', await entryPage.$eval('#castMethodQuick', (el) => el.hidden));
+  await entryPage.click('[data-reading-mode="gua"]');
+  check('单起卦显示起卦方法快捷行', !(await entryPage.$eval('#castMethodQuick', (el) => el.hidden)));
+  const quickChips = await entryPage.$$eval('#castMethodQuick [data-cast-method]', (n) => n.map((x) => x.textContent.trim()));
+  check('首页直接提供铜钱摇卦入口', quickChips.includes('铜钱摇卦'), quickChips.join('/'));
+
+  await entryPage.click('#advancedSetup');
+  await entryPage.waitForSelector('#setupOverlay:not([hidden])', { timeout: 8000 });
+  const drawHidden = await entryPage.evaluate(() => {
+    const el = document.getElementById('drawStyleOptions');
+    return { hidden: el.hidden, display: getComputedStyle(el).display, height: Math.round(el.getBoundingClientRect().height) };
+  });
+  check('单起卦 + 按时间：抽牌方式真正隐藏', drawHidden.hidden && drawHidden.display === 'none' && drawHidden.height === 0, JSON.stringify(drawHidden));
+  await entryPage.click('#settingsSheetDone');
+  await entryPage.waitForSelector('#setupOverlay', { state: 'hidden' });
+
+  // One tap on the entry chip replaces the three-level trip into the sheet.
+  await entryPage.click('#castMethodQuick [data-cast-method="coin"]');
+  const castAfterChip = await entryPage.$eval('#castMode', (el) => el.value);
+  check('首页点「铜钱摇卦」即切换起卦方法', castAfterChip === 'coin', castAfterChip);
+  await entryPage.click('#advancedSetup');
+  await entryPage.waitForSelector('#setupOverlay:not([hidden])', { timeout: 8000 });
+  const drawShown = await entryPage.evaluate(() => {
+    const el = document.getElementById('drawStyleOptions');
+    return { hidden: el.hidden, display: getComputedStyle(el).display };
+  });
+  check('选中铜钱后抽牌方式出现', !drawShown.hidden && drawShown.display !== 'none', JSON.stringify(drawShown));
+  const coinChips = await entryPage.$$eval('#drawStyleOptions .drawStyleOption', (n) => n.map((x) => x.textContent.trim()));
+  check('抽牌方式改为铜钱措辞', coinChips.includes('亲手摇卦'), coinChips.join('/'));
+  await entryPage.click('#drawStyleOptions [data-draw-style="manual"]');
+  await entryPage.click('#settingsSheetDone');
+  await entryPage.waitForSelector('#setupOverlay', { state: 'hidden' });
+  // Clicking a 起卦方法 chip must not be mistaken for a 抽牌方式 choice.
+  await entryPage.click('#castMethodQuick [data-cast-method="time"]');
+  const styleAfterChip = await entryPage.evaluate(() => {
+    const active = document.querySelector('#drawStyleOptions .drawStyleOption.active');
+    return active ? active.dataset.drawStyle : null;
+  });
+  check('切换起卦方法不会误改抽牌方式', styleAfterChip === 'manual', String(styleAfterChip));
+  await entryPage.close();
+
   // ── A. 单起卦 + 铜钱摇卦, manual toss then one-click ─────────────────────
   await page.goto(`${BASE}/tarot.html`, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#questionOverlay', { timeout: 15000 });

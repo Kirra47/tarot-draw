@@ -399,3 +399,19 @@ body::after{background:radial-gradient(ellipse at 22% 30%,rgba(111,83,66,.13),tr
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
+
+/* 起卦方法 on the entry card. It reuses the 抽牌方式 chip markup, but the shared
+   .drawStyleOptions colours come from the dark observation-space tokens: --ink is
+   #f0e8d8, which measures 1.09:1 against the warm desk surface (#e6dfd2) and is
+   effectively invisible. This row carries its own desk-surface colours. */
+#castMethodQuick{margin:12px 0 2px;color:#615b51}
+#castMethodQuick>span{color:#292a2b}
+#castMethodQuick .drawStyleOption{
+  min-height:36px;padding:7px 13px;border-color:rgba(48,42,35,.2);
+  background:rgba(255,255,255,.5);color:#544e46;
+}
+#castMethodQuick .drawStyleOption:hover{border-color:rgba(48,42,35,.4);color:#292a2b}
+#castMethodQuick .drawStyleOption.active{
+  border-color:#bf7d43;background:rgba(191,125,67,.14);color:#8c542d;
+}
+#castMethodQuick .drawStyleOption:focus-visible{outline:2px solid #885329;outline-offset:2px}

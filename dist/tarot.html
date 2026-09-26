@@ -173,6 +173,11 @@ button:focus-visible,textarea:focus-visible{outline:2px solid #8ab4ff;outline-of
 #divinationOptions{display:flex;flex-direction:column;}
 #divinationOptions[hidden]{display:none;}
 #settleCards[hidden]{display:none;}
+/* The hidden attribute only works where an author rule does not set `display`.
+   `.drawStyleOptions` sets display:flex, so `element.hidden = true` never hid
+   the 抽牌方式 row and it showed in 单起卦 where it means nothing. One rule at
+   the top of the cascade keeps that class of mistake from coming back. */
+[hidden]{display:none!important}
 .spreadOption{padding:13px 14px;border:1px solid rgba(100,140,255,.18);border-radius:10px;background:rgba(4,7,20,.65);color:#7d91b5;cursor:pointer;font:inherit;transition:.25s;}
 .spreadOption strong{display:block;color:#a9c6fa;font-size:13px;margin-bottom:3px;}
 .spreadOption span{font-size:10px;line-height:1.4;display:block;}
@@ -843,6 +848,14 @@ body::after{
         </div>
         <div class="readingModeNote"><span class="readingModeNoteDot" aria-hidden="true"></span><p id="readingModeHint" class="readingModeHint" aria-live="polite">按时间起卦。</p></div>
       </section>
+      <!-- 起卦方法 used to live only inside the settings sheet, so 铜钱摇卦 stayed
+           invisible unless someone opened it. Surface the decision here. -->
+      <div id="castMethodQuick" class="drawStyleOptions castMethodQuick" role="radiogroup" aria-label="起卦方法">
+        <span>起卦方法</span>
+        <button type="button" class="drawStyleOption" role="radio" aria-checked="false" data-cast-method="time">按时间</button>
+        <button type="button" class="drawStyleOption" role="radio" aria-checked="false" data-cast-method="coin">铜钱摇卦</button>
+        <button type="button" class="drawStyleOption" id="castMethodMore" aria-controls="setupOverlay" aria-haspopup="dialog">更多…</button>
+      </div>
       <button id="advancedSetup" class="settingsLauncher" type="button" aria-controls="setupOverlay" aria-haspopup="dialog" aria-expanded="false">
         <svg class="advancedSetupIcon" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M5 8h22M5 16h22M5 24h22"/><circle cx="12" cy="8" r="2.5"/><circle cx="21" cy="16" r="2.5"/><circle cx="10" cy="24" r="2.5"/></svg>
         <span class="advancedSetupCopy"><strong>更多设置</strong><small id="entrySettingLine">起卦 · 按时间 · 只看梅花</small></span>
@@ -1326,6 +1339,9 @@ let targetDraws=Number(savedPreferences.targetDraws)===5?5:3;
 let readingMode=allowedPreference(savedPreferences.readingMode,['tarot','gua','combo'],'gua');
 let drawStyle=allowedPreference(savedPreferences.drawStyle,['quick','manual'],'quick');
 const READING_MODE_LABELS=Object.freeze({tarot:'单塔罗牌',gua:'单起卦',combo:'塔罗＋起卦'});
+// Short labels for the entry's 起卦方法 row. Declared with the other label maps
+// because updateReadingModeUI() reads it during start-up.
+const CAST_METHOD_SHORT=Object.freeze({auto:'自动',time:'按时间',three:'三个数字',sound:'按声音',count:'按数量',text:'按字',coin:'铜钱摇卦'});
 const POSITION_LABELS=['过去 / 根源','现在 / 核心','未来 / 方向','建议 / 行动','潜意识 / 隐藏'];
 let sessionDraws=[]; // {card, reversed} for current reading session
 let userQuestion='';
@@ -3180,7 +3196,7 @@ function resetSession(){
   document.querySelectorAll('.spreadOption').forEach(option=>{
     const active=Number(option.dataset.count)===targetDraws;option.classList.toggle('active',active);option.setAttribute('aria-checked',String(active));
   });
-  document.querySelectorAll('.drawStyleOption').forEach(option=>{
+  document.querySelectorAll('#drawStyleOptions [data-draw-style]').forEach(option=>{
     const active=option.dataset.drawStyle===drawStyle;option.classList.toggle('active',active);option.setAttribute('aria-checked',String(active));
   });
   const houseFacing=document.getElementById('houseFacingInput');
@@ -3795,7 +3811,7 @@ document.querySelectorAll('.spreadOption').forEach(option=>{
   const active=Number(option.dataset.count)===targetDraws;
   option.classList.toggle('active',active);option.setAttribute('aria-checked',String(active));
 });
-document.querySelectorAll('.drawStyleOption').forEach(option=>{
+document.querySelectorAll('#drawStyleOptions [data-draw-style]').forEach(option=>{
   const active=option.dataset.drawStyle===drawStyle;
   option.classList.toggle('active',active);option.setAttribute('aria-checked',String(active));
 });
@@ -3811,9 +3827,52 @@ document.querySelectorAll('.spreadOption').forEach(button=>{
     savePreferences();updateEntrySettingLine();
   });
 });
-document.querySelectorAll('.drawStyleOption').forEach(button=>button.addEventListener('click',()=>{
+// 铜钱摇卦 used to be reachable only through the settings sheet, which is where
+// two separate tries to find it failed. The entry now offers the two methods
+// that need no extra input, with 更多… opening the sheet for the rest.
+function updateCastMethodQuickUI(){
+  const row=document.getElementById('castMethodQuick');
+  if(!row)return;
+  row.hidden=readingMode==='tarot';
+  const method=document.getElementById('castMode')?.value||'auto';
+  // 自动 reads as 按时间 unless the question carries explicit numbers.
+  const activeKey=method==='auto'?'time':method;
+  row.querySelectorAll('[data-cast-method]').forEach(button=>{
+    const active=button.dataset.castMethod===activeKey;
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-checked',String(active));
+  });
+  const more=document.getElementById('castMethodMore');
+  if(more){
+    const inQuick=method==='auto'||method==='time'||method==='coin';
+    more.textContent=inQuick?'更多…':`更多… ${CAST_METHOD_SHORT[method]||''}`.trim();
+    more.classList.toggle('active',!inQuick);
+    more.setAttribute('aria-checked',String(!inQuick));
+  }
+  const hint=document.getElementById('readingModeHint');
+  if(hint&&readingMode==='gua'){
+    hint.textContent=method==='coin'
+      ?'铜钱摇卦：亲手摇六次成卦，也可以一键成卦。'
+      :method==='auto'
+        ?'自动起卦：问题里写明数字时按数字，否则按时间。'
+        :`${CAST_METHOD_SHORT[method]||'按时间'}起卦。`;
+  }
+}
+document.querySelectorAll('#castMethodQuick [data-cast-method]').forEach(button=>button.addEventListener('click',()=>{
+  const field=document.getElementById('castMode');
+  if(!field)return;
+  field.value=allowedPreference(button.dataset.castMethod,['auto','time','three','sound','count','text','coin'],'auto');
+  updateCastModeUI();
+  savePreferences();
+}));
+document.getElementById('castMethodMore')?.addEventListener('click',()=>{
+  document.getElementById('advancedSetup')?.click();
+});
+// Scoped to buttons that actually carry a draw style: the 起卦方法 row reuses the
+// same class for its chips and must not be treated as a 抽牌方式 choice.
+document.querySelectorAll('#drawStyleOptions [data-draw-style]').forEach(button=>button.addEventListener('click',()=>{
   drawStyle=allowedPreference(button.dataset.drawStyle,['quick','manual'],'quick');
-  document.querySelectorAll('.drawStyleOption').forEach(option=>{
+  document.querySelectorAll('#drawStyleOptions [data-draw-style]').forEach(option=>{
     const active=option===button;option.classList.toggle('active',active);option.setAttribute('aria-checked',String(active));
   });
   // The main button label follows this choice as well.
@@ -3956,6 +4015,7 @@ function updateCastModeUI(){
   const typeHint=document.getElementById('questionTypeHint');
   if(typeHint)typeHint.textContent=questionType==='shooting'?'数字决定卦象，问题决定射覆；结果会给出可核对的颜色、形状、材质和候选。':'起卦方法与问题类型分开；例如三个数字也可以用于射覆。';
   updateDrawStyleOptionsUI();
+  updateCastMethodQuickUI();
   updateEntrySettingLine();
 }
 // 亲手 versus 一键. Cards and 铜钱摇卦 share one setting: 亲手 does the action on
