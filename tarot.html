@@ -952,6 +952,10 @@ body::after{
             </div>
           </details>
           </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:6px;padding-top:12px;border-top:1px solid rgba(101,80,58,.13)">
+            <button type="button" id="shareSetupLink" style="min-height:36px;padding:7px 12px;border:1px solid rgba(101,80,58,.28);border-radius:999px;background:rgba(255,255,255,.5);color:#51483e;font:13px var(--sans);cursor:pointer">复制设置链接</button>
+            <small id="appBuildLabel" style="color:var(--ink-muted);font-size:11px"></small>
+          </div>
           <footer class="settingsSheetFooter"><span>设置会自动记住</span><button type="button" id="settingsSheetDone" data-close-settings>完成</button></footer>
         </section>
       </div>
@@ -1321,6 +1325,38 @@ try{
   const stored=JSON.parse(localStorage.getItem(PREFERENCE_KEY)||'{}');
   if(stored&&typeof stored==='object'&&!Array.isArray(stored))savedPreferences=stored;
 }catch{}
+// Shareable setup. One device's saved choices travel in the query string so the
+// same link reproduces them on another device: ?mode=combo&draws=5&style=manual
+// &cast=coin&layer=meihua. Link values win over localStorage once, are persisted,
+// and are then stripped from the address bar so a refresh does not re-apply them.
+const PREFERENCE_PARAMS=Object.freeze({
+  mode:'readingMode',draws:'targetDraws',style:'drawStyle',cast:'castMode',layer:'traditionalLayer',
+});
+const PREFERENCE_PARAM_CHOICES=Object.freeze({
+  mode:['tarot','gua','combo'],
+  draws:['3','5'],
+  style:['quick','manual'],
+  cast:['auto','time','three','sound','count','text','coin'],
+  layer:['meihua','qimen','bazhai','all'],
+});
+function readPreferenceParams(search){
+  const params=new URLSearchParams(search||'');
+  const picked={};
+  for(const name of Object.keys(PREFERENCE_PARAMS)){
+    const value=params.get(name);
+    if(value===null||!PREFERENCE_PARAM_CHOICES[name].includes(value))continue;
+    picked[PREFERENCE_PARAMS[name]]=name==='draws'?Number(value):value;
+  }
+  return picked;
+}
+const sharedPreferences=readPreferenceParams(location.search);
+if(Object.keys(sharedPreferences).length){
+  savedPreferences={...savedPreferences,...sharedPreferences};
+  try{localStorage.setItem(PREFERENCE_KEY,JSON.stringify(savedPreferences));}catch{}
+  const clean=new URL(location.href);
+  Object.keys(PREFERENCE_PARAMS).forEach(name=>clean.searchParams.delete(name));
+  history.replaceState(null,'',`${clean.pathname}${clean.search}${clean.hash}`);
+}
 const allowedPreference=(value,choices,fallback)=>choices.includes(value)?value:fallback;
 function savePreferences(){
   const values={
@@ -1338,6 +1374,43 @@ const MIN_DRAWS=3, MAX_DRAWS=5;
 let targetDraws=Number(savedPreferences.targetDraws)===5?5:3;
 let readingMode=allowedPreference(savedPreferences.readingMode,['tarot','gua','combo'],'gua');
 let drawStyle=allowedPreference(savedPreferences.drawStyle,['quick','manual'],'quick');
+// Build marker: makes "my phone looks different from my computer" a one-glance answer.
+const APP_BUILD='v66-prefs-sync · 2026-09-26';
+// Rebuild the shareable setup link from the live controls rather than from
+// savedPreferences, so a link copied from the open sheet already reflects the
+// pending choices.
+function preferencesLink(){
+  const url=new URL(location.href);
+  url.search='';
+  url.searchParams.set('mode',readingMode);
+  url.searchParams.set('draws',String(targetDraws));
+  url.searchParams.set('style',drawStyle);
+  url.searchParams.set('cast',document.getElementById('castMode')?.value||'auto');
+  url.searchParams.set('layer',document.getElementById('traditionalLayer')?.value||'meihua');
+  return url.href;
+}
+async function copyPreferencesLink(button){
+  const link=preferencesLink();
+  let copied=false;
+  try{await navigator.clipboard.writeText(link);copied=true;}catch{}
+  if(!copied){
+    // The Clipboard API needs a secure context; a plain-HTTP LAN preview falls back.
+    const field=document.createElement('textarea');
+    field.value=link;field.setAttribute('readonly','');
+    field.style.cssText='position:fixed;top:-1000px;opacity:0';
+    document.body.appendChild(field);field.select();
+    try{copied=document.execCommand('copy');}catch{}
+    field.remove();
+  }
+  if(!copied){window.prompt('复制这条设置链接：',link);return;}
+  button.textContent='已复制 ✓';
+  setTimeout(()=>{button.textContent='复制设置链接';},1800);
+}
+const appBuildLabel=document.getElementById('appBuildLabel');
+if(appBuildLabel)appBuildLabel.textContent=APP_BUILD;
+const shareSetupButton=document.getElementById('shareSetupLink');
+shareSetupButton?.addEventListener('click',()=>{copyPreferencesLink(shareSetupButton);});
+console.info('[星象塔罗] build',APP_BUILD);
 const READING_MODE_LABELS=Object.freeze({tarot:'单塔罗牌',gua:'单起卦',combo:'塔罗＋起卦'});
 // Short labels for the entry's 起卦方法 row. Declared with the other label maps
 // because updateReadingModeUI() reads it during start-up.
