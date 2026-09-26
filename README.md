@@ -28,11 +28,12 @@ https://peas-47.netlify.app/
 - 结果页以“本卦先读”为主线：先给六爻图、本卦主题、白话导读、问题落点、动爻变化提示；动爻 / 互卦 / 体用和塔罗牌面参照可按需展开
 - 原典对照区载入对应卦辞和本次动爻辞，和本站现代说明分开标注；其余传篇通过逐卦原文入口查看
 - 起卦方式可选：按抽牌时间、三个数字、射覆、静物取象、人物取象、失物占、声音占、物数占、测字与外应记录；自动模式会识别“用三个数字起卦”等明确表述
+- 铜钱摇卦（三钱法）：手动摇六次或一键起卦，三枚铜钱每次同时落定，字面记 2、背面记 3，得老阴 / 少阳 / 少阴 / 老阳；六爻合成上下卦，老阴与老阳为动爻，可以有多个动爻。三钱法作为独立起卦方式呈现，不套用梅花的体用与互卦
 - 射覆与取象结果会单列颜色、形状、材质、大小手感、方向及候选物品，并明确标注为可核对线索，不把候选当成事实
 
 ## 传统文化资料库（第一批）
 
-《周易》、梅花易数、奇门遁甲、八宅与其他传统资料的来源清单位于 [`knowledge/`](knowledge/)。梅花、奇门、八宅的蒸馏笔记与技能说明分别位于 [`books/`](books/)。网站使用 `mh-ws-1` 规则档案做确定性梅花起卦，并在抽牌确认时同步生成可追溯的奇门时课；选择房屋主要朝向后，再显示八宅坐向、宅卦和四吉四凶。原文、现代说明和不纳入规则的说法分开保存，传统象类只作观照线索，不作事实证明或确定预言。运行 `node scripts/verify-meihua.mjs`、`node scripts/verify-meihua-modes.mjs` 与 `node scripts/verify-traditional.mjs` 可复核数值和模式检查。
+《周易》、梅花易数、奇门遁甲、八宅与其他传统资料的来源清单位于 [`knowledge/`](knowledge/)。梅花、奇门、八宅的蒸馏笔记与技能说明分别位于 [`books/`](books/)。网站使用 `mh-ws-1` 规则档案做确定性梅花起卦，并在抽牌确认时同步生成可追溯的奇门时课；选择房屋主要朝向后，再显示八宅坐向、宅卦和四吉四凶。铜钱摇卦使用独立的 `coin-3q-1` 规则档案，与梅花分开保存和呈现。原文、现代说明和不纳入规则的说法分开保存，传统象类只作观照线索，不作事实证明或确定预言。运行 `node scripts/verify-meihua.mjs`、`node scripts/verify-meihua-modes.mjs`、`node scripts/verify-traditional.mjs` 与 `node scripts/verify-coin-cast.mjs` 可复核数值和模式检查；`node scripts/verify-coin-ui.cjs` 需要本地服务在 8888 端口运行。
 
 ## 文件说明
 
@@ -46,6 +47,9 @@ https://peas-47.netlify.app/
 | `netlify/functions/tarot-reading.mjs` | AI 解读代理、输入校验与限流配置 |
 | `scripts/meihua-display.mjs` | 农历/时辰读取、六十四卦名称映射、各类起卦与取象展示数据 |
 | `scripts/meihua-insight.mjs` | 64 卦本站白话导读、上下卦取象、动爻变化提示与逐卦原文链接 |
+| `scripts/coin-cast.mjs` | 三钱法 `coin-3q-1` 规则档案：六爻取数、上下卦、动爻与变卦，独立于梅花引擎 |
+| `scripts/coin-stage.mjs` | 摇卦舞台的三维铜钱、落地动画与六爻进度回报（首次打开才创建 WebGL） |
+| `coin-cast.css` | 摇卦舞台的样式，沿用夜读工作台视觉系统 |
 | `scripts/zhouyi-text.mjs` | 六十四卦卦辞与爻辞原文对照数据，供本卦和动爻展示 |
 | `scripts/qimen-insight.mjs` | 《神奇之门》规则骨架的时家奇门确定性排盘与九宫资料层 |
 | `scripts/bazhai-insight.mjs` | 《八宅风水简介》的朝向—坐向—宅卦—四吉四凶提示 |
@@ -58,13 +62,7 @@ https://peas-47.netlify.app/
 
 ## 本地运行
 
-请通过静态服务器访问。直接双击 `tarot.html` 可以查看页面，但浏览器不会启用 Service Worker，因此无法安装 PWA 或验证离线模式。
-
-```bash
-# Python 内置服务器
-python3 -m http.server 8080
-# 浏览器访问 http://localhost:8080/tarot.html
-```
+要体验完整功能（包括 AI），请用项目自带的本地服务启动。不要双击 `tarot.html`，也不要用 Python 静态服务器代替：它们不会转发 AI 请求。
 
 如需重新拉取或校验本地依赖与牌图：
 
@@ -83,7 +81,7 @@ node scripts/generate-pwa-icons.cjs
 node scripts/local-server.mjs --port=8888
 ```
 
-访问 `http://localhost:8888/tarot.html`。本地服务只监听 `127.0.0.1`，不会把 API Key 发送到浏览器或暴露到公网；`.env` 已被 Git 忽略。
+访问 `http://localhost:8888/tarot.html`。本地服务只监听 `127.0.0.1`，不会把 API Key 发送到浏览器或暴露到公网；`.env` 已被 Git 忽略。可打开 `http://localhost:8888/api/health` 检查本地 AI 是否已配置；该状态接口不发起模型请求，也不会显示密钥。
 
 梅花易数同步起卦在第一张牌确认瞬间完成，不调用摄像头、不上传起卦时间；起卦结果随本次观测保存在本机档案，并随 AI 请求以结构化资料传入，不包含任何 API 密钥。
 
@@ -106,13 +104,12 @@ API Key 只由 Netlify Function 读取，不会发送到浏览器。函数端点
 
 不要把真实 Key 写进 `tarot.html`、`netlify.toml` 或提交到 GitHub。线上请在 Netlify 的 **Project configuration → Environment variables** 新建 `DASHSCOPE_API_KEY`，如界面提供 Scope，需包含 **Functions**；可将它标记为 **Contains secret values**。修改环境变量后需要重新部署。
 
-本地的 Python 静态服务器不运行 Netlify Function，所以 AI 请求会返回 501。需要本地测试 AI 时：
+本地 AI 通过同一台电脑上的 Node 代理连接百炼；需要单独启动或重启本地服务时：
 
 ```bash
 copy .env.example .env
 # 只在本机的 .env 中填入真实 DASHSCOPE_API_KEY
-npx netlify dev
-# 打开 Netlify CLI 输出的本地地址，通常是 http://localhost:8888
+node scripts/local-server.mjs --port=8888
 ```
 
 `.env` 和 `.env.*` 已被 `.gitignore` 排除，只有不含真实密钥的 `.env.example` 可以提交。

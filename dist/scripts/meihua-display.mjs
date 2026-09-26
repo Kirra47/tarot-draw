@@ -7,6 +7,7 @@ import {
   relation,
   structure,
 } from '../books/meihua-yishu-wikisource/meihua-numeric-cast/scripts/meihua.mjs';
+import { COIN_LINE_LABELS, structureFromCoinValues } from './coin-cast.mjs';
 
 // The site only needs the compact, traceable labels here. Full source texts
 // stay out of the client bundle; the result card links to a public Zhouyi text.
@@ -25,7 +26,12 @@ export const CAST_MODE_LABELS = Object.freeze({
   count: '物数占',
   text: '测字起卦',
   omen: '外应记录',
+  coin: '铜钱摇卦',
 });
+// 三钱法 reads six tossed lines; 梅花易数 reads numbers and one moving line.
+// The two stay separate so a coin result is never described as a 梅花 cast.
+export const COIN_CAST_MODE = 'coin';
+export { COIN_PROFILE, COIN_LINE_LABELS } from './coin-cast.mjs';
 
 // King Wen sequence. Each pair uses the same upper/lower numbering as the
 // numeric-cast module, so the mapping remains inspectable instead of guessed.
@@ -72,6 +78,23 @@ export function hexagramMeta(upper, lower) {
 
 export function movingLineLabel(line) {
   return `${ORDINALS[line] || `第${line}`}爻`;
+}
+
+// 三钱法 records six tossed lines. This keeps the per-line detail readable and
+// marks which lines are moving, without borrowing 梅花 体/用 language.
+export function coinLineSummary(value) {
+  const lineValues = value?.lineValues;
+  if (!Array.isArray(lineValues) || lineValues.length !== 6) return '';
+  const moving = Array.isArray(value.movingLines) ? value.movingLines : [];
+  return lineValues
+    .map((line, index) => `${ORDINALS[index + 1]}爻 ${COIN_LINE_LABELS[line] || line}${moving.includes(index + 1) ? '（动）' : ''}`)
+    .join(' · ');
+}
+
+export function coinMovingLabel(value) {
+  const moving = Array.isArray(value?.movingLines) ? value.movingLines : [];
+  if (!moving.length) return '六爻皆静';
+  return moving.map((line) => movingLineLabel(line)).join('、');
 }
 
 export function hourBranch(hour) {
@@ -356,12 +379,15 @@ export function observationProfile({ mode, upper, lower, material = '', count = 
   return null;
 }
 
-export function castByMode({ mode = 'time', moment = new Date(), numbers = [], text = '', count = null } = {}) {
+export function castByMode({ mode = 'time', moment = new Date(), numbers = [], text = '', count = null, coinValues = [] } = {}) {
   if (!CAST_MODE_LABELS[mode]) throw new RangeError(`unknown cast mode: ${mode}`);
   const calendar = traditionalCalendar(moment);
   let cast;
   let sourceInput = {};
-  if (mode === 'three') {
+  if (mode === COIN_CAST_MODE) {
+    cast = structureFromCoinValues(coinValues);
+    sourceInput = { coinValues: [...cast.lineValues] };
+  } else if (mode === 'three') {
     cast = castThreeNumbers(numbers);
     sourceInput = { numbers: [cast.inputs.upperNumber, cast.inputs.lowerNumber, cast.inputs.movingNumber] };
   } else if (mode === 'sound' || mode === 'count') {
@@ -385,7 +411,15 @@ export function castByMode({ mode = 'time', moment = new Date(), numbers = [], t
   } else {
     cast = castFromMoment(moment);
   }
-  const value = { ...cast, mode, modeLabel: CAST_MODE_LABELS[mode], calendar, sourceInput, relation: relation(cast.body, cast.use) };
+  // 三钱法 has no 体/用 pair, so the relation only exists for 梅花 casts.
+  const value = {
+    ...cast,
+    mode,
+    modeLabel: CAST_MODE_LABELS[mode],
+    calendar,
+    sourceInput,
+    relation: cast.body ? relation(cast.body, cast.use) : null,
+  };
   const observation = observationProfile({ mode, upper: value.upper, lower: value.lower, material: sourceInput.text || '', count: sourceInput.count || null });
   if (observation) value.observation = observation;
   return value;

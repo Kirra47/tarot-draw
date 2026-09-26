@@ -1,0 +1,123 @@
+/* Local trial: keep the main question flow quiet and put optional controls in
+   one dedicated, scrollable panel instead of nested scrolling cards. */
+#questionOverlay #advancedSetup.settingsLauncher{
+  position:relative;
+  display:grid;
+  grid-template-columns:42px minmax(0,1fr) minmax(120px,auto) auto;
+  grid-template-areas:"icon copy meta action";
+  align-items:center;
+  gap:12px;
+  width:100%;
+  min-height:70px;
+  margin:8px 0 14px;
+  padding:12px 14px;
+  overflow:visible;
+  border:1px solid #cfc9bd;
+  border-radius:14px;
+  background:#f3efe6;
+  color:#252923;
+  text-align:left;
+  box-shadow:0 2px 8px rgba(44,41,34,.035);
+  cursor:pointer;
+  transition:background-color 160ms ease,border-color 160ms ease,transform 140ms ease;
+}
+#questionOverlay #advancedSetup.settingsLauncher:hover{border-color:#a9b5a8;background:#f8f5ed}
+#questionOverlay #advancedSetup.settingsLauncher:active{transform:scale(.99)}
+#questionOverlay #advancedSetup.settingsLauncher:focus-visible{outline:2px solid #718b79;outline-offset:3px}
+#questionOverlay #advancedSetup .advancedSetupIcon{grid-area:icon;width:38px;height:38px;padding:8px;border:1px solid #c7cfc4;border-radius:11px;background:#e8ece4;color:#637d6c;stroke:currentColor}
+#questionOverlay #advancedSetup .advancedSetupCopy{grid-area:copy;display:flex;min-width:0;flex-direction:column;gap:3px}
+#questionOverlay #advancedSetup .advancedSetupCopy strong{color:#282b27;font:600 15px/1.35 var(--sans);letter-spacing:0}
+#questionOverlay #advancedSetup .advancedSetupCopy small{color:#74776f;font:12px/1.45 var(--sans)}
+#questionOverlay #advancedSetup .advancedSetupMeta{grid-area:meta;display:flex;min-width:0;flex-direction:column;align-items:flex-end;gap:3px}
+#questionOverlay #advancedSetup .advancedSetupMeta>span{color:#728778;font-size:11px;font-weight:600;letter-spacing:0}
+#questionOverlay #entrySettingLine{display:block;max-width:190px;color:#4f554e;font:12px/1.45 var(--sans);white-space:nowrap;text-overflow:ellipsis}
+#questionOverlay #advancedSetup .advancedSetupChevron{grid-area:action;display:flex;align-items:center;justify-content:center;width:auto;height:34px;padding:0 11px;border:1px solid #c9d0c6;border-radius:999px;background:#f8f7f2;color:#536f5e;font:600 12px/1 var(--sans);white-space:nowrap;transition:background-color 160ms ease,border-color 160ms ease}
+#questionOverlay #advancedSetup.settingsLauncher:hover .advancedSetupChevron{border-color:#9bac9d;background:#eef1e9}
+
+#setupOverlay[hidden]{display:none!important}
+#setupOverlay.settingsSheet{position:fixed;inset:0;z-index:360;display:block;isolation:isolate;color:#282b27}
+.settingsSheetScrim{position:absolute;inset:0;width:100%;height:100%;border:0;background:rgba(13,16,19,.52);backdrop-filter:blur(5px);opacity:0;transition:opacity 180ms ease;cursor:default}
+.settingsSheetPanel{position:absolute;top:16px;right:16px;bottom:16px;display:flex;width:min(600px,calc(100vw - 32px));max-height:calc(100dvh - 32px);flex-direction:column;overflow:hidden;border:1px solid rgba(70,78,68,.2);border-radius:20px;background:#f4f1e9;box-shadow:0 24px 72px rgba(0,0,0,.3);opacity:0;transform:translateX(22px);transition:opacity 190ms ease,transform 230ms cubic-bezier(.2,.75,.25,1)}
+#setupOverlay.is-open .settingsSheetScrim{opacity:1}
+#setupOverlay.is-open .settingsSheetPanel{opacity:1;transform:translateX(0)}
+.settingsSheetGrip{display:none}
+.settingsSheetHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding:23px 24px 19px;border-bottom:1px solid #ddd8ce;background:#f7f4ed}
+.settingsSheetHeader>div>span{color:#728778;font-size:12px;font-weight:600}
+.settingsSheetHeader h2{margin:5px 0 3px;color:#292c28;font:500 25px/1.3 var(--serif)}
+.settingsSheetHeader p{margin:0;color:#73736c;font-size:13px;line-height:1.55}
+.settingsSheetClose{flex:0 0 40px;width:40px;height:40px;border:1px solid #d5d1c7;border-radius:50%;background:#fbfaf6;color:#4c524c;font:24px/1 var(--sans);cursor:pointer}
+.settingsSheetBody{flex:1 1 auto;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:#b9b7ab transparent;padding:16px 18px 20px}
+.settingsSheetBody::-webkit-scrollbar{width:7px}
+.settingsSheetBody::-webkit-scrollbar-thumb{border:2px solid #f4f1e9;border-radius:9px;background:#c3c0b5}
+.settingsSheetBody .advancedSettingGroup{margin:0 0 11px;overflow:hidden;border:1px solid #d8d4ca;border-radius:13px;background:#fbfaf6;box-shadow:none}
+.settingsSheetBody .advancedSettingGroup:last-child{margin-bottom:0}
+.settingsSheetBody .advancedSettingGroupHead{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:14px;min-height:66px;padding:12px 15px;border:0;background:#fbfaf6;text-align:left;cursor:pointer;list-style:none}
+.settingsSheetBody .advancedSettingGroupHead::-webkit-details-marker{display:none}
+.settingsSheetBody .advancedSettingGroupHead>span{display:flex;flex:1 1 auto;min-width:0;flex-direction:column;align-items:flex-start;gap:3px;text-align:left}
+.settingsSheetBody .advancedSettingGroupHead strong{color:#292c28;font:600 15px/1.4 var(--sans);text-align:left}
+.settingsSheetBody .advancedSettingGroupHead small{color:#777970;font:12px/1.4 var(--sans);text-align:left}
+.settingsSheetBody .advancedSettingGroupHead>i{display:grid;flex:0 0 26px;width:26px;height:26px;margin-left:auto;place-items:center;border:1px solid #d5d7ce;border-radius:50%;color:#657f6e;font-style:normal}
+.settingsSheetBody .advancedSettingGroupHead>i::before{content:'＋';font:16px/1 var(--sans)}
+.settingsSheetBody .advancedSettingGroup[open]>.advancedSettingGroupHead{border-bottom:1px solid #e4e0d8;background:#f5f3ec}
+.settingsSheetBody .advancedSettingGroup[open]>.advancedSettingGroupHead>i::before{content:'−'}
+.settingsGroupContent{padding:15px 16px 17px}
+.settingsSheetBody #spreadSettings,.settingsSheetBody #divinationOptions{padding:0}
+.settingsSheetBody #spreadSettings{margin:0}
+.settingsSheetBody .spreadLabel{margin:0 0 9px;font-size:14px}
+.settingsSheetBody .spreadPicker{gap:9px;margin:0}
+.settingsSheetBody .spreadOption{min-height:72px;padding:11px 12px;border-radius:11px}
+.settingsSheetBody .drawStyleOptions{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:15px 0 0;padding:14px 0 0;border-top:1px solid #e7e3da}
+.settingsSheetBody .drawStyleOptions>span{flex:0 0 100%;margin:0;color:#343832;font-size:14px;font-weight:600}
+.settingsSheetBody .drawStyleOption{min-height:40px;padding:8px 13px;border-color:#d7d4ca;border-radius:10px;background:#f8f7f2;color:#5f625b;font-size:13px}
+.settingsSheetBody .drawStyleOption.active{border-color:#8da091;background:#edf1e9;color:#496653}
+.settingsSheetBody #divinationOptions{display:grid;gap:0}
+.settingsSheetBody .castModeLabel,.settingsSheetBody .traditionalLabel{margin:15px 0 7px;font-size:14px}
+.settingsSheetBody .castModeLabel:first-child{margin-top:0}
+.settingsSheetBody #castMode,.settingsSheetBody #questionType,.settingsSheetBody #traditionalLayer,.settingsSheetBody #houseFacingInput{width:100%;min-height:47px;padding:10px 38px 10px 12px;border:1px solid #d4d2c8;border-radius:10px;background:#fffefa;color:#30332f;font:14px var(--sans);outline:none}
+.settingsSheetBody #castMode:focus,.settingsSheetBody #questionType:focus,.settingsSheetBody #traditionalLayer:focus,.settingsSheetBody #houseFacingInput:focus{border-color:#90a494;box-shadow:0 0 0 3px rgba(114,139,121,.13)}
+.settingsSheetBody .castModeHint{margin:7px 0 3px;color:#74766e;font-size:12px;line-height:1.65}
+.settingsSheetBody .castExtraField{margin:12px 0 7px}
+.settingsSheetBody .castExtraField label{font-size:13px}
+.settingsSheetBody .threeNumberRow input,.settingsSheetBody #castCountInput,.settingsSheetBody #castDetailInput{min-height:47px;border-color:#d4d2c8;border-radius:10px;background:#fffefa;font-size:14px}
+.settingsSheetBody .threeNumberRow input:focus,.settingsSheetBody #castCountInput:focus,.settingsSheetBody #castDetailInput:focus{border-color:#90a494;box-shadow:0 0 0 3px rgba(114,139,121,.13)}
+.settingsSheetBody .castExtraField[hidden]{display:none!important}
+.settingsSheetFooter{display:flex;flex:0 0 auto;align-items:center;justify-content:space-between;gap:14px;padding:13px 18px calc(13px + env(safe-area-inset-bottom));border-top:1px solid #dedad0;background:#f7f4ed}
+.settingsSheetFooter>span{color:#777970;font-size:12px}
+.settingsSheetFooter button{min-width:112px;min-height:44px;padding:10px 18px;border:1px solid #536f5e;border-radius:10px;background:#536f5e;color:#fffdf7;font:600 14px var(--sans);cursor:pointer;transition:background-color 150ms ease,transform 150ms ease}
+.settingsSheetFooter button:hover{background:#455f50}
+.settingsSheetFooter button:active{transform:scale(.98)}
+
+@media(max-width:720px){
+  #questionOverlay,.qCard,.qIntro,.qForm{min-width:0;max-width:100vw}
+  #questionOverlay .qCard{width:100vw}
+  #questionOverlay .qForm{width:100%;min-width:0;box-sizing:border-box}
+  #questionOverlay #questionInput,#questionOverlay #questionConfirm,#questionOverlay #advancedSetup{width:100%;min-width:0;max-width:100%}
+  #questionOverlay .readingModePicker{width:100%;min-width:0;grid-template-columns:repeat(3,minmax(0,1fr))}
+  #questionOverlay .readingModeOption{min-width:0;overflow:hidden}
+  #questionOverlay #advancedSetup.settingsLauncher{grid-template-columns:36px minmax(0,1fr) auto;grid-template-areas:"icon copy action" "icon meta action";gap:2px 10px;min-height:70px;margin:8px 0 12px;padding:10px 11px}
+  #questionOverlay #advancedSetup .advancedSetupIcon{width:34px;height:34px;padding:7px}
+  #questionOverlay #advancedSetup .advancedSetupMeta{flex-direction:row;align-items:center;justify-content:flex-start;gap:6px}
+  #questionOverlay #advancedSetup .advancedSetupMeta>span{font-size:10px}
+  #questionOverlay #entrySettingLine{max-width:min(53vw,260px);font-size:11px}
+  .settingsSheetPanel{top:auto;right:0;bottom:0;width:100%;height:min(88dvh,820px);max-height:calc(100dvh - 8px);border-right:0;border-bottom:0;border-left:0;border-radius:22px 22px 0 0;transform:translateY(24px)}
+  #setupOverlay.is-open .settingsSheetPanel{transform:translateY(0)}
+  .settingsSheetGrip{display:block;flex:0 0 5px;width:42px;height:5px;margin:10px auto 0;border-radius:99px;background:#c7c5bb}
+  .settingsSheetHeader{padding:14px 18px 13px}
+  .settingsSheetHeader h2{font-size:23px}
+  .settingsSheetHeader p{font-size:12px}
+  .settingsSheetBody{padding:12px 13px 18px}
+  .settingsSheetBody .advancedSettingGroupHead{min-height:62px;padding:10px 13px}
+  .settingsGroupContent{padding:13px 12px 15px}
+  .settingsSheetFooter{padding-right:14px;padding-left:14px}
+}
+@media(max-width:380px){
+  #questionOverlay #advancedSetup .advancedSetupCopy small{font-size:11px}
+  #questionOverlay #entrySettingLine{max-width:48vw;font-size:10px}
+  #questionOverlay #advancedSetup .advancedSetupChevron{height:31px;padding:0 8px;font-size:11px}
+  .settingsSheetPanel{height:90dvh}
+  .settingsSheetBody .spreadPicker{grid-template-columns:1fr}
+  .settingsSheetBody .spreadOption{min-height:58px}
+}
+@media(prefers-reduced-motion:reduce){
+  .settingsSheetScrim,.settingsSheetPanel,#questionOverlay #advancedSetup.settingsLauncher,.settingsSheetFooter button{transition:none}
+}

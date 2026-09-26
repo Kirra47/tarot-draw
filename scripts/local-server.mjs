@@ -10,7 +10,7 @@ const PORT = Number(process.env.PORT || portArg?.split('=')[1] || 8888);
 async function loadDotEnv(filePath) {
   let text;
   try { text = await fs.readFile(filePath, 'utf8'); } catch { return; }
-  for (const line of text.split(/\r?\n/)) {
+  for (const line of text.split(/\r\n|\n|\r/)) {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith('#')) continue;
     const separator = trimmed.indexOf('=');
@@ -18,6 +18,10 @@ async function loadDotEnv(filePath) {
     const key = trimmed.slice(0, separator).trim();
     let value = trimmed.slice(separator + 1).trim();
     if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) value = value.slice(1, -1);
+    // API keys copied from dashboards or chat may contain visual whitespace.
+    // Never log the value; remove whitespace before passing it to the provider.
+    if (key === 'DASHSCOPE_API_KEY') value = value.replace(/\s+/g, '');
+    if (key === 'DASHSCOPE_MODEL') value = value.replace(/\s+/g, '');
     if (!process.env[key]) process.env[key] = value;
   }
 }
@@ -80,6 +84,13 @@ async function serveStatic(request, response) {
 const server = http.createServer(async (request, response) => {
   try {
     const pathname = new URL(request.url, `http://127.0.0.1:${PORT}`).pathname;
+    if (pathname === '/api/health' && request.method === 'GET') {
+      const configuredModel = String(process.env.DASHSCOPE_MODEL || 'qwen3.8-flash').replace(/\s+/g, '');
+      const model = /^[a-z0-9._-]{1,80}$/i.test(configuredModel) ? configuredModel : 'qwen3.8-flash';
+      response.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
+      response.end(JSON.stringify({ ok: true, aiConfigured: Boolean(process.env.DASHSCOPE_API_KEY), model }));
+      return;
+    }
     if (pathname === '/api/tarot-reading') {
       const body = request.method === 'POST' ? await readBody(request) : undefined;
       const fetchRequest = new Request(`http://127.0.0.1:${PORT}${request.url}`, { method: request.method, headers: new Headers(request.headers), body: body?.length ? body : undefined });
@@ -97,5 +108,6 @@ const server = http.createServer(async (request, response) => {
 server.listen(PORT, '127.0.0.1', () => {
   console.log(`本地塔罗服务：http://localhost:${PORT}/tarot.html`);
   console.log(`AI 代理：${process.env.DASHSCOPE_API_KEY ? '已读取本地 Key' : '未读取 Key，请在 .env 填入 DASHSCOPE_API_KEY'}`);
-  console.log(`模型：${process.env.DASHSCOPE_MODEL || 'qwen3.8-flash'}`);
+  const configuredModel = String(process.env.DASHSCOPE_MODEL || 'qwen3.8-flash').replace(/\s+/g, '');
+  console.log(`模型：${/^[a-z0-9._-]{1,80}$/i.test(configuredModel) ? configuredModel : 'qwen3.8-flash'}`);
 });

@@ -105,6 +105,34 @@ const oversized = await tarotReading(request(
 assert.equal(oversized.status, 413);
 assert.equal(upstreamCalls.length, 3);
 
+for (const mode of ["gua", "tarot", "combo"]) {
+  const response = await tarotReading(request({
+    readingMode: mode,
+    depth: "detail",
+    question: "模式隔离检查",
+    cards: "【现在】星星 - 正位",
+    meihua: "本卦：第49卦 · 泽火革\n动爻：初爻；体用：体兑／用离",
+    traditional: "奇门资料观照测试",
+  }));
+  assert.equal(response.status, 200);
+}
+const detailedPrompts = Object.fromEntries(upstreamCalls.slice(3).map((call, index) => {
+  const mode = ["gua", "tarot", "combo"][index];
+  const systemText = call.body.messages.filter((message) => message.role === "system").map((message) => message.content).join("\n");
+  const userText = call.body.messages.at(-1).content;
+  return [mode, { systemText, userText }];
+}));
+assert.match(detailedPrompts.gua.systemText, /三卦与问题/);
+assert.doesNotMatch(detailedPrompts.gua.systemText, /牌面总览|逐牌解读|牌面关联/);
+assert.doesNotMatch(detailedPrompts.gua.userText, /塔罗牌面/);
+assert.match(detailedPrompts.tarot.systemText, /牌面总览/);
+assert.doesNotMatch(detailedPrompts.tarot.systemText, /## ☯ 本卦先读|如果资料中提供“奇门遁甲资料观照”/);
+assert.doesNotMatch(detailedPrompts.tarot.userText, /同步梅花起卦结果|奇门与八宅资料观照/);
+assert.match(detailedPrompts.combo.systemText, /卦象与问题/);
+assert.match(detailedPrompts.combo.systemText, /牌面总览/);
+assert.match(detailedPrompts.combo.userText, /塔罗牌面/);
+assert.match(detailedPrompts.combo.userText, /同步梅花起卦结果/);
+
 console.log(JSON.stringify({
   initialRoles: upstreamCalls[0].body.messages.map((message) => message.role),
   model: upstreamCalls[0].body.model,
@@ -116,4 +144,8 @@ console.log(JSON.stringify({
   forgedSystemMessageRemoved: true,
   crossSiteStatus: crossSite.status,
   oversizedStatus: oversized.status,
+  modeSpecificDetailedPrompts: Object.fromEntries(Object.entries(detailedPrompts).map(([mode, value]) => [mode, {
+    tarotContentIncluded: value.systemText.includes("牌面总览"),
+    guaContentIncluded: value.systemText.includes("三卦与问题") || value.systemText.includes("卦象与问题"),
+  }])),
 }, null, 2));

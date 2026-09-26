@@ -1,11 +1,14 @@
-const CACHE_VERSION = "astral-tarot-v46-settings-groups-20260925";
+const CACHE_VERSION = "astral-tarot-v63-coin-cast-20260926";
 const CORE_CACHE = `${CACHE_VERSION}-core`;
 const ASSET_CACHE = `${CACHE_VERSION}-assets`;
 
 const CORE_ASSETS = [
   "./",
   "./tarot.html",
-  "./emil-redesign.css?v=20260925-settings-groups-8",
+  "./emil-redesign.css?v=20260926-gua-structure-1",
+  "./settings-trial.css?v=20260926-local-sheet-1",
+  "./tarot-ui-v3.css?v=20260926-reading-desk-12",
+  "./coin-cast.css?v=20260926-coin-1",
   "./tarot-bg.png",
   "./manifest.webmanifest",
   "./assets/icons/tarot-icon.svg",
@@ -15,6 +18,8 @@ const CORE_ASSETS = [
   "./assets/icons/apple-touch-icon.png",
   "./vendor/three/three.module.min.js",
   "./scripts/meihua-display.mjs",
+  "./scripts/coin-cast.mjs",
+  "./scripts/coin-stage.mjs",
   "./scripts/meihua-insight.mjs",
   "./scripts/qimen-insight.mjs",
   "./scripts/bazhai-insight.mjs",

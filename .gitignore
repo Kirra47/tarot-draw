@@ -5,3 +5,7 @@
 .env.*
 !.env.example
 tmp/
+# Generated review and capture output. The repo is public, so kept out of history:
+# output/ also holds the cafe partnership PDF, which is not product source.
+output/
+.impeccable/

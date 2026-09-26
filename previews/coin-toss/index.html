@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#171816">
+  <title>铜钱 · 摇卦预览</title>
+  <link rel="stylesheet" href="./preview.css">
+</head>
+<body>
+  <main class="preview">
+    <header class="page-heading">
+      <div><p class="eyebrow">星象塔罗 · 动效试作</p><h1>三钱起卦</h1></div>
+      <p class="intro">三枚铜钱，六次落定。</p>
+    </header>
+
+    <section class="workbench" aria-label="铜钱动画预览">
+      <div class="visual-column">
+        <div class="scene-heading">
+          <div class="view-switch" aria-label="预览内容">
+            <button type="button" id="motion-view" aria-pressed="true">摇卦动作</button>
+            <button type="button" id="material-view" aria-pressed="false">铜钱细节</button>
+          </div>
+          <button class="sound-button" type="button" id="sound-toggle" aria-pressed="false">声音 · 关</button>
+        </div>
+        <div class="stage" id="stage">
+          <canvas id="coin-canvas" aria-label="三枚有方孔和旧铜纹理的三维铜钱"></canvas>
+          <div class="scene-caption" id="scene-caption"><span class="status-dot"></span><span id="stage-status">铜钱已就位</span></div>
+          <div class="coin-results" id="coin-results" aria-hidden="true"><span>字面</span><span>背面</span><span>字面</span></div>
+          <div class="material-labels" id="material-labels" hidden><span>字面<span>铸字 · 方孔 · 磨损铜缘</span></span><span>背面<span>素纹 · 铜锈 · 真实厚度</span></span></div>
+          <p class="webgl-error" id="webgl-error" hidden>当前浏览器未能显示三维铜钱，请用 Chrome 打开此预览。</p>
+        </div>
+        <div class="controls">
+          <div class="action-copy"><span class="section-label" id="round-label">准备起初爻</span><p id="round-hint">摇一次，三枚铜钱落定成一爻。</p></div>
+          <div class="action-buttons"><button id="quick-cast" class="secondary-button" type="button">一键起卦</button><button id="toss-button" class="primary-button" type="button"><span>摇一次</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.5"/></svg></button></div>
+        </div>
+      </div>
+      <aside class="cast-panel" aria-label="六次摇卦进度">
+        <div class="cast-heading"><h2>六爻成卦</h2><span id="progress-count">0 / 6</span></div>
+        <p class="cast-subtitle">从初爻开始，逐爻向上。</p>
+        <ol class="yao-list" id="yao-list" aria-label="六爻结果"></ol>
+        <div class="round-outcome" aria-live="polite" aria-atomic="true"><span class="section-label">本轮落定</span><p id="outcome-text">等待第一枚卦爻</p><span id="outcome-detail">三枚铜钱的结果会记录在这里。</span></div>
+        <button type="button" class="reset-button" id="reset-button">重新开始 <span aria-hidden="true">↺</span></button>
+      </aside>
+    </section>
+    <footer><span>旧铜质感 · 真实三维 · 六次成卦</span><span>先看铜钱与动作，再接入正式页面。</span></footer>
+  </main>
+  <script type="module" src="./preview.js"></script>
+</body>
+</html>

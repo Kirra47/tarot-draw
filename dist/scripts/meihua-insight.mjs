@@ -119,7 +119,16 @@ export function primaryHexagramInsight(cast) {
   if (!cast) return null;
   const base = hexagramMeta(cast.upper, cast.lower);
   const note = HEXAGRAM_NOTES.find(item => item.number === base.number);
-  if (!note || !Number.isInteger(cast.movingLine) || cast.movingLine < 1 || cast.movingLine > 6) return null;
+  if (!note) return null;
+  // 梅花 casts carry exactly one moving line (cast.movingLine). 三钱 casts carry
+  // the lines that came up 老阴/老阳, which may be none or several
+  // (cast.movingLines). The two shapes stay distinct so neither is misread.
+  const coinStyle = Array.isArray(cast.movingLines);
+  const movingLines = coinStyle
+    ? [...new Set(cast.movingLines)].filter(n => Number.isInteger(n) && n >= 1 && n <= 6).sort((a, b) => a - b)
+    : [cast.movingLine];
+  if (!coinStyle && (!Number.isInteger(cast.movingLine) || cast.movingLine < 1 || cast.movingLine > 6)) return null;
+
   const upper = trigram(cast.upper), lower = trigram(cast.lower);
   const lines = [...lower.lines, ...upper.lines];
   const changed = hexagramMeta(cast.changed?.upper, cast.changed?.lower);
@@ -129,24 +138,49 @@ export function primaryHexagramInsight(cast) {
     title: `${position}卦 · ${trigram(index).name}为${QUALITIES[index][0]}`,
     text: QUALITIES[index][1],
   });
+  const lineLabel = (yang, index) => index === 0
+    ? `初${yang ? '九' : '六'}`
+    : index === 5
+      ? `上${yang ? '九' : '六'}`
+      : `${yang ? '九' : '六'}${['', '二', '三', '四', '五'][index]}`;
+
+  const movingPositions = movingLines.map(line => movingLineLabel(line));
+  const movingTitle = movingLines.length === 0
+    ? '六爻皆静'
+    : movingLines.length === 1
+      ? LINE_GUIDANCE[movingLines[0] - 1][0]
+      : `${movingPositions.join('、')}同动`;
+  const movingText = movingLines.length
+    ? movingLines.map(line => LINE_GUIDANCE[line - 1][1]).join('')
+    : '六爻皆静，先按本卦的主题观察，本次没有需要特别留意的动爻。';
+  const changeText = movingLines.length
+    ? `${movingPositions.join('、')}${movingLines.length > 1 ? '分别' : ''}由${movingLines.map(line => (lines[line - 1] ? '阳转阴' : '阴转阳')).join('、')}，得到${changed.name}。${changedNote ? `变卦的导读主题是“${changedNote.theme}”。` : ''}`
+    : `六爻皆静，本次没有发动之爻，变卦仍为${changed.name}。`;
+
   return {
     ...note, name: base.name,
     upper: describe(cast.upper, '上'), lower: describe(cast.lower, '下'),
     lines: lines.map((yang, index) => ({
-      position: index + 1, yang: Boolean(yang), moving: index + 1 === cast.movingLine,
-      label: index === 0 ? `初${yang ? '九' : '六'}` : index === 5 ? `上${yang ? '九' : '六'}` : `${yang ? '九' : '六'}${['', '二', '三', '四', '五'][index]}`,
+      position: index + 1, yang: Boolean(yang), moving: movingLines.includes(index + 1),
+      label: lineLabel(yang, index),
     })),
+    movingLines,
     moving: {
-      position: movingLineLabel(cast.movingLine),
-      title: LINE_GUIDANCE[cast.movingLine - 1][0],
-      text: LINE_GUIDANCE[cast.movingLine - 1][1],
+      position: movingLines.length ? movingPositions.join('、') : '六爻皆静',
+      title: movingTitle,
+      text: movingText,
     },
     classical: classical ? {
       guaCi: classical.guaCi,
-      movingYao: movingLineText(base.number, cast.movingLine),
+      // movingLineText already carries its own 爻名 (e.g. "初六：…"), so the
+      // several-line case only needs a separator between entries.
+      movingYao: movingLines
+        .map(line => movingLineText(base.number, line))
+        .filter(Boolean)
+        .join('　'),
       yong: classical.yong || '',
     } : null,
-    change: `${movingLineLabel(cast.movingLine)}由${lines[cast.movingLine - 1] ? '阳转阴' : '阴转阳'}，得到${changed.name}。${changedNote ? `变卦的导读主题是“${changedNote.theme}”。` : ''}`,
+    change: changeText,
     relation: RELATION_NOTES[cast.relation] || '',
   };
 }
