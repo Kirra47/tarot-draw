@@ -1168,12 +1168,11 @@ import { HEXAGRAM_NOTES, primaryHexagramInsight, questionLens } from './scripts/
 import { describeBazhai, deriveBazhai } from './scripts/bazhai-insight.mjs';
 import { describeQimen, deriveQimenCast, QIMEN_GRID_ORDER } from './scripts/qimen-insight.mjs';
 
-// Localhost uses the same-origin Node proxy so its DashScope key stays server-side.
-// Deployed pages continue to call the private Codex AI Site.
-const isLocalTarotServer=['127.0.0.1','localhost','::1'].includes(location.hostname);
-const AI_READING_ENDPOINT=isLocalTarotServer
-  ? `${location.origin}/api/tarot-reading`
-  : 'https://astral-tarot-ai-924.bull686.chatgpt.site/api/tarot-reading';
+// Both the deployed Netlify function and the local Node server expose the proxy
+// at the same origin, so the DashScope key never reaches the browser. Routing
+// deployed pages at the private Codex AI Site instead sent anonymous visitors a
+// 401, which is why the live site showed no AI reading at all.
+const AI_READING_ENDPOINT='/api/tarot-reading';
 function explainAIConnectionError(error){
   const message=String(error?.message||'');
   if(location.protocol==='file:'&&/failed to fetch|load failed|networkerror/i.test(message)){

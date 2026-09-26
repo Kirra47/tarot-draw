@@ -31,6 +31,7 @@ const notes = [];
 // UI checks stub it. The stubbed request bodies are inspected instead, which is
 // what actually proves the payload describes 三钱法 correctly.
 const aiRequests = [];
+const aiRequestOrigins = new Set();
 const AI_STUB = [
   `data: ${JSON.stringify({ choices: [{ delta: { content: '这是一段用于界面校验的解读文字，先说结论。' } }] })}`,
   '',
@@ -43,6 +44,12 @@ const AI_STUB = [
 
 async function stubAI(context) {
   await context.route('**/api/tarot-reading', async (route) => {
+    // The deployed page must reach the same-origin proxy. Routing at a private
+    // host instead returned 401 to anonymous visitors and killed every reading.
+    try {
+      const url = new URL(route.request().url());
+      aiRequestOrigins.add(url.origin);
+    } catch {}
     try {
       const body = route.request().postDataJSON();
       aiRequests.push(body);
@@ -312,6 +319,8 @@ async function run() {
     check('梅花载荷仍包含体用与互卦', meihuaPayload.meihua.includes('体用：体') && meihuaPayload.meihua.includes('互卦：'));
     check('梅花载荷不被写成三钱法', !meihuaPayload.meihua.includes('coin-3q-1'));
   }
+  check('AI 请求只发往同源代理', aiRequests.length > 0 && [...aiRequestOrigins].every((origin) => origin === new URL(BASE).origin), [...aiRequestOrigins].join(','));
+  check('未再指向私有 Codex AI 站点', ![...aiRequestOrigins].some((origin) => origin.includes('chatgpt.site')), [...aiRequestOrigins].join(','));
 
   await browser.close();
   return { failures, notes, errors };
