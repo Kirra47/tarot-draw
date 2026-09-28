@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -760,7 +760,7 @@ body::after{
 @media(max-width:720px){#questionOverlay #advancedSetup .advancedSetupBody{max-height:min(38dvh,320px)}}
 </style>
   <link rel="stylesheet" href="./settings-trial.css?v=20260926-local-sheet-1">
-  <link rel="stylesheet" href="./tarot-ui-v3.css?v=20260926-reading-desk-12">
+  <link rel="stylesheet" href="./tarot-ui-v3.css?v=20260928-preserve-pass-1">
 <link rel="stylesheet" href="./coin-cast.css?v=20260926-coin-1">
 </head>
 <body>
@@ -1173,6 +1173,7 @@ import {
   movingLineLabel,
   trigram,
 } from './scripts/meihua-display.mjs';
+import { renderHexagramDiagram } from './scripts/hexagram-diagram.mjs';
 import {
   LINE_NAMES as COIN_LINE_NAMES,
   LINE_TYPES as COIN_LINE_TYPES,
@@ -1181,7 +1182,7 @@ import {
   facesTotal as coinFacesTotal,
   randomFaces as randomCoinFaces,
 } from './scripts/coin-stage.mjs';
-import { HEXAGRAM_NOTES, primaryHexagramInsight, questionLens } from './scripts/meihua-insight.mjs';
+import { HEXAGRAM_NOTES, primaryHexagramInsight } from './scripts/meihua-insight.mjs';
 import { hexagramText } from './scripts/zhouyi-text.mjs';
 import { describeBazhai, deriveBazhai } from './scripts/bazhai-insight.mjs';
 import { describeQimen, deriveQimenCast, QIMEN_GRID_ORDER } from './scripts/qimen-insight.mjs';
@@ -1190,8 +1191,11 @@ import { describeQimen, deriveQimenCast, QIMEN_GRID_ORDER } from './scripts/qime
 // at the same origin, so the DashScope key never reaches the browser. Routing
 // deployed pages at the private Codex AI Site instead sent anonymous visitors a
 // 401, which is why the live site showed no AI reading at all.
+const CLOUDBASE_AI_GATEWAY='https://peas47-d0g4dt5f002ccf6ba-1309640856.ap-shanghai.app.tcloudbase.com/tarot-api/tarot-reading';
 const AI_READING_ENDPOINT=location.hostname==='peas47-d0g4dt5f002ccf6ba-1309640856.ap-shanghai.app.tcloudbase.com'
   ?'/tarot-api/tarot-reading'
+  :location.hostname==='peas47-d0g4dt5f002ccf6ba-1309640856.tcloudbaseapp.com'
+    ?CLOUDBASE_AI_GATEWAY
   :location.hostname==='astral-tarot.bull686.chatgpt.site'
     ?'https://astral-tarot-ai-924.bull686.chatgpt.site/api/tarot-reading'
     :'/api/tarot-reading';
@@ -1213,6 +1217,11 @@ const setupLauncher=document.getElementById('advancedSetup');
 const questionOverlay=document.getElementById('questionOverlay');
 const setupOverlayRoot=document.getElementById('settingsOverlayRoot');
 if(setupOverlay&&setupOverlayRoot)setupOverlayRoot.append(setupOverlay);
+// The hint under 方式 describes the chosen 起卦方法, not the mode. Move it below
+// that row so the control comes before its explanation.
+const castMethodQuickRow=document.getElementById('castMethodQuick');
+const readingModeNoteRow=document.querySelector('.readingModeNote');
+if(castMethodQuickRow&&readingModeNoteRow)castMethodQuickRow.after(readingModeNoteRow);
 let settingsFocusReturn=null;
 let settingsCloseTimer=0;
 let settingsBackgroundState=[];
@@ -2896,8 +2905,11 @@ function renderMeihuaPanel(){
       const sourceUrl=note?.sourceUrl||ZHOUYI_SOURCE_URL;
       const sourceChapter=note?.chapter||entry.meta.name;
       return `<article class="guaMeaningCard${index===0?' isPrimary':''}">
-        <div class="guaMeaningCardTop"><span>${entry.label}</span><small>${entry.role}</small></div>
-        <h4>${escapeHTML(hexagramTitle(entry.meta))}</h4>
+        <div class="guaMeaningCardLead">
+          <div class="guaMeaningCardTop"><span>${entry.label}</span><small>${entry.role}</small></div>
+          <h4>${escapeHTML(hexagramTitle(entry.meta))}</h4>
+          ${renderHexagramDiagram(entry.meta,entry.label,hexagramTitle(entry.meta))}
+        </div>
         <details class="guaMeaningOriginal">
           <summary>原文 · 《周易·${escapeHTML(sourceChapter)}卦》</summary>
           <p>${escapeHTML(classical?.guaCi||'原文暂未载入。')}</p>
@@ -2948,7 +2960,7 @@ function renderMeihuaPanel(){
       <div class="baseReadingCopy"><span>本卦主题</span><h4>${escapeHTML(insight.theme)}</h4><p>${escapeHTML(insight.meaning)}</p></div>
     </div>
     <div class="baseReadingFocus"><span>用白话读这一卦</span><p>${escapeHTML(insight.focus)}</p></div>
-    ${userQuestion?`<div class="baseQuestionBridge"><span>放回你的问题</span><p class="baseQuestionText">${escapeHTML(userQuestion.slice(0,180))}</p><p>${escapeHTML(questionLens(userQuestion))}</p></div>`:''}
+    ${userQuestion?`<div class="baseQuestionBridge"><span>对应你的问题</span><p class="baseQuestionText">${escapeHTML(userQuestion.slice(0,180))}</p></div>`:''}
     <div class="baseTrigrams"><div><strong>${escapeHTML(insight.upper.title)}</strong><span>${escapeHTML(insight.upper.text)}</span></div><div><strong>${escapeHTML(insight.lower.title)}</strong><span>${escapeHTML(insight.lower.text)}</span></div></div>
     <div class="baseReadingChange"><span>动爻落点</span><strong>${escapeHTML(insight.moving.title)}</strong><p>${escapeHTML(insight.moving.text)}</p><div class="baseChangeNote"><span>卦变方向</span><p>${escapeHTML(insight.change)}</p></div>${insight.relation?`<p>${escapeHTML(insight.relation)}</p>`:''}</div>
     ${classicalMarkup}`:'';
@@ -3051,6 +3063,18 @@ function getMeihuaDescription(){
   const observationLine=observation?.features?.length
     ? `物象候选：${observation.features.map(item=>`${item.label}=${item.value}`).join('；')}`
     : '';
+  const classicalSections=[];
+  const addClassicalSection=(label,meta,movingYao='')=>{
+    if(!meta?.number)return;
+    const original=hexagramText(meta.number);
+    if(!original?.guaCi)return;
+    const note=HEXAGRAM_NOTES.find(item=>item.number===meta.number);
+    const moving=label==='本卦'&&movingYao?`；本次动爻原文：${movingYao}`:'';
+    classicalSections.push(`${label}《周易·${note?.chapter||meta.name}卦》卦辞：${original.guaCi}${moving}；出处：${note?.sourceUrl||ZHOUYI_SOURCE_URL}`);
+  };
+  addClassicalSection('本卦',base,insight?.classical?.movingYao||'');
+  if(value.mutual)addClassicalSection('互卦',mutual);
+  if(value.changed&&changed.number!==base.number&&changed.number!==mutual.number)addClassicalSection('变卦',changed);
   const questionTypeLabels={general:'一般问题',shooting:'射覆',object:'眼前物件',person:'人物外在',lost:'寻找失物',sound:'声音',count:'物品数量',text:'测字',omen:'现场外应'};
   return [
     `规则档案：${value.profile||MEIHUA_PROFILE}（网站本地确定性计算）`,
@@ -3061,13 +3085,12 @@ function getMeihuaDescription(){
     `本卦：${hexagramTitle(base)}（上${upper.name}，下${lower.name}）`,
     insight?`本卦导读（本站现代说明，非卦辞原文）：主题“${insight.theme}”；${insight.meaning} 可反思：${insight.focus}`:'',
     insight?`上下卦取象：${insight.upper.title}，${insight.upper.text}；${insight.lower.title}，${insight.lower.text}`:'',
-    userQuestion?`问题落点提示：${questionLens(userQuestion)}`:'',
     isCoinCast?`六爻（自初爻至上爻）：${coinLineSummary(value)}`:'',
     isCoinCast
       ?`动爻：${movingText}（共 ${value.movingLines.length} 个）；变卦：${hexagramTitle(changed)}（三钱法不取互卦与体用）`
       :`动爻：${movingLineLabel(value.movingLine)}；互卦：${hexagramTitle(mutual)}；变卦：${hexagramTitle(changed)}`,
     isCoinCast?'':`体用：体${body.name}（${body.element}）／用${use.name}（${use.element}），关系：${value.relation||'—'}`,
-    insight?.classical?`原典对照（经文，不是本站白话）：${insight.classical.guaCi}${insight.classical.movingYao?`；${movingText}：${insight.classical.movingYao}`:''}`:'',
+    classicalSections.length?`原典对照（经文，不是本站白话）：\n${classicalSections.join('\n')}`:'原典对照：本次原文尚未载入，不要补引。',
     observationLine,
     `本卦原文链接：${insight?.sourceUrl||ZHOUYI_SOURCE_URL}（页面已载入卦辞与动爻辞；其他传篇请打开原文对照）`,
     `说明：以上是${readingMode==='gua'?'确认起卦时':'抽第一张牌时'}锁定的结构化取数，后续追问沿用同一卦；请将其作为传统文化角度的自我反思，不作确定预言。`,
@@ -3395,6 +3418,24 @@ function getCardsDescription(){
     return `【${pos}】${c.name} - ${r?'逆位':'正位'}\n含义：${meaning}`;
   }).join('\n\n');
 }
+function getAICastMethodContext(){
+  const cast=serializeMeihua();
+  return {
+    castProfile:cast?.profile||'',
+    castMethod:cast?.method||'',
+    castMode:cast?.mode||'',
+  };
+}
+function syncAIDetailConversation(){
+  aiConversation=aiConversation.filter(turn=>turn.contextType!=='detail');
+  if(aiDetailReading){
+    aiConversation.push({
+      role:'assistant',
+      content:`页面已展示的详细分析：\n${aiDetailReading.slice(0,2000)}`,
+      contextType:'detail',
+    });
+  }
+}
 function resetFollowups(){
   aiConversation=[];initialAIReading='';followUpCount=0;isFollowUpStreaming=false;
   document.getElementById('followupThread').replaceChildren();
@@ -3422,7 +3463,7 @@ function persistAIHistory(){
   if(initialAIReading)item.aiReading=initialAIReading.slice(0,6000);
   if(aiDetailReading)item.aiDetail=aiDetailReading.slice(0,9000);
   item.aiReadingStatus=aiReadingStatus;
-  item.followUps=aiConversation.slice(initialAIReading?1:0).slice(-8).map(turn=>({role:turn.role,content:turn.content.slice(0,2400)}));
+  item.followUps=aiConversation.slice(initialAIReading?1:0).filter(turn=>turn.contextType!=='detail').slice(-8).map(turn=>({role:turn.role,content:turn.content.slice(0,2400)}));
   localStorage.setItem(HISTORY_KEY,JSON.stringify(historyList));
   renderHistory();
 }
@@ -3524,7 +3565,7 @@ async function requestAIReading(){
     const resp=await fetch(AI_READING_ENDPOINT,{
       method:'POST',credentials:'include',headers:{'Content-Type':'text/plain'},
       signal:controller.signal,
-      body:JSON.stringify({readingMode,question:userQuestion,questionType:castRequest.questionType||'general',depth:'brief',cards:getCardsDescription(),meihua:getMeihuaDescription(),traditional:getTraditionalDescription()})
+      body:JSON.stringify({readingMode,question:userQuestion,questionType:castRequest.questionType||'general',depth:'brief',cards:getCardsDescription(),meihua:getMeihuaDescription(),traditional:getTraditionalDescription(),...getAICastMethodContext()})
     });
     if(!resp.ok){
       let message=`智能解读暂时不可用（${resp.status}）`;
@@ -3591,7 +3632,7 @@ async function requestAIDetail(){
     const resp=await fetch(AI_READING_ENDPOINT,{
       method:'POST',credentials:'include',headers:{'Content-Type':'text/plain'},
       signal:controller.signal,
-      body:JSON.stringify({readingMode,question:userQuestion,questionType:castRequest.questionType||'general',depth:'detail',brief:initialAIReading,cards:getCardsDescription(),meihua:getMeihuaDescription(),traditional:getTraditionalDescription()})
+      body:JSON.stringify({readingMode,question:userQuestion,questionType:castRequest.questionType||'general',depth:'detail',cards:getCardsDescription(),meihua:getMeihuaDescription(),traditional:getTraditionalDescription(),conversation:aiConversation.slice(-11).filter(turn=>turn.contextType!=='detail'),...getAICastMethodContext()})
     });
     if(!resp.ok){let message=`詳細分析暫時不可用（${resp.status}）`;try{const data=await resp.json();if(data.error)message=data.error;}catch{}throw new Error(message);}
     if(token!==aiSessionToken)return;
@@ -3600,11 +3641,12 @@ async function requestAIDetail(){
     if(!answer)throw new Error('解读服务没有返回内容');
     aiDetailReading=filterReadingSectionsForMode(answer,readingMode);
     if(!aiDetailReading)throw new Error('没有生成与本次选择相关的详细内容');
+    syncAIDetailConversation();
     persistAIHistory();
     button.textContent='重新生成详细分析';
   }catch(error){
     if(token!==aiSessionToken)return;
-    if(streamedText)aiDetailReading=filterReadingSectionsForMode(streamedText,readingMode);
+    if(streamedText){aiDetailReading=filterReadingSectionsForMode(streamedText,readingMode);syncAIDetailConversation();}
     const status=document.createElement('div');status.className='aiDetailStatus';
     status.append(document.createTextNode(`${streamedText?'连接中断，已收到的内容保留。':'详细分析暂时没有生成。'}${explainAIConnectionError(error)}；短解和本次结果仍在。`));content.appendChild(status);
     if(streamedText)persistAIHistory();
@@ -3638,12 +3680,12 @@ async function requestFollowUp(rawQuestion,{retry=false,pending=null}={}){
   const token=aiSessionToken;
   let streamedText='';
   const controller=makeAIController();
-  const priorConversation=aiConversation.slice(-7);
+  const priorConversation=aiConversation.slice(-11);
   try{
     const resp=await fetch(AI_READING_ENDPOINT,{
       method:'POST',credentials:'include',headers:{'Content-Type':'text/plain'},
       signal:controller.signal,
-      body:JSON.stringify({readingMode,question:userQuestion,questionType:castRequest.questionType||'general',cards:getCardsDescription(),meihua:getMeihuaDescription(),traditional:getTraditionalDescription(),followUp,conversation:priorConversation})
+      body:JSON.stringify({readingMode,question:userQuestion,questionType:castRequest.questionType||'general',cards:getCardsDescription(),meihua:getMeihuaDescription(),traditional:getTraditionalDescription(),followUp,conversation:priorConversation,...getAICastMethodContext()})
     });
     if(!resp.ok){
       let message=`智能解读暂时不可用（${resp.status}）`;

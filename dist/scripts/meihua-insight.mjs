@@ -100,21 +100,6 @@ const LINE_GUIDANCE = [
   ['上爻 · 收束', '事情接近一个阶段的边界，先判断如何收尾、退让或把经验带走。'],
 ];
 
-const QUESTION_LENSES = [
-  [/他|她|关系|感情|喜欢|朋友|家人|对象/u, '先观察关系中的回应、边界与实际行动，不把卦象当作对方内心的确定答案。'],
-  [/工作|事业|项目|学习|考试|论文|研究|面试/u, '先把目标拆成当前能推进的一步，检查资源、分工和反馈是否跟得上。'],
-  [/钱|财|收入|投资|买|卖|价格|收益/u, '先核对真实的资源、风险与可承受边界，不用卦象替代财务判断。'],
-  [/找|丢|哪里|手里|什么东西|物品|射覆|静物/u, '先把颜色、形状、材质和位置当作候选线索，逐项回到现场核对。'],
-  [/选|要不要|该不该|决定|未来|结果|怎么办|下一步/u, '先列出可选行动与现实证据，看哪一步能产生清晰反馈。'],
-];
-
-export function questionLens(question) {
-  const value = String(question || '').trim();
-  if (!value) return '先抓住一个可观察的现实环节，再用本卦主题检验自己的理解。';
-  return QUESTION_LENSES.find(([pattern]) => pattern.test(value))?.[1]
-    || '先抓住一个可观察的现实环节，再用本卦主题检验自己的理解。';
-}
-
 export function primaryHexagramInsight(cast) {
   if (!cast) return null;
   const base = hexagramMeta(cast.upper, cast.lower);

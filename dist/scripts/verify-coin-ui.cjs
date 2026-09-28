@@ -26,6 +26,10 @@ function loadChromium() {
 
 const chromium = loadChromium();
 const failures = [];
+// Held outside the run so a failure can still close Chromium. A leaked browser
+// keeps the event loop alive, hangs the process instead of reporting, and leaves
+// the next run short of the machine it needs.
+let activeBrowser = null;
 const notes = [];
 // The live model is external, costs money and can refuse its own output, so the
 // UI checks stub it. The stubbed request bodies are inspected instead, which is
@@ -93,10 +97,13 @@ async function openSettingsForCoin(page, { drawStyle = 'manual' } = {}) {
 
 async function run() {
   fs.mkdirSync(OUTPUT, { recursive: true });
-  const browser = await chromium.launch({
+  const browser = activeBrowser = await chromium.launch({
     headless: true,
     executablePath: CHROME,
-    args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
+    // Real GPU first. SwiftShader rasterises every 3D frame on the CPU, and with
+    // several live pages that starves the renderer main thread; it showed up as
+    // clicks and navigations timing out in the later sections.
+    args: ['--use-angle=d3d11', '--ignore-gpu-blocklist', '--enable-unsafe-swiftshader'],
   });
   const errors = [];
   const context = await browser.newContext({
@@ -119,14 +126,28 @@ async function run() {
   entryPage.on('console', (message) => { if (message.type() === 'error') errors.push(`entry console: ${message.text()}`); });
   await entryPage.goto(`${BASE}/tarot.html`, { waitUntil: 'domcontentloaded' });
   await entryPage.waitForSelector('#questionOverlay', { timeout: 15000 });
+  const defaultSelection = await entryPage.evaluate(() => ({
+    readingMode: document.querySelector('.readingModeOption[aria-checked="true"]')?.dataset.readingMode,
+    castMode: document.getElementById('castMode').value,
+    drawStyle: document.querySelector('#drawStyleOptions [data-draw-style][aria-checked="true"]')?.dataset.drawStyle,
+    action: document.querySelector('#questionConfirm span')?.textContent.trim(),
+  }));
+  check('未设置偏好时默认起卦、铜钱摇卦、亲手摇卦', defaultSelection.readingMode === 'gua' && defaultSelection.castMode === 'coin' && defaultSelection.drawStyle === 'manual', JSON.stringify(defaultSelection));
+  check('默认主操作提示开始摇卦', defaultSelection.action === '开始摇卦', defaultSelection.action);
   await entryPage.click('[data-reading-mode="tarot"]');
+  await entryPage.click('#advancedSetup');
+  await entryPage.waitForSelector('#setupOverlay:not([hidden])', { timeout: 8000 });
+  await entryPage.click('#drawStyleOptions [data-draw-style="quick"]');
+  await entryPage.click('#settingsSheetDone');
+  await entryPage.waitForSelector('#setupOverlay', { state: 'hidden' });
   const tarotConfirmLabel = await entryPage.$eval('#questionConfirm span', (el) => el.textContent.trim());
-  check('单塔罗默认主操作为一键翻牌', tarotConfirmLabel === '一键翻牌', tarotConfirmLabel);
+  check('单塔罗可选一键翻牌', tarotConfirmLabel === '一键翻牌', tarotConfirmLabel);
   check('单塔罗隐藏起卦方法快捷行', await entryPage.$eval('#castMethodQuick', (el) => el.hidden));
   await entryPage.click('[data-reading-mode="gua"]');
   check('单起卦显示起卦方法快捷行', !(await entryPage.$eval('#castMethodQuick', (el) => el.hidden)));
   const quickChips = await entryPage.$$eval('#castMethodQuick [data-cast-method]', (n) => n.map((x) => x.textContent.trim()));
   check('首页直接提供铜钱摇卦入口', quickChips.includes('铜钱摇卦'), quickChips.join('/'));
+  await entryPage.click('#castMethodQuick [data-cast-method="time"]');
 
   await entryPage.click('#advancedSetup');
   await entryPage.waitForSelector('#setupOverlay:not([hidden])', { timeout: 8000 });
@@ -319,6 +340,8 @@ async function run() {
   check('每次一键起卦都记录三枚铜钱正反面', comboRecord && Array.isArray(comboRecord.faces) && comboRecord.faces.length === 6 && comboRecord.faces.every((faces) => Array.isArray(faces) && faces.length === 3), JSON.stringify(comboRecord && comboRecord.faces));
   await comboPage.screenshot({ path: path.join(OUTPUT, 'combo-quick-settlement.png') });
 
+  await comboPage.close();
+
   // ── B2. 一键起卦 must skip the shaking screen entirely ───────────────────
   const quickPage = await context.newPage();
   quickPage.on('pageerror', (error) => errors.push(`quick pageerror: ${error.message}`));
@@ -364,6 +387,9 @@ async function run() {
   check('二合一按时间法也同步留下牌面与卦象', comboTimeRecord && comboTimeRecord.mode === 'combo' && comboTimeRecord.profile, JSON.stringify(comboTimeRecord));
   check('二合一按时间法确实抽到了牌面', comboTimeRecord && comboTimeRecord.cards > 0, JSON.stringify(comboTimeRecord));
 
+  await quickPage.close();
+  await comboQuickPage.close();
+
   // ── C. 单塔罗 must not be touched by the coin path ───────────────────────
   const tarotPage = await context.newPage();
   tarotPage.on('pageerror', (error) => errors.push(`tarot pageerror: ${error.message}`));
@@ -377,6 +403,8 @@ async function run() {
   const tarotCoinHidden = await tarotPage.$eval('#coinOverlay', (el) => el.hidden);
   check('单塔罗不进入摇卦舞台', tarotCoinHidden);
 
+  await tarotPage.close();
+
   // ── D. 梅花路径仍然按时间起卦 ────────────────────────────────────────────
   const meihuaPage = await context.newPage();
   meihuaPage.on('pageerror', (error) => errors.push(`meihua pageerror: ${error.message}`));
@@ -387,6 +415,7 @@ async function run() {
   await meihuaPage.reload({ waitUntil: 'domcontentloaded' });
   await meihuaPage.waitForSelector('#questionOverlay', { timeout: 15000 });
   await meihuaPage.click('[data-reading-mode="gua"]');
+  await meihuaPage.click('#castMethodQuick [data-cast-method="time"]');
   await meihuaPage.fill('#questionInput', '按时间起一卦。');
   await meihuaPage.click('#questionConfirm');
   await meihuaPage.waitForSelector('#settleOverlay.show', { timeout: 15000 });
@@ -395,7 +424,7 @@ async function run() {
     const item = raw.find((entry) => entry.meihua && entry.meihua.mode !== 'coin' && entry.meihua.mode !== 'none');
     return item ? { mode: item.meihua.mode, profile: item.meihua.profile, movingLine: item.meihua.movingLine, relation: item.meihua.relation } : null;
   });
-  check('默认仍按时间起卦（梅花）', meihuaMode && meihuaMode.mode === 'time' && meihuaMode.profile === 'mh-ws-1', JSON.stringify(meihuaMode));
+  check('明确选择按时间后仍按梅花起卦', meihuaMode && meihuaMode.mode === 'time' && meihuaMode.profile === 'mh-ws-1', JSON.stringify(meihuaMode));
   check('梅花记录仍保留单动爻与体用', meihuaMode && Number.isInteger(meihuaMode.movingLine) && Boolean(meihuaMode.relation), JSON.stringify(meihuaMode));
   const meihuaMeta = await meihuaPage.$eval('#guaStructureMeta', (el) => el.textContent.replace(/\s+/g, ' ').trim());
   check('梅花结构摘要仍显示体用', meihuaMeta.includes('体卦') && meihuaMeta.includes('用卦'), meihuaMeta);
@@ -413,6 +442,8 @@ async function run() {
     return Boolean(structure.compareDocumentPosition(ai) & Node.DOCUMENT_POSITION_FOLLOWING);
   });
   check('梅花起卦也先看卦象，再看 AI 解读', meihuaStructureBeforeAI);
+
+  await meihuaPage.close();
 
   // ── E. 移动端布局 ────────────────────────────────────────────────────────
   const mobile = await browser.newContext({
@@ -449,6 +480,7 @@ async function run() {
 
   check('没有控制台或页面错误', errors.length === 0, errors.slice(0, 4).join(' | '));
 
+  await mobilePage.close();
   // ── F. What the model actually receives for a 三钱 cast ──────────────────
   const coinPayload = aiRequests.find((body) => body && typeof body.meihua === 'string' && body.meihua.includes('coin-3q-1'));
   check('AI 请求带上三钱规则档案', Boolean(coinPayload));
@@ -458,6 +490,8 @@ async function run() {
     check('AI 载荷给出六爻明细', /六爻（自初爻至上爻）：/.test(meihua));
     check('AI 载荷不声称梅花体用', !meihua.includes('体用：体') && !meihua.includes('互卦：'), meihua.slice(0, 80));
     check('AI 载荷声明不取互卦与体用', meihua.includes('不取互卦与体用'));
+    check('AI 请求用结构化字段标明三钱规则档案', coinPayload.castProfile === 'coin-3q-1' && coinPayload.castMethod === 'three-coins');
+    check('AI 载荷包含本卦原文和可追溯出处', meihua.includes('本卦《周易·') && meihua.includes('出处：https://zh.wikisource.org/'));
     check('AI 载荷携带六爻数值', coinPayload.meihua.includes('（字面记 2、背面记 3'), '');
     check('AI 载荷的 readingMode 正确', ['gua', 'combo'].includes(coinPayload.readingMode), String(coinPayload.readingMode));
   }
@@ -465,6 +499,7 @@ async function run() {
   if (meihuaPayload) {
     check('梅花载荷仍包含体用与互卦', meihuaPayload.meihua.includes('体用：体') && meihuaPayload.meihua.includes('互卦：'));
     check('梅花载荷不被写成三钱法', !meihuaPayload.meihua.includes('coin-3q-1'));
+    check('AI 载荷包含互卦原文和独立出处', /互卦《周易·.+卦》卦辞：/.test(meihuaPayload.meihua) && meihuaPayload.meihua.includes('出处：https://zh.wikisource.org/'));
   }
   check('AI 请求只发往同源代理', aiRequests.length > 0 && [...aiRequestOrigins].every((origin) => origin === new URL(BASE).origin), [...aiRequestOrigins].join(','));
   check('未再指向私有 Codex AI 站点', ![...aiRequestOrigins].some((origin) => origin.includes('chatgpt.site')), [...aiRequestOrigins].join(','));
@@ -489,5 +524,8 @@ run()
   .catch((error) => {
     console.error(notes.join('\n'));
     console.error('RUN ERROR:', error && error.stack ? error.stack : error);
-    process.exit(1);
+    // Leaving Chromium alive keeps the event loop busy and the run hangs instead
+    // of reporting the failure; it also starves the next run of the machine.
+    if (activeBrowser) activeBrowser.close().catch(() => {}).finally(() => process.exit(1));
+    else process.exit(1);
   });

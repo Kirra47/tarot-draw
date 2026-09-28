@@ -26,6 +26,10 @@ function loadChromium() {
 
 const chromium = loadChromium();
 const failures = [];
+// Held outside the run so a failure can still close Chromium. A leaked browser
+// keeps the event loop alive, hangs the process instead of reporting, and leaves
+// the next run short of the machine it needs.
+let activeBrowser = null;
 const notes = [];
 // The live model is external, costs money and can refuse its own output, so the
 // UI checks stub it. The stubbed request bodies are inspected instead, which is
@@ -93,10 +97,13 @@ async function openSettingsForCoin(page, { drawStyle = 'manual' } = {}) {
 
 async function run() {
   fs.mkdirSync(OUTPUT, { recursive: true });
-  const browser = await chromium.launch({
+  const browser = activeBrowser = await chromium.launch({
     headless: true,
     executablePath: CHROME,
-    args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
+    // Real GPU first. SwiftShader rasterises every 3D frame on the CPU, and with
+    // several live pages that starves the renderer main thread; it showed up as
+    // clicks and navigations timing out in the later sections.
+    args: ['--use-angle=d3d11', '--ignore-gpu-blocklist', '--enable-unsafe-swiftshader'],
   });
   const errors = [];
   const context = await browser.newContext({
@@ -333,6 +340,8 @@ async function run() {
   check('每次一键起卦都记录三枚铜钱正反面', comboRecord && Array.isArray(comboRecord.faces) && comboRecord.faces.length === 6 && comboRecord.faces.every((faces) => Array.isArray(faces) && faces.length === 3), JSON.stringify(comboRecord && comboRecord.faces));
   await comboPage.screenshot({ path: path.join(OUTPUT, 'combo-quick-settlement.png') });
 
+  await comboPage.close();
+
   // ── B2. 一键起卦 must skip the shaking screen entirely ───────────────────
   const quickPage = await context.newPage();
   quickPage.on('pageerror', (error) => errors.push(`quick pageerror: ${error.message}`));
@@ -378,6 +387,9 @@ async function run() {
   check('二合一按时间法也同步留下牌面与卦象', comboTimeRecord && comboTimeRecord.mode === 'combo' && comboTimeRecord.profile, JSON.stringify(comboTimeRecord));
   check('二合一按时间法确实抽到了牌面', comboTimeRecord && comboTimeRecord.cards > 0, JSON.stringify(comboTimeRecord));
 
+  await quickPage.close();
+  await comboQuickPage.close();
+
   // ── C. 单塔罗 must not be touched by the coin path ───────────────────────
   const tarotPage = await context.newPage();
   tarotPage.on('pageerror', (error) => errors.push(`tarot pageerror: ${error.message}`));
@@ -390,6 +402,8 @@ async function run() {
   await tarotPage.waitForTimeout(2500);
   const tarotCoinHidden = await tarotPage.$eval('#coinOverlay', (el) => el.hidden);
   check('单塔罗不进入摇卦舞台', tarotCoinHidden);
+
+  await tarotPage.close();
 
   // ── D. 梅花路径仍然按时间起卦 ────────────────────────────────────────────
   const meihuaPage = await context.newPage();
@@ -429,6 +443,8 @@ async function run() {
   });
   check('梅花起卦也先看卦象，再看 AI 解读', meihuaStructureBeforeAI);
 
+  await meihuaPage.close();
+
   // ── E. 移动端布局 ────────────────────────────────────────────────────────
   const mobile = await browser.newContext({
     viewport: { width: 390, height: 844 },
@@ -464,6 +480,7 @@ async function run() {
 
   check('没有控制台或页面错误', errors.length === 0, errors.slice(0, 4).join(' | '));
 
+  await mobilePage.close();
   // ── F. What the model actually receives for a 三钱 cast ──────────────────
   const coinPayload = aiRequests.find((body) => body && typeof body.meihua === 'string' && body.meihua.includes('coin-3q-1'));
   check('AI 请求带上三钱规则档案', Boolean(coinPayload));
@@ -507,5 +524,8 @@ run()
   .catch((error) => {
     console.error(notes.join('\n'));
     console.error('RUN ERROR:', error && error.stack ? error.stack : error);
-    process.exit(1);
+    // Leaving Chromium alive keeps the event loop busy and the run hangs instead
+    // of reporting the failure; it also starves the next run of the machine.
+    if (activeBrowser) activeBrowser.close().catch(() => {}).finally(() => process.exit(1));
+    else process.exit(1);
   });

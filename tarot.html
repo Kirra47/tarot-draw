@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -760,7 +760,7 @@ body::after{
 @media(max-width:720px){#questionOverlay #advancedSetup .advancedSetupBody{max-height:min(38dvh,320px)}}
 </style>
   <link rel="stylesheet" href="./settings-trial.css?v=20260926-local-sheet-1">
-  <link rel="stylesheet" href="./tarot-ui-v3.css?v=20260928-hexagram-diagram-1">
+  <link rel="stylesheet" href="./tarot-ui-v3.css?v=20260928-preserve-pass-1">
 <link rel="stylesheet" href="./coin-cast.css?v=20260926-coin-1">
 </head>
 <body>
@@ -1217,6 +1217,11 @@ const setupLauncher=document.getElementById('advancedSetup');
 const questionOverlay=document.getElementById('questionOverlay');
 const setupOverlayRoot=document.getElementById('settingsOverlayRoot');
 if(setupOverlay&&setupOverlayRoot)setupOverlayRoot.append(setupOverlay);
+// The hint under 方式 describes the chosen 起卦方法, not the mode. Move it below
+// that row so the control comes before its explanation.
+const castMethodQuickRow=document.getElementById('castMethodQuick');
+const readingModeNoteRow=document.querySelector('.readingModeNote');
+if(castMethodQuickRow&&readingModeNoteRow)castMethodQuickRow.after(readingModeNoteRow);
 let settingsFocusReturn=null;
 let settingsCloseTimer=0;
 let settingsBackgroundState=[];

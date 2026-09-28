@@ -421,3 +421,73 @@ body::after{background:radial-gradient(ellipse at 22% 30%,rgba(111,83,66,.13),tr
   border-color:#bf7d43;background:rgba(191,125,67,.14);color:#8c542d;
 }
 #castMethodQuick .drawStyleOption:focus-visible{outline:2px solid #885329;outline-offset:2px}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Preserve pass — hierarchy, measure and hairline discipline.
+
+   Three defects measured on the result screen, not guessed:
+   1. Prose ran the full 920px panel: 54 CJK glyphs per line at the 17px body
+      size, against a comfortable 30–45. Structure needs the width; sentences do
+      not.
+   2. Six near-identical browns had accumulated for hairlines (#51484a #695742
+      #645750 #66584d #5e5149 #66594f). Separators that all look alike cannot
+      rank anything, which is what DESIGN.md's Instrument Rule asks them to do.
+   3. Every drawer carried a border on both edges, so two stacked drawers drew a
+      2px double line between them.
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root{
+  /* Two hairline roles instead of six lookalikes. */
+  --ui-line-strong:#6b5c4e;
+  --ui-line-soft:#403a3e;
+  /* Long-form measure. A fixed length, not `em`: `em` resolves against each
+     block's own font size, which gave the 17px snapshot and the 16px AI text
+     different right edges (680px vs 640px) and a ragged reading column. */
+  --ui-measure:660px;
+  --ui-drawer-h:54px;
+}
+
+/* 1. Measure. Only the running-prose blocks; cards and diagrams keep the panel. */
+#aiContent,
+#aiContent .aiShortText,
+#snapshotLocalReading,
+#aiDetailContent,
+#followupThread{max-width:var(--ui-measure)}
+
+/* 2. Hairlines. Section boundaries read stronger than separators inside one. */
+#readingSnapshot{padding-bottom:19px;margin-bottom:20px;border-bottom-color:var(--ui-line-strong)}
+.readingSectionHead{border-bottom-color:var(--ui-line-strong)}
+.guaStructureGrid{border-top-color:var(--ui-line-soft);border-bottom-color:var(--ui-line-soft)}
+.guaMeaningCard{border-right-color:var(--ui-line-soft)}
+
+/* 3. Drawers: one boundary each, one shared spec, so three stacked drawers read
+   as one group instead of three slightly different things. */
+.aiDetailPanel,
+.traditionalDetails,
+#tarotReference{
+  margin:0;padding:0;border:0;border-top:1px solid var(--ui-line-strong);
+  border-radius:0;background:transparent;
+}
+.aiDetailPanel>summary,
+.traditionalDetails>summary,
+#tarotReference>summary{
+  min-height:var(--ui-drawer-h);padding:0 2px;
+  color:#e5dac7;font:600 14px/1.45 var(--sans);
+}
+#tarotReference>summary strong{font:600 14px/1.45 var(--sans)}
+#followupPanel{
+  margin:0;padding:18px 0 16px;
+  border:0;border-top:1px solid var(--ui-line-strong);
+}
+
+/* 4. Entry: the method row is secondary to the mode choice, so it sits quieter
+   and closer to the control it belongs to. Hierarchy comes from the label and
+   the spacing, not from shrinking the targets: these chips are the main way to
+   reach 铜钱摇卦, so they keep a full-size hit area. */
+#castMethodQuick{margin:10px 0 0}
+#castMethodQuick>span{color:#5a544c;font-size:12.5px;font-weight:600}
+#castMethodQuick .drawStyleOption{min-height:36px;font-size:13px}
+
+/* 5. Keyboard focus stays visible on every control this pass touched. */
+.aiDetailPanel>summary:focus-visible,
+.traditionalDetails>summary:focus-visible,
+#tarotReference>summary:focus-visible{outline:2px solid #c1a171;outline-offset:2px}

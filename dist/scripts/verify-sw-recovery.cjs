@@ -1,4 +1,4 @@
-// Regression test for the stale-service-worker outage.
+﻿// Regression test for the stale-service-worker outage.
 //
 // The failure: an older worker answers navigation from the network (so the page
 // is new) but answers sub-resources from its cache with `ignoreSearch` (so
@@ -66,7 +66,7 @@ function check(label, ok, detail = '') {
   const staleInsight = execSync(`git show ${STALE_RELEASE}:scripts/meihua-insight.mjs`, { cwd: ROOT, encoding: 'utf8' });
   check('旧模块确实缺少新导出', !/COIN_LINE_LABELS/.test(staleModule) && !/coinMovingLabel/.test(staleModule));
 
-  const browser = activeBrowser = await chromium.launch({ headless: true, executablePath: CHROME, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+  const browser = activeBrowser = await chromium.launch({ headless: true, executablePath: CHROME, args: ['--use-angle=d3d11', '--ignore-gpu-blocklist', '--enable-unsafe-swiftshader'] });
 
   // ── Part A: prove the failure mode deterministically, with no worker involved.
   // Serving the previous release's module is enough to kill the whole page,
