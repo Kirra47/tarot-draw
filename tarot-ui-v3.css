@@ -160,6 +160,10 @@ body::after{background:radial-gradient(ellipse at 22% 30%,rgba(111,83,66,.13),tr
 .guaStructureGrid{gap:0;border-top:1px solid #645750;border-bottom:1px solid #645750}
 .guaMeaningCard{padding:14px 13px;border:0;border-right:1px solid #645750;border-radius:0;background:transparent;box-shadow:none}
 .guaMeaningCard:last-child{border-right:0}
+.guaMeaningCardLead{position:relative;min-height:114px;padding-right:82px}
+.guaHexagramDiagram{position:absolute;top:18px;right:0;display:flex;align-items:center;justify-content:center;width:74px;height:96px;margin:0;color:var(--gold);opacity:.8;pointer-events:none}
+.guaHexagramDiagram svg{display:block;width:100%;height:100%;overflow:visible}
+.guaYaoMarks{stroke:currentColor}
 .guaMeaningCardTop span{color:#d1ad72}
 .guaMeaningCardTop small{color:#bfb29e}
 .guaMeaningCard h4{color:#ecd6ad;font:600 16px/1.45 var(--serif)}
@@ -342,6 +346,8 @@ body::after{background:radial-gradient(ellipse at 22% 30%,rgba(111,83,66,.13),tr
   .guaStructureGrid{grid-template-columns:1fr;gap:0}
   .guaMeaningCard{padding:10px 2px;border-right:0;border-bottom:1px solid #645750}
   .guaMeaningCard:last-child{border-bottom:0}
+  .guaMeaningCardLead{min-height:100px;padding-right:70px}
+  .guaHexagramDiagram{top:18px;width:62px;height:82px}
   .guaMeaningCard h4{font-size:16px}
   .guaMeaningCard>p{font-size:14px;line-height:1.65}
   #aiReading{margin:13px 0 15px}

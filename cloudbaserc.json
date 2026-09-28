@@ -1,0 +1,21 @@
+{
+  "$schema": "https://static.cloudbase.net/cli/cloudbaserc.schema.json",
+  "version": "2.0",
+  "envId": "peas47-d0g4dt5f002ccf6ba",
+  "functionRoot": "cloudbase",
+  "functions": [
+    {
+      "name": "astral-tarot-ai",
+      "timeout": 120,
+      "memorySize": 256,
+      "runtime": "Nodejs20.19",
+      "description": "星象塔罗 AI 解读（DeepSeek Flash）",
+      "envVariables": {
+        "AI_PROVIDER": "deepseek",
+        "DEEPSEEK_API_KEY": "{{env.DEEPSEEK_API_KEY}}",
+        "DEEPSEEK_MODEL": "deepseek-flash",
+        "TAROT_ALLOWED_ORIGINS": "https://peas47-d0g4dt5f002ccf6ba-1309640856.ap-shanghai.app.tcloudbase.com,https://peas47-d0g4dt5f002ccf6ba-1309640856.tcloudbaseapp.com"
+      }
+    }
+  ]
+}

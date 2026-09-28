@@ -28,7 +28,7 @@ https://peas-47.netlify.app/
 - 结果页以“本卦先读”为主线：先给六爻图、本卦主题、白话导读、问题落点、动爻变化提示；动爻 / 互卦 / 体用和塔罗牌面参照可按需展开
 - 原典对照区载入对应卦辞和本次动爻辞，和本站现代说明分开标注；其余传篇通过逐卦原文入口查看
 - 起卦方式可选：按抽牌时间、三个数字、射覆、静物取象、人物取象、失物占、声音占、物数占、测字与外应记录；自动模式会识别“用三个数字起卦”等明确表述
-- 铜钱摇卦（三钱法）：起卦方法选「铜钱摇卦」后，由「抽牌方式」决定做法——**亲手摇卦**进入单独的摇卦页面，逐次摇满六爻；**一键起卦**直接成卦，不进入该页面。这和塔罗的「快速抽取 / 亲手抽牌」是同一个开关。三枚铜钱每次同时落定，字面记 2、背面记 3，得老阴 / 少阳 / 少阴 / 老阳；六爻合成上下卦，老阴与老阳为动爻，可以有多个动爻。三钱法作为独立起卦方式呈现，不套用梅花的体用与互卦
+- 铜钱摇卦（三钱法）：单起卦时可选**亲手摇卦**（三枚铜钱逐次摇六次）或**一键起卦**（直接生成六次结果）；二合一固定为一键同步抽牌与起卦，不进入手摇流程。塔罗单独提供一键翻牌或手动翻牌。字面记 2、背面记 3，得老阴 / 少阳 / 少阴 / 老阳；六爻合成上下卦，老阴与老阳为动爻，可以有多个动爻。三钱法作为独立起卦方式呈现，不套用梅花的体用与互卦。
 - 射覆与取象结果会单列颜色、形状、材质、大小手感、方向及候选物品，并明确标注为可核对线索，不把候选当成事实
 
 ## 传统文化资料库（第一批）
@@ -75,13 +75,15 @@ node scripts/generate-pwa-icons.cjs
 
 ### 本地运行 AI
 
-本地静态服务器只负责页面。若要在电脑上启用 AI，请先复制 `.env.example` 为 `.env`，只在 `.env` 中填写自己的 `DASHSCOPE_API_KEY`，然后运行：
+本地静态服务器只负责页面。若要在电脑上启用 DeepSeek V4.1 Flash，请先复制 `.env.example` 为 `.env`，只在 `.env` 中填写自己的 DeepSeek API Key，然后运行：
 
 ```bash
 node scripts/local-server.mjs --port=8888
 ```
 
 访问 `http://localhost:8888/tarot.html`。本地服务只监听 `127.0.0.1`，不会把 API Key 发送到浏览器或暴露到公网；`.env` 已被 Git 忽略。可打开 `http://localhost:8888/api/health` 检查本地 AI 是否已配置；该状态接口不发起模型请求，也不会显示密钥。
+
+默认配置为 `AI_PROVIDER=deepseek`、`DEEPSEEK_MODEL=deepseek-flash`。官方将 `deepseek-flash` 映射到当前 DeepSeek V4.1 Flash；不要把展示名称直接当 API 模型 ID。旧的 DashScope 配置仍可使用：改成 `AI_PROVIDER=dashscope` 并设置 `DASHSCOPE_API_KEY` / `DASHSCOPE_MODEL`。
 
 梅花易数同步起卦在第一张牌确认瞬间完成，不调用摄像头、不上传起卦时间；起卦结果随本次观测保存在本机档案，并随 AI 请求以结构化资料传入，不包含任何 API 密钥。
 
@@ -94,21 +96,23 @@ node scripts/local-server.mjs --port=8888
 
 ### 配置智能解读
 
-在 Netlify 的 **Site configuration → Environment variables** 中添加：
+若之后决定部署到 Netlify，在 **Site configuration → Environment variables** 中设置以下 DeepSeek 变量：
 
 ```text
-DASHSCOPE_API_KEY=你的通义千问 API Key
+AI_PROVIDER=deepseek
+DEEPSEEK_API_KEY=你的 DeepSeek API Key
+DEEPSEEK_MODEL=deepseek-flash
 ```
 
-API Key 只由 Netlify Function 读取，不会发送到浏览器。函数端点还会校验请求来源与体积，并按 IP + 站点每分钟最多 100 次限流（适合个人与小范围朋友使用）。若旧版本曾把 Key 写进前端源码，请先在阿里云控制台撤销旧 Key 并创建新 Key。
+API Key 只由 Netlify Function 读取，不会发送到浏览器。函数端点还会校验请求来源与体积，并按 IP + 站点每分钟最多 100 次限流（适合个人与小范围朋友使用）。旧版 DashScope 仍通过 `AI_PROVIDER=dashscope` 和 `DASHSCOPE_API_KEY` 配置。若旧版本曾把 Key 写进前端源码，请立即在相应服务商控制台撤销并创建新 Key。
 
-不要把真实 Key 写进 `tarot.html`、`netlify.toml` 或提交到 GitHub。线上请在 Netlify 的 **Project configuration → Environment variables** 新建 `DASHSCOPE_API_KEY`，如界面提供 Scope，需包含 **Functions**；可将它标记为 **Contains secret values**。修改环境变量后需要重新部署。
+不要把真实 Key 写进 `tarot.html`、`netlify.toml` 或提交到 GitHub。线上 Key 应保存在服务商的服务器端环境变量中，标记为 Secret；修改环境变量后需要重新部署。
 
 本地 AI 通过同一台电脑上的 Node 代理连接百炼；需要单独启动或重启本地服务时：
 
 ```bash
 copy .env.example .env
-# 只在本机的 .env 中填入真实 DASHSCOPE_API_KEY
+# 只在本机的 .env 中填入真实 DEEPSEEK_API_KEY
 node scripts/local-server.mjs --port=8888
 ```
 

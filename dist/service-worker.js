@@ -1,4 +1,4 @@
-const CACHE_VERSION = "astral-tarot-v66-prefs-sync-20260926";
+const CACHE_VERSION = "astral-tarot-v69-coin-default-20260927";
 const CORE_CACHE = `${CACHE_VERSION}-core`;
 const ASSET_CACHE = `${CACHE_VERSION}-assets`;
 

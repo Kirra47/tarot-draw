@@ -313,13 +313,19 @@ button:focus-visible,textarea:focus-visible,input:focus-visible,summary:focus-vi
 .guaStructureOrder{padding-bottom:3px;color:#8d8173;font:600 10px/1 var(--sans);letter-spacing:.12em}
 .guaStructureGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
 .guaMeaningCard{min-width:0;padding:13px 14px 14px;border:1px solid rgba(101,80,58,.16);border-radius:12px;background:rgba(255,255,255,.58)}
-.guaMeaningCard.isPrimary{border-color:rgba(191,125,67,.42);background:linear-gradient(150deg,rgba(191,125,67,.09),rgba(255,255,255,.68) 65%)}
+.guaMeaningCard.isPrimary{border:1px solid #6e5b45;background:#2b2830}
 .guaMeaningCardTop{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .guaMeaningCardTop span{color:#8c542d;font:600 12px/1.4 var(--sans)}
 .guaMeaningCardTop small{color:var(--ink-muted);font-size:10px;white-space:nowrap}
 .guaMeaningCard h4{margin:7px 0 5px;color:var(--ink);font:600 16px/1.4 var(--serif)}
 .guaMeaningCard>strong{display:block;color:#975d32;font:600 12px/1.5 var(--sans)}
 .guaMeaningCard>p{margin:6px 0 0;color:#5f574e;font:12px/1.7 var(--sans)}
+.guaMeaningOriginal{margin:8px 0 9px;padding:7px 0;border-block:1px solid rgba(255,255,255,.14)}
+.guaMeaningOriginal summary{display:flex;align-items:center;gap:7px;color:#d9c6a5;font:600 12px/1.5 var(--sans);cursor:pointer}
+.guaMeaningOriginal summary::marker{color:#c1a171}
+.guaMeaningOriginal p{margin:8px 0;color:#eee5d4;font:14px/1.75 var(--serif)}
+.guaMeaningOriginal a{display:inline-block;color:#dfbd82;font:600 12px/1.5 var(--sans);text-underline-offset:3px}
+.guaMeaningOriginal a:focus-visible{outline:2px solid #885329;outline-offset:3px;border-radius:2px}
 .guaStructureMeta{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .guaStructureMeta>span{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border:1px solid rgba(101,80,58,.12);border-radius:999px;background:rgba(94,78,61,.035);color:var(--ink-muted);font:11px/1.4 var(--sans)}
 .guaStructureMeta b{color:var(--ink);font-weight:600}

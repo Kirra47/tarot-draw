@@ -8,7 +8,7 @@ const path = require('node:path');
 
 const BASE = process.env.TAROT_BASE || 'http://127.0.0.1:8888';
 const CHROME = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
-const OUTPUT = path.resolve(__dirname, '../output/coin-integrated');
+const OUTPUT = path.resolve(process.env.TAROT_TEST_OUTPUT || path.join(__dirname, '../output/coin-integrated'));
 
 function loadChromium() {
   const candidates = [
@@ -119,12 +119,28 @@ async function run() {
   entryPage.on('console', (message) => { if (message.type() === 'error') errors.push(`entry console: ${message.text()}`); });
   await entryPage.goto(`${BASE}/tarot.html`, { waitUntil: 'domcontentloaded' });
   await entryPage.waitForSelector('#questionOverlay', { timeout: 15000 });
+  const defaultSelection = await entryPage.evaluate(() => ({
+    readingMode: document.querySelector('.readingModeOption[aria-checked="true"]')?.dataset.readingMode,
+    castMode: document.getElementById('castMode').value,
+    drawStyle: document.querySelector('#drawStyleOptions [data-draw-style][aria-checked="true"]')?.dataset.drawStyle,
+    action: document.querySelector('#questionConfirm span')?.textContent.trim(),
+  }));
+  check('未设置偏好时默认起卦、铜钱摇卦、亲手摇卦', defaultSelection.readingMode === 'gua' && defaultSelection.castMode === 'coin' && defaultSelection.drawStyle === 'manual', JSON.stringify(defaultSelection));
+  check('默认主操作提示开始摇卦', defaultSelection.action === '开始摇卦', defaultSelection.action);
   await entryPage.click('[data-reading-mode="tarot"]');
+  await entryPage.click('#advancedSetup');
+  await entryPage.waitForSelector('#setupOverlay:not([hidden])', { timeout: 8000 });
+  await entryPage.click('#drawStyleOptions [data-draw-style="quick"]');
+  await entryPage.click('#settingsSheetDone');
+  await entryPage.waitForSelector('#setupOverlay', { state: 'hidden' });
+  const tarotConfirmLabel = await entryPage.$eval('#questionConfirm span', (el) => el.textContent.trim());
+  check('单塔罗可选一键翻牌', tarotConfirmLabel === '一键翻牌', tarotConfirmLabel);
   check('单塔罗隐藏起卦方法快捷行', await entryPage.$eval('#castMethodQuick', (el) => el.hidden));
   await entryPage.click('[data-reading-mode="gua"]');
   check('单起卦显示起卦方法快捷行', !(await entryPage.$eval('#castMethodQuick', (el) => el.hidden)));
   const quickChips = await entryPage.$$eval('#castMethodQuick [data-cast-method]', (n) => n.map((x) => x.textContent.trim()));
   check('首页直接提供铜钱摇卦入口', quickChips.includes('铜钱摇卦'), quickChips.join('/'));
+  await entryPage.click('#castMethodQuick [data-cast-method="time"]');
 
   await entryPage.click('#advancedSetup');
   await entryPage.waitForSelector('#setupOverlay:not([hidden])', { timeout: 8000 });
@@ -216,6 +232,18 @@ async function run() {
 
   const structureCards = await page.$$eval('#guaStructureGrid .guaMeaningCard .guaMeaningCardTop span:first-child', (nodes) => nodes.map((n) => n.textContent.trim()));
   check('三钱卦只给本卦与变卦，不给互卦', !structureCards.includes('互卦') && structureCards.includes('本卦') && structureCards.includes('变卦'), structureCards.join('/'));
+  const structureBeforeAI = await page.evaluate(() => {
+    const structure = document.getElementById('guaStructureSummary');
+    const ai = document.getElementById('aiReading');
+    return Boolean(structure.compareDocumentPosition(ai) & Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+  check('先展示卦象结构，再展示 AI 解读', structureBeforeAI);
+  const perHexagramSources = await page.$$eval('#guaStructureGrid .guaMeaningOriginal', (nodes) => nodes.map((node) => ({
+    citation: node.querySelector('summary')?.textContent || '',
+    original: node.querySelector('p')?.textContent.trim() || '',
+    href: node.querySelector('a')?.href || '',
+  })));
+  check('每个卦象卡都标明《周易》出处与原文', perHexagramSources.length === 2 && perHexagramSources.every((item) => item.citation.includes('周易') && item.original.length > 5 && item.href.startsWith('https://zh.wikisource.org/')), JSON.stringify(perHexagramSources));
 
   const trace = await page.$eval('#meihuaTraceText', (el) => el.textContent);
   check('取数过程记录六爻与规则档案', trace.includes('铜钱摇卦') && trace.includes('coin-3q-1'), trace.split('\n')[0]);
@@ -268,7 +296,7 @@ async function run() {
   });
   check('档案标注起卦方式', aiDescription === '铜钱摇卦', String(aiDescription));
 
-  // ── B. 二合一 with 亲手摇卦 opens the shaking screen too ─────────────────
+  // ── B. 二合一 always casts and draws with one action ────────────────────
   const comboPage = await context.newPage();
   comboPage.on('pageerror', (error) => errors.push(`combo pageerror: ${error.message}`));
   comboPage.on('console', (message) => { if (message.type() === 'error') errors.push(`combo console: ${message.text()}`); });
@@ -276,21 +304,34 @@ async function run() {
   await comboPage.waitForSelector('#questionOverlay', { timeout: 15000 });
   await comboPage.click('[data-reading-mode="combo"]');
   await comboPage.fill('#questionInput', '这段时间该先做什么？');
-  await openSettingsForCoin(comboPage, { drawStyle: 'manual' });
+  await comboPage.click('#advancedSetup');
+  await comboPage.waitForSelector('#setupOverlay:not([hidden])', { timeout: 8000 });
+  await comboPage.selectOption('#castMode', 'coin');
+  const comboDrawChoice = await comboPage.evaluate(() => {
+    const el = document.getElementById('drawStyleOptions');
+    return { hidden: el.hidden, display: getComputedStyle(el).display };
+  });
+  check('二合一隐藏独立的手动/快速选项', comboDrawChoice.hidden && comboDrawChoice.display === 'none', JSON.stringify(comboDrawChoice));
+  const inheritedStyle = await comboPage.$eval('#drawStyleOptions [data-draw-style].active', (el) => el.dataset.drawStyle).catch(() => null);
+  check('二合一不会暴露已保存的手动选择', inheritedStyle === 'manual', String(inheritedStyle));
+  await comboPage.click('#settingsSheetDone');
+  await comboPage.waitForSelector('#setupOverlay', { state: 'hidden', timeout: 8000 });
+  const comboConfirm = await comboPage.$eval('#questionConfirm span', (el) => el.textContent.trim());
+  check('二合一主操作明确为一次开始', comboConfirm === '开始二合一', comboConfirm);
   await comboPage.click('#questionConfirm');
-  await comboPage.waitForSelector('#coinOverlay:not([hidden])', { timeout: 10000 });
-  const tossUsable = await comboPage.$eval('#coinTossBtn', (el) => !el.hidden && !el.disabled);
-  check('二合一 + 亲手摇卦 打开摇卦页', tossUsable);
-  await comboPage.screenshot({ path: path.join(OUTPUT, 'combo-manual-stage.png') });
-
-  await comboPage.click('#coinQuickBtn');
-  // 亲手 means the cards are drawn by hand next, so the result sheet must NOT
-  // appear yet. That is the difference between 亲手 and 一键.
-  await comboPage.waitForFunction(() => document.getElementById('coinOverlay').hidden, { timeout: 25000 });
+  await comboPage.waitForSelector('#settleOverlay.show', { timeout: 30000 });
+  const comboCoinStageSkipped = await comboPage.$eval('#coinOverlay', (el) => el.hidden);
+  check('二合一铜钱直接一键成卦，不进入手摇页', comboCoinStageSkipped);
   const comboLines = await comboPage.evaluate(() => window.coinCast.getLines());
-  check('二合一 + 亲手摇卦 记录六爻', Array.isArray(comboLines) && comboLines.length === 6, JSON.stringify(comboLines));
-  const comboStillDrawing = await comboPage.evaluate(() => !document.getElementById('settleOverlay').classList.contains('show'));
-  check('二合一 + 亲手：铜钱后进入手动抽牌而非直接出结果', comboStillDrawing);
+  check('二合一一键记录六爻', Array.isArray(comboLines) && comboLines.length === 6, JSON.stringify(comboLines));
+  const comboRecord = await comboPage.evaluate(() => {
+    const raw = JSON.parse(localStorage.getItem('tarot-reading-history-v3') || '[]');
+    const item = raw.find((entry) => entry.readingMode === 'combo' && entry.meihua && entry.meihua.mode === 'coin');
+    return item ? { cards: (item.cards || []).length, lines: item.meihua.lineValues.length, faces: item.meihua.coinFaces } : null;
+  });
+  check('二合一同时保存塔罗牌和六次三钱结果', comboRecord && comboRecord.cards > 0 && comboRecord.lines === 6, JSON.stringify(comboRecord));
+  check('每次一键起卦都记录三枚铜钱正反面', comboRecord && Array.isArray(comboRecord.faces) && comboRecord.faces.length === 6 && comboRecord.faces.every((faces) => Array.isArray(faces) && faces.length === 3), JSON.stringify(comboRecord && comboRecord.faces));
+  await comboPage.screenshot({ path: path.join(OUTPUT, 'combo-quick-settlement.png') });
 
   // ── B2. 一键起卦 must skip the shaking screen entirely ───────────────────
   const quickPage = await context.newPage();
@@ -314,25 +355,28 @@ async function run() {
   check('一键起卦结果仍按三钱法呈现', quickMeta.includes('铜钱'), quickMeta);
   await quickPage.screenshot({ path: path.join(OUTPUT, 'quick-settlement.png') });
 
-  // 二合一 + 一键: one click finishes the coins and the cards together.
+  // 二合一 with a non-coin casting method still completes both together.
   const comboQuickPage = await context.newPage();
   comboQuickPage.on('pageerror', (error) => errors.push(`combo quick pageerror: ${error.message}`));
   comboQuickPage.on('console', (message) => { if (message.type() === 'error') errors.push(`combo quick console: ${message.text()}`); });
   await comboQuickPage.goto(`${BASE}/tarot.html`, { waitUntil: 'domcontentloaded' });
   await comboQuickPage.waitForSelector('#questionOverlay', { timeout: 15000 });
   await comboQuickPage.click('[data-reading-mode="combo"]');
-  await comboQuickPage.fill('#questionInput', '一键二合一。');
-  await openSettingsForCoin(comboQuickPage, { drawStyle: 'quick' });
+  await comboQuickPage.fill('#questionInput', '同时看牌和卦。');
+  await comboQuickPage.click('#advancedSetup');
+  await comboQuickPage.waitForSelector('#setupOverlay:not([hidden])', { timeout: 8000 });
+  await comboQuickPage.selectOption('#castMode', 'time');
+  await comboQuickPage.click('#settingsSheetDone');
+  await comboQuickPage.waitForSelector('#setupOverlay', { state: 'hidden', timeout: 8000 });
   await comboQuickPage.click('#questionConfirm');
   await comboQuickPage.waitForSelector('#settleOverlay.show', { timeout: 30000 });
-  check('二合一 + 一键：不打开摇卦页直接出结果', await comboQuickPage.$eval('#coinOverlay', (el) => el.hidden));
-  const comboQuickRecord = await comboQuickPage.evaluate(() => {
+  const comboTimeRecord = await comboQuickPage.evaluate(() => {
     const raw = JSON.parse(localStorage.getItem('tarot-reading-history-v3') || '[]');
-    const item = raw.find((entry) => entry.readingMode === 'combo' && entry.meihua && entry.meihua.mode === 'coin');
-    return item ? { mode: item.readingMode, cards: (item.cards || []).length, lineValues: item.meihua.lineValues.length } : null;
+    const item = raw.find((entry) => entry.readingMode === 'combo' && entry.meihua && entry.meihua.mode === 'time');
+    return item ? { mode: item.readingMode, cards: (item.cards || []).length, profile: item.meihua.profile } : null;
   });
-  check('二合一 + 一键：同时留下牌面与卦象', comboQuickRecord && comboQuickRecord.mode === 'combo' && comboQuickRecord.lineValues === 6, JSON.stringify(comboQuickRecord));
-  check('二合一 + 一键：确实抽到了牌面', comboQuickRecord && comboQuickRecord.cards > 0, JSON.stringify(comboQuickRecord));
+  check('二合一按时间法也同步留下牌面与卦象', comboTimeRecord && comboTimeRecord.mode === 'combo' && comboTimeRecord.profile, JSON.stringify(comboTimeRecord));
+  check('二合一按时间法确实抽到了牌面', comboTimeRecord && comboTimeRecord.cards > 0, JSON.stringify(comboTimeRecord));
 
   // ── C. 单塔罗 must not be touched by the coin path ───────────────────────
   const tarotPage = await context.newPage();
@@ -357,6 +401,7 @@ async function run() {
   await meihuaPage.reload({ waitUntil: 'domcontentloaded' });
   await meihuaPage.waitForSelector('#questionOverlay', { timeout: 15000 });
   await meihuaPage.click('[data-reading-mode="gua"]');
+  await meihuaPage.click('#castMethodQuick [data-cast-method="time"]');
   await meihuaPage.fill('#questionInput', '按时间起一卦。');
   await meihuaPage.click('#questionConfirm');
   await meihuaPage.waitForSelector('#settleOverlay.show', { timeout: 15000 });
@@ -365,12 +410,24 @@ async function run() {
     const item = raw.find((entry) => entry.meihua && entry.meihua.mode !== 'coin' && entry.meihua.mode !== 'none');
     return item ? { mode: item.meihua.mode, profile: item.meihua.profile, movingLine: item.meihua.movingLine, relation: item.meihua.relation } : null;
   });
-  check('默认仍按时间起卦（梅花）', meihuaMode && meihuaMode.mode === 'time' && meihuaMode.profile === 'mh-ws-1', JSON.stringify(meihuaMode));
+  check('明确选择按时间后仍按梅花起卦', meihuaMode && meihuaMode.mode === 'time' && meihuaMode.profile === 'mh-ws-1', JSON.stringify(meihuaMode));
   check('梅花记录仍保留单动爻与体用', meihuaMode && Number.isInteger(meihuaMode.movingLine) && Boolean(meihuaMode.relation), JSON.stringify(meihuaMode));
   const meihuaMeta = await meihuaPage.$eval('#guaStructureMeta', (el) => el.textContent.replace(/\s+/g, ' ').trim());
   check('梅花结构摘要仍显示体用', meihuaMeta.includes('体卦') && meihuaMeta.includes('用卦'), meihuaMeta);
   const meihuaCards = await meihuaPage.$$eval('#guaStructureGrid .guaMeaningCard .guaMeaningCardTop span:first-child', (nodes) => nodes.map((n) => n.textContent.trim()));
   check('梅花仍显示互卦', meihuaCards.includes('互卦'), meihuaCards.join('/'));
+  const meihuaSources = await meihuaPage.$$eval('#guaStructureGrid .guaMeaningOriginal', (nodes) => nodes.map((node) => ({
+    citation: node.querySelector('summary')?.textContent || '',
+    original: node.querySelector('p')?.textContent.trim() || '',
+    href: node.querySelector('a')?.href || '',
+  })));
+  check('梅花本卦、互卦、变卦都有经文出处', meihuaSources.length === 3 && meihuaSources.every((item) => item.citation.includes('周易') && item.original.length > 5 && item.href.startsWith('https://zh.wikisource.org/')), JSON.stringify(meihuaSources));
+  const meihuaStructureBeforeAI = await meihuaPage.evaluate(() => {
+    const structure = document.getElementById('guaStructureSummary');
+    const ai = document.getElementById('aiReading');
+    return Boolean(structure.compareDocumentPosition(ai) & Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+  check('梅花起卦也先看卦象，再看 AI 解读', meihuaStructureBeforeAI);
 
   // ── E. 移动端布局 ────────────────────────────────────────────────────────
   const mobile = await browser.newContext({
@@ -394,6 +451,13 @@ async function run() {
   // reduced motion must still produce six lines without waiting on animation
   await mobilePage.click('#coinQuickBtn');
   await mobilePage.waitForSelector('#settleOverlay.show', { timeout: 20000 });
+  await mobilePage.waitForFunction(() => {
+    const panel = document.getElementById('settlePanel');
+    const rect = panel.getBoundingClientRect();
+    return getComputedStyle(panel).display !== 'none' && rect.width > 0 && rect.height > 0 && panel.textContent.includes('卦象结构');
+  }, { timeout: 8000 });
+  await mobilePage.waitForTimeout(350);
+  check('手机结果页先显示卦象与可读正文', await mobilePage.$eval('#guaStructureSummary', (el) => !el.hidden && el.getBoundingClientRect().height > 0));
   const reducedLines = await mobilePage.evaluate(() => window.coinCast.getLines());
   check('减少动态效果时仍能完成六爻', Array.isArray(reducedLines) && reducedLines.length === 6, JSON.stringify(reducedLines));
   await mobilePage.screenshot({ path: path.join(OUTPUT, 'settlement-mobile.png') });
@@ -409,6 +473,8 @@ async function run() {
     check('AI 载荷给出六爻明细', /六爻（自初爻至上爻）：/.test(meihua));
     check('AI 载荷不声称梅花体用', !meihua.includes('体用：体') && !meihua.includes('互卦：'), meihua.slice(0, 80));
     check('AI 载荷声明不取互卦与体用', meihua.includes('不取互卦与体用'));
+    check('AI 请求用结构化字段标明三钱规则档案', coinPayload.castProfile === 'coin-3q-1' && coinPayload.castMethod === 'three-coins');
+    check('AI 载荷包含本卦原文和可追溯出处', meihua.includes('本卦《周易·') && meihua.includes('出处：https://zh.wikisource.org/'));
     check('AI 载荷携带六爻数值', coinPayload.meihua.includes('（字面记 2、背面记 3'), '');
     check('AI 载荷的 readingMode 正确', ['gua', 'combo'].includes(coinPayload.readingMode), String(coinPayload.readingMode));
   }
@@ -416,6 +482,7 @@ async function run() {
   if (meihuaPayload) {
     check('梅花载荷仍包含体用与互卦', meihuaPayload.meihua.includes('体用：体') && meihuaPayload.meihua.includes('互卦：'));
     check('梅花载荷不被写成三钱法', !meihuaPayload.meihua.includes('coin-3q-1'));
+    check('AI 载荷包含互卦原文和独立出处', /互卦《周易·.+卦》卦辞：/.test(meihuaPayload.meihua) && meihuaPayload.meihua.includes('出处：https://zh.wikisource.org/'));
   }
   check('AI 请求只发往同源代理', aiRequests.length > 0 && [...aiRequestOrigins].every((origin) => origin === new URL(BASE).origin), [...aiRequestOrigins].join(','));
   check('未再指向私有 Codex AI 站点', ![...aiRequestOrigins].some((origin) => origin.includes('chatgpt.site')), [...aiRequestOrigins].join(','));

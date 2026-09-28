@@ -20,14 +20,23 @@ async function loadDotEnv(filePath) {
     if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) value = value.slice(1, -1);
     // API keys copied from dashboards or chat may contain visual whitespace.
     // Never log the value; remove whitespace before passing it to the provider.
-    if (key === 'DASHSCOPE_API_KEY') value = value.replace(/\s+/g, '');
-    if (key === 'DASHSCOPE_MODEL') value = value.replace(/\s+/g, '');
+    if (key.endsWith('_API_KEY') || key.endsWith('_MODEL') || key === 'AI_PROVIDER') value = value.replace(/\s+/g, '');
     if (!process.env[key]) process.env[key] = value;
   }
 }
 
 await loadDotEnv(path.join(ROOT, '.env'));
 const { default: tarotReading } = await import(pathToFileURL(path.join(ROOT, 'netlify/functions/tarot-reading.mjs')).href);
+
+function getAIConfiguration() {
+  const provider = String(process.env.AI_PROVIDER || 'dashscope').trim().toLowerCase();
+  const settings = {
+    deepseek: { key: process.env.DEEPSEEK_API_KEY, model: process.env.DEEPSEEK_MODEL, fallback: 'deepseek-flash' },
+    dashscope: { key: process.env.DASHSCOPE_API_KEY, model: process.env.DASHSCOPE_MODEL, fallback: 'qwen3.8-flash' },
+  }[provider];
+  const model = settings && /^[a-z0-9._-]{1,80}$/i.test(settings.model || '') ? settings.model : settings?.fallback || '';
+  return { provider, aiConfigured: Boolean(settings?.key), model };
+}
 
 const MIME = Object.freeze({
   '.css': 'text/css; charset=utf-8', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
@@ -85,10 +94,9 @@ const server = http.createServer(async (request, response) => {
   try {
     const pathname = new URL(request.url, `http://127.0.0.1:${PORT}`).pathname;
     if (pathname === '/api/health' && request.method === 'GET') {
-      const configuredModel = String(process.env.DASHSCOPE_MODEL || 'qwen3.8-flash').replace(/\s+/g, '');
-      const model = /^[a-z0-9._-]{1,80}$/i.test(configuredModel) ? configuredModel : 'qwen3.8-flash';
+      const configuration = getAIConfiguration();
       response.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
-      response.end(JSON.stringify({ ok: true, aiConfigured: Boolean(process.env.DASHSCOPE_API_KEY), model }));
+      response.end(JSON.stringify({ ok: true, ...configuration }));
       return;
     }
     if (pathname === '/api/tarot-reading') {
@@ -107,7 +115,8 @@ const server = http.createServer(async (request, response) => {
 
 server.listen(PORT, '127.0.0.1', () => {
   console.log(`本地塔罗服务：http://localhost:${PORT}/tarot.html`);
-  console.log(`AI 代理：${process.env.DASHSCOPE_API_KEY ? '已读取本地 Key' : '未读取 Key，请在 .env 填入 DASHSCOPE_API_KEY'}`);
-  const configuredModel = String(process.env.DASHSCOPE_MODEL || 'qwen3.8-flash').replace(/\s+/g, '');
-  console.log(`模型：${/^[a-z0-9._-]{1,80}$/i.test(configuredModel) ? configuredModel : 'qwen3.8-flash'}`);
+  const configuration = getAIConfiguration();
+  console.log(`AI 提供方：${configuration.provider}`);
+  console.log(`AI 代理：${configuration.aiConfigured ? '已读取本地 Key' : '未读取对应 Key，请检查 .env 配置'}`);
+  console.log(`模型：${configuration.model || '未配置'}`);
 });
