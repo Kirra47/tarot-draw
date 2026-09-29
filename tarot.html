@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -30,6 +30,47 @@
   navigator.serviceWorker.register('./service-worker.js',{scope:'./',updateViaCache:'none'})
     .then(function(registration){return registration.update();})
     .catch(function(){});
+})();
+// Boot watchdog. A blank page is impossible to act on: the visitor cannot tell a
+// stale cache from a dead network from a broken script, and neither can we from a
+// screenshot. If the app has not taken over the form within a few seconds, say so,
+// name the build, and offer a reload. The detector is a real side effect of boot —
+// every .readingModeOption ships aria-checked="false" and the app flips one to
+// "true" — so this needs no cooperation from the module.
+(function(){
+  var BUILD='v75-boot-safety';
+  var shown=false;
+  function booted(){
+    try{
+      return Boolean(document.querySelector('.readingModeOption[aria-checked="true"]'));
+    }catch(e){
+      return true; /* cannot tell: stay quiet rather than cry wolf */
+    }
+  }
+  function show(){
+    if(shown||booted()||!document.body)return;
+    shown=true;
+    var d=document.createElement('div');
+    d.id='bootNotice';
+    d.setAttribute('role','alert');
+    d.style.cssText='position:fixed;left:16px;right:16px;bottom:16px;z-index:2147483000;'
+      +'max-width:520px;margin:0 auto;padding:16px 18px;border-radius:16px;'
+      +'background:rgba(18,14,23,.97);border:1px solid rgba(226,190,134,.36);'
+      +'color:#eee7dc;font:14px/1.65 "Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;'
+      +'box-shadow:0 24px 60px -32px rgba(3,2,8,.95)';
+    d.innerHTML='<strong style="display:block;margin-bottom:6px;font-size:15px">页面没有启动</strong>'
+      +'可能是浏览器里存着旧版本。'
+      +'<button type="button" id="bootReload" style="display:block;margin-top:12px;min-height:42px;'
+      +'padding:0 20px;border-radius:999px;border:1px solid rgba(226,190,134,.5);background:transparent;'
+      +'color:#f0dab1;font:inherit;cursor:pointer">重新加载</button>'
+      +'<small style="display:block;margin-top:10px;color:#9a909f;font-size:12px">'
+      +'若反复出现，请在浏览器设置里清除本站数据后重开。构建 '+BUILD+'</small>';
+    document.body.appendChild(d);
+    var btn=document.getElementById('bootReload');
+    if(btn)btn.addEventListener('click',function(){location.reload();});
+  }
+  window.addEventListener('load',function(){setTimeout(show,6000);});
+  setTimeout(show,8000);
 })();
 </script>
 <link rel="manifest" href="./manifest.webmanifest">
@@ -764,7 +805,7 @@ body::after{
 <link rel="stylesheet" href="./coin-cast.css?v=20260926-coin-1">
 <!-- Craft pass: depth, grain, type presence and motion. Added last so it can
      layer over the four structural sheets without rewriting any of them. -->
-<link rel="stylesheet" href="./tarot-ui-v4.css?v=20260929-craft-1">
+<link rel="stylesheet" href="./tarot-ui-v4.css?v=20260929-craft-2">
 </head>
 <body>
 <canvas id="c"></canvas>
@@ -1397,7 +1438,7 @@ let drawStyle=allowedPreference(savedPreferences.drawStyle,['quick','manual'],DE
 // answer. It must be bumped with every release — it read v69-coin-default while
 // the code had moved on, so the stamp told visitors they were stale when they
 // were not. verify-coin-ui.cjs now fails if it drifts from CACHE_VERSION.
-const APP_BUILD='v74-craft-pass · 2026-09-29';
+const APP_BUILD='v75-boot-safety · 2026-09-29';
 // Rebuild the shareable setup link from the live controls rather than from
 // savedPreferences, so a link copied from the open sheet already reflects the
 // pending choices.
