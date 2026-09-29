@@ -1,4 +1,4 @@
-﻿// Regression test for the stale-service-worker outage.
+// Regression test for the stale-service-worker outage.
 //
 // The failure: an older worker answers navigation from the network (so the page
 // is new) but answers sub-resources from its cache with `ignoreSearch` (so
@@ -135,12 +135,30 @@ function check(label, ok, detail = '') {
     recovered = true;
   } catch {}
   check('无需人工操作即自动恢复', recovered);
-  const after = await page.evaluate(() => ({
-    booted: typeof window.coinCast !== 'undefined',
-    controller: navigator.serviceWorker.controller ? navigator.serviceWorker.controller.scriptURL.split('/').pop() : 'none',
-  }));
+  /* The takeover and the cache purge are both asynchronous with respect to the
+     reload that recovery triggers: the new document can finish loading a beat
+     before its worker is attached and before activate() finishes deleting the
+     old caches. Asserting the instant the app becomes usable made this flake
+     roughly one run in three, while the app itself was already fine — the two
+     user-visible checks above passed in every one of those runs. Poll instead of
+     sampling once. */
+  let after = { booted: false, controller: 'none' };
+  for (let i = 0; i < 40; i += 1) {
+    after = await page.evaluate(() => ({
+      booted: typeof window.coinCast !== 'undefined',
+      controller: navigator.serviceWorker.controller ? navigator.serviceWorker.controller.scriptURL.split('/').pop() : 'none',
+    }));
+    if (after.controller === 'service-worker.js') break;
+    await page.waitForTimeout(150);
+  }
   check('恢复后由当前 worker 接管', after.controller === 'service-worker.js', after.controller);
-  const staleGone = await page.evaluate(async (name) => !(await caches.keys()).includes(name), STALE_CACHE);
+
+  let staleGone = false;
+  for (let i = 0; i < 40; i += 1) {
+    staleGone = await page.evaluate(async (name) => !(await caches.keys()).includes(name), STALE_CACHE);
+    if (staleGone) break;
+    await page.waitForTimeout(150);
+  }
   check('旧缓存已被清理', staleGone);
 
   if (recovered) {

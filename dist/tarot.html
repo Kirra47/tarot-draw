@@ -38,7 +38,7 @@
 // every .readingModeOption ships aria-checked="false" and the app flips one to
 // "true" — so this needs no cooperation from the module.
 (function(){
-  var BUILD='v77-lamp';
+  var BUILD='v78-toss';
   var shown=false;
   function booted(){
     try{
@@ -805,7 +805,7 @@ body::after{
 <link rel="stylesheet" href="./coin-cast.css?v=20260926-coin-1">
 <!-- Craft pass: depth, grain, type presence and motion. Added last so it can
      layer over the four structural sheets without rewriting any of them. -->
-<link rel="stylesheet" href="./tarot-ui-v4.css?v=20260929-craft-4">
+<link rel="stylesheet" href="./tarot-ui-v4.css?v=20260929-craft-5">
 </head>
 <body>
 <canvas id="c"></canvas>
@@ -1224,6 +1224,7 @@ import {
   TOSS_MS as COIN_TOSS_MS,
   createCoinStage,
   facesTotal as coinFacesTotal,
+  generateCoinResult,
   randomFaces as randomCoinFaces,
 } from './scripts/coin-stage.mjs';
 import { HEXAGRAM_NOTES, primaryHexagramInsight } from './scripts/meihua-insight.mjs';
@@ -1438,7 +1439,7 @@ let drawStyle=allowedPreference(savedPreferences.drawStyle,['quick','manual'],DE
 // answer. It must be bumped with every release — it read v69-coin-default while
 // the code had moved on, so the stamp told visitors they were stale when they
 // were not. verify-coin-ui.cjs now fails if it drifts from CACHE_VERSION.
-const APP_BUILD='v77-lamp · 2026-09-29';
+const APP_BUILD='v78-toss · 2026-09-29';
 // Rebuild the shareable setup link from the live controls rather than from
 // savedPreferences, so a link copied from the open sheet already reflects the
 // pending choices.
@@ -4281,6 +4282,23 @@ let coinStage=null;
 let coinTosses=[];       // [{faces:[0|1,0|1,0|1],total:6|7|8|9}]
 let coinFromFaces=[0,1,0];
 let coinBusy=false;
+// 待摇的静止姿态。落定结果先停留 COIN_HOLD_MS 让眼睛看清，再复位到这里。
+const COIN_READY_FACES=[0,0,0];
+const COIN_HOLD_MS=700;
+let coinResetTimer=0;
+/* 铜钱碰撞音 hook。项目目前没有音频系统，所以这里只留接线口，不塞一个合成器
+   进来 —— 合成的「叮」很容易做得廉价，而廉价音效比没有音效更伤质感。
+   要接上，任意位置调用一次：
+     window.__tarotSetCoinLandSound((coin, face) => { … });
+   它会在每枚铜钱各自落地的那一帧被调用一次，参数是 {coin:0|1|2, face:'front'|'back'}。
+   播放时机已经由动画推导好了，不需要调用方自己算延时。 */
+let coinLandSound=null;
+try{
+  Object.defineProperty(window,'__tarotSetCoinLandSound',{
+    value:(fn)=>{coinLandSound=typeof fn==='function'?fn:null;},
+    configurable:true,
+  });
+}catch(error){}
 function coinReducedMotion(){
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
@@ -4293,6 +4311,9 @@ function initCoinStage(){
       prefersReducedMotion:coinReducedMotion,
     });
     coinStage.init();
+    /* 诊断句柄。verify-coin-toss.cjs 用它证明「落定朝向 == 本次结果」，
+       而不是靠截图猜。自用工具，留一个只读引用比藏着更划算。 */
+    try{ Object.defineProperty(window,'__tarotCoinStage',{value:coinStage,configurable:true}); }catch(error){}
   }catch(error){
     console.error('Coin stage unavailable:',error);
     coinStage=null;
@@ -4365,27 +4386,56 @@ function coinRecord(toss){
 function coinTossOnce(){
   if(coinBusy||coinTosses.length>=6)return;
   const stage=initCoinStage();
-  const faces=randomCoinFaces();
-  const toss={faces,total:coinFacesTotal(faces)};
+  /* 结果先生成，动画再落到它上面 —— 不是「扔完看停在哪算哪」。
+     generateCoinResult() 同时给出 0/1 的 faces（项目其余部分读这个）、
+     可读的 coins、以及本爻的 lineType。 */
+  const result=generateCoinResult();
+  const toss={faces:result.faces,total:result.total};
   coinBusy=true;
   coinSyncControls();
   coinSetStatus('聚拢，轻摇');
+
+  let settled=false;
   const settle=()=>{
-    coinBusy=false;
+    if(settled)return;
+    settled=true;
     coinRecord(toss);
-    coinShowFaces(toss.faces);
-    coinSetStatus(coinTosses.length>=6?'六爻已成':'本轮已落定');
+    coinShowFaces(result.faces);
     coinSyncControls();
-    if(coinTosses.length>=6)coinFinish();
+    // 第 6 爻不再复位：让最后一卦留在桌上，直接进结果
+    if(coinTosses.length>=6){
+      coinSetStatus('六爻已成');
+      coinBusy=false;
+      coinSyncControls();
+      coinFinish();
+      return;
+    }
+    coinSetStatus(`${COIN_LINE_NAMES[coinTosses.length-1]}已落定`);
+    // 结果先停住，让眼睛看清三枚的字面/背面，再复位成待摇姿态
+    clearTimeout(coinResetTimer);
+    coinResetTimer=setTimeout(()=>{
+      if(stage)stage.showRest(COIN_READY_FACES);
+      coinFromFaces=[...COIN_READY_FACES];
+      coinShowFaces(COIN_READY_FACES);
+      coinBusy=false;
+      coinSetStatus(`${COIN_LINE_NAMES[coinTosses.length]} 待摇`);
+      coinSyncControls();
+    },COIN_HOLD_MS);
   };
+
   if(!stage){settle();return;}
   stage.playToss({
     fromFaces:coinFromFaces,
-    toFaces:faces,
-    onFrame:elapsed=>{
-      if(elapsed>670&&elapsed<1650)coinSetStatus('三钱翻转');
-      else if(elapsed>=1650)coinSetStatus('落定成爻');
+    toFaces:result.faces,
+    // 状态文案由动画自己的状态机驱动，不再靠帧数硬编码时间点
+    onState:next=>{
+      if(next==='preparing')coinSetStatus('聚拢，轻摇');
+      else if(next==='tossing')coinSetStatus('三钱翻转');
+      else if(next==='falling')coinSetStatus('依次落定');
+      else if(next==='settling')coinSetStatus('落定成爻');
     },
+    // 每枚各自落地的那一帧 —— 音效就应该挂在这里
+    onLand:({coin,face})=>{ if(coinLandSound)coinLandSound(coin,face); },
     onDone:settle,
   });
 }
