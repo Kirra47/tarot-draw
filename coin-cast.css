@@ -24,6 +24,9 @@
   grid-template-columns: minmax(0, 1.35fr) minmax(280px, .85fr);
   width: min(1080px, 100%);
   max-height: min(760px, calc(100vh - 40px));
+  /* iOS Safari 的 100vh 把会收起的地址栏算在内，比可视高度高，卡片底部会被
+     浏览器底栏盖住。dvh 跟随可视高度；老浏览器不认这一行，退回上面那行。 */
+  max-height: min(760px, calc(100dvh - 40px));
   border: 1px solid rgba(193, 161, 113, .22);
   border-radius: 16px;
   background: linear-gradient(180deg, rgba(34, 39, 44, .96), rgba(23, 27, 32, .98));

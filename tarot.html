@@ -38,7 +38,7 @@
 // every .readingModeOption ships aria-checked="false" and the app flips one to
 // "true" — so this needs no cooperation from the module.
 (function(){
-  var BUILD='v75-boot-safety';
+  var BUILD='v76-preflight';
   var shown=false;
   function booted(){
     try{
@@ -805,7 +805,7 @@ body::after{
 <link rel="stylesheet" href="./coin-cast.css?v=20260926-coin-1">
 <!-- Craft pass: depth, grain, type presence and motion. Added last so it can
      layer over the four structural sheets without rewriting any of them. -->
-<link rel="stylesheet" href="./tarot-ui-v4.css?v=20260929-craft-2">
+<link rel="stylesheet" href="./tarot-ui-v4.css?v=20260929-craft-3">
 </head>
 <body>
 <canvas id="c"></canvas>
@@ -823,7 +823,7 @@ body::after{
     </div>
   </header>
   <nav id="headerActions" aria-label="仪式控制">
-    <button id="histToggle" class="uiBtn" aria-controls="histPanel" aria-expanded="false"><span aria-hidden="true">⌛</span> 历史</button>
+    <button id="histToggle" class="uiBtn" aria-controls="histPanel" aria-expanded="false"><span aria-hidden="true"><svg class="uiIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3.5 6.5h17M5.5 6.5V19h13V6.5M9.5 10.5h5M9.5 14h5"/></svg></span> 历史</button>
     <button id="modeBtn" class="uiBtn" aria-label="切换鼠标或摄像头手势模式"><span aria-hidden="true">◇</span> 启用手势</button>
   </nav>
 </div>
@@ -879,15 +879,15 @@ body::after{
         <div class="readingModePicker" role="radiogroup" aria-labelledby="readingModeTitle" aria-describedby="readingModeHint">
           <button class="readingModeOption" type="button" role="radio" aria-checked="false" aria-label="单塔罗牌" tabindex="-1" data-reading-mode="tarot">
             <svg class="readingModeIcon" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="m8 7-4 1 4 21 7-1"/><rect x="10" y="3" width="17" height="24" rx="3"/><path d="m18.5 9 1.6 4.4 4.4 1.6-4.4 1.6-1.6 4.4-1.6-4.4-4.4-1.6 4.4-1.6Z"/></svg>
-            <strong>塔罗牌</strong><em>只看牌面</em><span class="readingModeCheck" aria-hidden="true">✓</span>
+            <strong>塔罗牌</strong><em>只看牌面</em><span class="readingModeCheck" aria-hidden="true"></span>
           </button>
           <button class="readingModeOption" type="button" role="radio" aria-checked="false" aria-label="单起卦" tabindex="-1" data-reading-mode="gua">
             <svg class="readingModeIcon" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M6 5h20M6 9.5h7m6 0h7M6 14h20M6 18.5h7m6 0h7M6 23h20M6 27.5h7m6 0h7"/></svg>
-            <strong>起卦</strong><em>只看卦象</em><span class="readingModeCheck" aria-hidden="true">✓</span>
+            <strong>起卦</strong><em>只看卦象</em><span class="readingModeCheck" aria-hidden="true"></span>
           </button>
           <button class="readingModeOption" type="button" role="radio" aria-checked="false" aria-label="塔罗加起卦，二合一" tabindex="-1" data-reading-mode="combo">
             <svg class="readingModeIcon" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect x="3" y="6" width="16" height="22" rx="3"/><path d="m11 11 1.2 3.8L16 16l-3.8 1.2L11 21l-1.2-3.8L6 16l3.8-1.2ZM22 5h7m-6 5h6m-6 5h2m3 0h1M23 20h6"/></svg>
-            <strong>二合一</strong><em>牌面和卦象</em><span class="readingModeCheck" aria-hidden="true">✓</span>
+            <strong>二合一</strong><em>牌面和卦象</em><span class="readingModeCheck" aria-hidden="true"></span>
           </button>
         </div>
         <div class="readingModeNote"><span class="readingModeNoteDot" aria-hidden="true"></span><p id="readingModeHint" class="readingModeHint" aria-live="polite">按时间起卦。</p></div>
@@ -1005,7 +1005,7 @@ body::after{
       </div>
       <p id="castError" class="castError" role="alert" hidden></p>
       <button id="questionConfirm" type="button"><span>起一卦</span><b aria-hidden="true">↗</b></button>
-      <button id="questionArchive" type="button" aria-controls="histPanel" aria-expanded="false">⌛ 打开观测档案</button>
+      <button id="questionArchive" type="button" aria-controls="histPanel" aria-expanded="false"><svg class="uiIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3.5 6.5h17M5.5 6.5V19h13V6.5M9.5 10.5h5M9.5 14h5"/></svg> 打开观测档案</button>
       <p class="qHint">问题可以留空。塔罗与传统起卦仅用于自我探索与娱乐，不替代专业建议。</p>
     </section>
   </div>
@@ -1438,7 +1438,7 @@ let drawStyle=allowedPreference(savedPreferences.drawStyle,['quick','manual'],DE
 // answer. It must be bumped with every release — it read v69-coin-default while
 // the code had moved on, so the stamp told visitors they were stale when they
 // were not. verify-coin-ui.cjs now fails if it drifts from CACHE_VERSION.
-const APP_BUILD='v75-boot-safety · 2026-09-29';
+const APP_BUILD='v76-preflight · 2026-09-29';
 // Rebuild the shareable setup link from the live controls rather than from
 // savedPreferences, so a link copied from the open sheet already reflects the
 // pending choices.
@@ -1466,7 +1466,7 @@ async function copyPreferencesLink(button){
     field.remove();
   }
   if(!copied){window.prompt('复制这条设置链接：',link);return;}
-  button.textContent='已复制 ✓';
+  button.textContent='已复制';
   setTimeout(()=>{button.textContent='复制设置链接';},1800);
 }
 const appBuildLabel=document.getElementById('appBuildLabel');
