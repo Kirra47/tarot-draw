@@ -1,0 +1,739 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   星象塔罗 · UI v4 —— 工艺层（craft pass）
+   ──────────────────────────────────────────────────────────────────────────
+   这一层不改身份。既有主题（近黑台面 + 象牙纸面 + 金 + 酒红/鼠尾草）是
+   特异的、对的，保留；重做的是**深度、质感、版式分量、以及动效**。
+
+   为什么另起一层而不是改旧层：旧的四层（emil-redesign / settings-trial /
+   tarot-ui-v3 / coin-cast）各自承担结构职责，就地改写会牵动 80 项浏览器
+   断言。这一层只做加法与覆盖，出问题时整层摘掉即可回退。
+
+   三条与 skill 对齐的硬规矩：
+     · 缓动一律自定义曲线，不用 linear / ease-in-out / ease 默认值
+     · 只动 transform 与 opacity，绝不动 width/height/top/left/margin
+     · 悬停效果一律包在 @media (hover:hover) and (pointer:fine) 内，
+       否则触屏点一下就会触发 false hover
+   ══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── 动效 ───────────────────────────────────────────────────────────────
+     浏览器内置的 ease-out / ease-in-out 太弱，缺少「有意图」的力度。
+     下面三条是对应场景的强化版本。 */
+  --v4-ease-out: cubic-bezier(.23, 1, .32, 1);      /* 入场、反馈：起步快 */
+  --v4-ease-in-out: cubic-bezier(.77, 0, .175, 1);  /* 屏上位移：先加速后减速 */
+  --v4-ease-drawer: cubic-bezier(.32, .72, 0, 1);   /* iOS 抽屉曲线 */
+
+  --v4-dur-press: 140ms;
+  --v4-dur-fast: 180ms;
+  --v4-dur-base: 240ms;
+  --v4-dur-panel: 420ms;
+  --v4-dur-draw: 560ms;
+
+  /* ── 圆角阶 ─────────────────────────────────────────────────────────────
+     同心弧：内层半径 = 外层半径 − 间距，这样嵌套起来才是机器加工出来的
+     感觉，而不是几个各自为政的圆角。 */
+  --v4-r-tray: 24px;
+  --v4-r-core: 18px;
+  --v4-r-row: 14px;
+  --v4-r-pill: 999px;
+  --v4-gap-tray: 7px;
+
+  /* ── 阴影 ───────────────────────────────────────────────────────────────
+     一律带夜色相（#03020 8），不用纯黑中性灰：纯黑落在近黑台面上会发闷，
+     且看起来像廉价模板。 */
+  --v4-shade: 3, 2, 8;
+  --v4-lift: 0 42px 96px -56px rgba(var(--v4-shade), .96);
+  --v4-lift-sm: 0 16px 34px -22px rgba(var(--v4-shade), .85);
+  --v4-hairline: 0 0 0 1px rgba(226, 190, 134, .11);
+  --v4-tray-ring: 0 0 0 var(--v4-gap-tray) rgba(238, 231, 220, .028);
+  --v4-machined: inset 0 1px 0 rgba(255, 255, 255, .05);
+  --v4-gold-glow: 0 18px 40px -24px rgba(201, 163, 109, .5);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   1 · 台面质感：颗粒 + 环境光
+   ──────────────────────────────────────────────────────────────────────────
+   纯平向量背景会显得无菌。加一层极低的胶片颗粒，破掉数字感。
+   固定在视口上、pointer-events:none，绝不挂在滚动容器里（那会持续重绘）。
+   ══════════════════════════════════════════════════════════════════════════ */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: .07;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>");
+  background-size: 200px 200px;
+  mix-blend-mode: soft-light;
+}
+
+/* 环境光：台面上方一片极弱的暖光，让近黑有上下之分，而不是死平的一块 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 62% at 50% -12%, rgba(201, 163, 109, .085), transparent 62%),
+    radial-gradient(78% 48% at 12% 104%, rgba(98, 50, 79, .10), transparent 68%);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   2 · 双层嵌套容器（Double-Bezel）
+   ──────────────────────────────────────────────────────────────────────────
+   面板不该平摊在背景上，要像一块加工过的金属板嵌在托盘里。
+   这里用「发丝外圈 + 托盘环 + 着色投影 + 顶缘高光」四层，不改 DOM。
+   ══════════════════════════════════════════════════════════════════════════ */
+.qCard,
+.settleCard,
+.settingsSheetPanel {
+  border-radius: var(--v4-r-tray);
+  box-shadow:
+    var(--v4-hairline),
+    var(--v4-tray-ring),
+    var(--v4-lift),
+    var(--v4-machined);
+  transition:
+    box-shadow var(--v4-dur-panel) var(--v4-ease-out),
+    transform var(--v4-dur-panel) var(--v4-ease-out);
+}
+
+/* 纸面侧的顶缘高光：让奶油面看起来是「一张压在台面上的纸」 */
+.qForm {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5);
+}
+
+/* 暗侧的内凹：仪器视窗的感觉 */
+.qIntro {
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, .04);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   3 · 版式分量
+   ──────────────────────────────────────────────────────────────────────────
+   中文显示级的改进主要不在字体族（系统宋体已经是对的，且离线 PWA 不该
+   为此拉几 MB 网络字体），而在**尺度、字距、行高**这三件事上。
+   拉丁与数字部分单独处理：等宽数字 + 收紧字距。
+   ══════════════════════════════════════════════════════════════════════════ */
+#questionTitle {
+  font-size: clamp(38px, 4.4vw, 58px);
+  line-height: 1.04;
+  letter-spacing: -.035em;
+  margin-block: .1em .42em;
+}
+
+/* 引题：做成眉标（eyebrow）——极小、大字距、前面一道短金线 */
+.qKicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 11.5px;
+  letter-spacing: .3em;
+  text-transform: none;
+  color: var(--gold);
+  opacity: .95;
+}
+.qKicker::before {
+  content: "";
+  width: 22px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold));
+}
+
+.qSub {
+  letter-spacing: .01em;
+  line-height: 1.75;
+  max-width: 22ch;
+}
+
+/* 流程图例：数字等宽，读起来才像刻度而不是装饰 */
+.ritualLegend {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .06em;
+}
+.ritualLegend i {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .02em;
+}
+
+/* 表单标签：小字距 + 更明确的从属关系 */
+.fieldLabel > span,
+.readingModeHeading h3,
+#castMethodQuick > span {
+  letter-spacing: .04em;
+}
+
+/* 中文正文的行首行尾更稳，标题避免孤字 */
+.sec__lede,
+#aiContent,
+.aiShortText,
+#snapshotLocalReading,
+#aiDetailContent,
+#followupThread {
+  text-wrap: pretty;
+}
+h2,
+h3,
+#questionTitle,
+#cardName {
+  text-wrap: balance;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   4 · 控件工艺
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── 输入框 ──────────────────────────────────────────────────────────────── */
+#questionInput,
+.settingsSheetBody textarea,
+.settingsSheetBody input[type="text"] {
+  border-radius: var(--v4-r-row);
+  box-shadow:
+    inset 0 2px 5px rgba(101, 80, 58, .07),
+    inset 0 0 0 1px rgba(101, 80, 58, .13);
+  transition:
+    box-shadow var(--v4-dur-base) var(--v4-ease-out),
+    background-color var(--v4-dur-base) var(--v4-ease-out);
+}
+#questionInput:focus-visible,
+.settingsSheetBody textarea:focus-visible,
+.settingsSheetBody input[type="text"]:focus-visible {
+  box-shadow:
+    inset 0 1px 3px rgba(101, 80, 58, .05),
+    0 0 0 2px rgba(201, 163, 109, .55),
+    0 8px 20px -14px rgba(101, 80, 58, .5);
+  outline: none;
+}
+
+/* ── 方式分段控件 ──────────────────────────────────────────────────────────
+   选中项仍是深色块 —— 保留它明确的示能（在奶油底上对比度最高），
+   但让它看起来是被加工出来的：渐变、内高光、金色发丝边。 */
+.readingModePicker {
+  border-radius: var(--v4-r-core);
+  box-shadow:
+    inset 0 2px 6px rgba(101, 80, 58, .07),
+    inset 0 0 0 1px rgba(101, 80, 58, .10);
+  padding: 5px;
+  gap: 5px;
+}
+.readingModeOption {
+  border-radius: var(--v4-r-row);
+  transition:
+    transform var(--v4-dur-fast) var(--v4-ease-out),
+    box-shadow var(--v4-dur-base) var(--v4-ease-out),
+    background-color var(--v4-dur-base) var(--v4-ease-out),
+    color var(--v4-dur-base) var(--v4-ease-out);
+}
+.readingModeOption[aria-checked="true"] {
+  background: linear-gradient(180deg, #2b2632, #1a1620);
+  box-shadow:
+    0 0 0 1px rgba(201, 163, 109, .42),
+    0 10px 22px -14px rgba(3, 2, 8, .8),
+    inset 0 1px 0 rgba(255, 255, 255, .12);
+}
+.readingModeOption[aria-checked="false"] {
+  background: transparent;
+  box-shadow: none;
+}
+
+/* ── 起卦方法 chips ──────────────────────────────────────────────────────── */
+.drawStyleOption {
+  border-radius: var(--v4-r-pill);
+  transition:
+    transform var(--v4-dur-press) var(--v4-ease-out),
+    box-shadow var(--v4-dur-base) var(--v4-ease-out),
+    background-color var(--v4-dur-base) var(--v4-ease-out),
+    color var(--v4-dur-base) var(--v4-ease-out);
+}
+.drawStyleOption[aria-checked="true"],
+.drawStyleOption.active {
+  box-shadow:
+    0 0 0 1px rgba(201, 163, 109, .5),
+    0 8px 18px -12px rgba(101, 80, 58, .55),
+    inset 0 1px 0 rgba(255, 255, 255, .5);
+}
+
+/* ── 更多设置：一行可点的托盘 ────────────────────────────────────────────── */
+.settingsLauncher {
+  border-radius: var(--v4-r-core);
+  transition:
+    transform var(--v4-dur-fast) var(--v4-ease-out),
+    box-shadow var(--v4-dur-base) var(--v4-ease-out),
+    background-color var(--v4-dur-base) var(--v4-ease-out);
+  box-shadow:
+    inset 0 0 0 1px rgba(101, 80, 58, .12),
+    inset 0 1px 0 rgba(255, 255, 255, .45);
+}
+
+/* ── 主按钮：按钮套按钮 ────────────────────────────────────────────────────
+   箭头不再裸挂在文字旁边，而是嵌进自己的圆里（button-in-button）。
+   悬停时圆做对角位移并微放大，产生内部张力。 */
+#questionConfirm,
+.castPrimary,
+#coinQuickBtn,
+.settleActions button {
+  border-radius: var(--v4-r-pill);
+  transition:
+    transform var(--v4-dur-press) var(--v4-ease-out),
+    box-shadow var(--v4-dur-base) var(--v4-ease-out),
+    filter var(--v4-dur-fast) var(--v4-ease-out);
+  box-shadow:
+    var(--v4-gold-glow),
+    inset 0 1px 0 rgba(255, 255, 255, .22);
+}
+#questionConfirm > b {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--v4-r-pill);
+  background: rgba(255, 255, 255, .17);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .26);
+  transition: transform var(--v4-dur-base) var(--v4-ease-out);
+  flex: none;
+}
+
+/* ── 次按钮 ──────────────────────────────────────────────────────────────── */
+#questionArchive,
+.settingsSheetClose,
+.settingsSheetDone,
+#settingsSheetDone {
+  border-radius: var(--v4-r-pill);
+  transition:
+    transform var(--v4-dur-press) var(--v4-ease-out),
+    background-color var(--v4-dur-base) var(--v4-ease-out),
+    box-shadow var(--v4-dur-base) var(--v4-ease-out);
+}
+
+/* ── 抽屉行 ──────────────────────────────────────────────────────────────── */
+.settingsSheetBody details > summary,
+.aiDetailPanel > summary,
+details > summary {
+  transition:
+    background-color var(--v4-dur-base) var(--v4-ease-out),
+    color var(--v4-dur-base) var(--v4-ease-out);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   5 · 按压物理
+   ──────────────────────────────────────────────────────────────────────────
+   任何可按的东西都必须对按压有反应，否则界面不像在听用户说话。
+   0.97 是微妙而够用的量；只动 transform，走 GPU。
+   同时把 focus 环做成即时出现、不加动画（可访问性硬要求）。
+   ══════════════════════════════════════════════════════════════════════════ */
+button:not(:disabled):active,
+.readingModeOption:active,
+.drawStyleOption:active,
+.spreadOption:active,
+[role="radio"]:active {
+  transform: scale(.97);
+}
+
+button:focus-visible,
+a:focus-visible,
+[role="radio"]:focus-visible,
+textarea:focus-visible,
+input:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--gold-bright, #f0dab1);
+  outline-offset: 3px;
+  transition: none; /* 焦点环必须即时，不得淡入 */
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   6 · 入场：错峰揭示
+   ──────────────────────────────────────────────────────────────────────────
+   绝不整块同时出现。每个元素自下方 10px 淡入，间隔 40ms。
+   起点是 translateY(10px) + opacity:0，不是 scale(0) —— 现实里没有东西
+   是从「无」里蹦出来的。
+   错峰纯属装饰：播放期间不禁用指针事件，用户可以立刻打字。
+   ══════════════════════════════════════════════════════════════════════════ */
+@keyframes v4Rise {
+  from { opacity: 0; transform: translate3d(0, 10px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes v4Fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+#questionOverlay:not([hidden]) .qForm > * {
+  animation: v4Rise var(--v4-dur-panel) var(--v4-ease-out) both;
+}
+#questionOverlay:not([hidden]) .qForm > *:nth-child(1) { animation-delay: 40ms; }
+#questionOverlay:not([hidden]) .qForm > *:nth-child(2) { animation-delay: 80ms; }
+#questionOverlay:not([hidden]) .qForm > *:nth-child(3) { animation-delay: 120ms; }
+#questionOverlay:not([hidden]) .qForm > *:nth-child(4) { animation-delay: 160ms; }
+#questionOverlay:not([hidden]) .qForm > *:nth-child(5) { animation-delay: 200ms; }
+#questionOverlay:not([hidden]) .qForm > *:nth-child(6) { animation-delay: 240ms; }
+#questionOverlay:not([hidden]) .qForm > *:nth-child(n+7) { animation-delay: 280ms; }
+
+#questionOverlay:not([hidden]) .qIntro > * {
+  animation: v4Rise var(--v4-dur-panel) var(--v4-ease-out) both;
+}
+#questionOverlay:not([hidden]) .qIntro > *:nth-child(2) { animation-delay: 60ms; }
+#questionOverlay:not([hidden]) .qIntro > *:nth-child(3) { animation-delay: 120ms; }
+#questionOverlay:not([hidden]) .qIntro > *:nth-child(4) { animation-delay: 180ms; }
+#questionOverlay:not([hidden]) .qIntro > *:nth-child(5) { animation-delay: 240ms; }
+#questionOverlay:not([hidden]) .qCard {
+  animation: v4Fade var(--v4-dur-panel) var(--v4-ease-out) both;
+}
+
+/* 结算面板：整张升起，内部各段再错峰 */
+#settleOverlay.show .settleCard {
+  animation: v4Rise var(--v4-dur-panel) var(--v4-ease-drawer) both;
+}
+#settleOverlay.show .settleCard > * {
+  animation: v4Rise var(--v4-dur-panel) var(--v4-ease-out) both;
+}
+#settleOverlay.show .settleCard > *:nth-child(1) { animation-delay: 70ms; }
+#settleOverlay.show .settleCard > *:nth-child(2) { animation-delay: 130ms; }
+#settleOverlay.show .settleCard > *:nth-child(3) { animation-delay: 190ms; }
+#settleOverlay.show .settleCard > *:nth-child(4) { animation-delay: 250ms; }
+#settleOverlay.show .settleCard > *:nth-child(n+5) { animation-delay: 310ms; }
+
+/* 设置抽屉：从下方推入 */
+#setupOverlay:not([hidden]) .settingsSheetPanel {
+  animation: v4Rise var(--v4-dur-panel) var(--v4-ease-drawer) both;
+}
+#setupOverlay:not([hidden]) .settingsSheetScrim {
+  animation: v4Fade var(--v4-dur-base) var(--v4-ease-out) both;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   7 · 卦象图：逐爻描画
+   ──────────────────────────────────────────────────────────────────────────
+   全站最该有动效的地方。爻是 stroke + linecap:round 画的，所以用
+   dashoffset 自左向右描出来，自下而上依次落定 —— 这正是「起卦」这件事
+   本身的顺序，动效因此有理由存在，而不是为了好看。
+   ══════════════════════════════════════════════════════════════════════════ */
+@keyframes v4DrawYao {
+  from { stroke-dashoffset: 420; opacity: .25; }
+  to   { stroke-dashoffset: 0; opacity: 1; }
+}
+.guaHexagramDiagram .guaYao path,
+.guaHexagramDiagram .guaYao line,
+.guaHexagramDiagram .guaYao rect,
+.guaHexagramDiagram .guaYaoMarks path,
+.guaHexagramDiagram .guaYaoMarks line,
+.guaHexagramDiagram .guaYaoMarks rect {
+  stroke-dasharray: 420;
+  stroke-dashoffset: 0;
+  animation: v4DrawYao var(--v4-dur-draw) var(--v4-ease-out) both;
+}
+/* 自下而上：第一爻最先，第六爻最后（.guaYao-1 是初爻） */
+.guaHexagramDiagram .guaYao-1 { animation-delay: 60ms; }
+.guaHexagramDiagram .guaYao-2 { animation-delay: 140ms; }
+.guaHexagramDiagram .guaYao-3 { animation-delay: 220ms; }
+.guaHexagramDiagram .guaYao-4 { animation-delay: 300ms; }
+.guaHexagramDiagram .guaYao-5 { animation-delay: 380ms; }
+.guaHexagramDiagram .guaYao-6 { animation-delay: 460ms; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   8 · 悬停 —— 只在真有指针的设备上
+   ──────────────────────────────────────────────────────────────────────────
+   触屏点一下就会触发 hover，造成假阳性。全部包进媒体查询。
+   ══════════════════════════════════════════════════════════════════════════ */
+@media (hover: hover) and (pointer: fine) {
+  .readingModeOption:hover {
+    box-shadow: 0 0 0 1px rgba(101, 80, 58, .18);
+  }
+  .drawStyleOption:hover {
+    box-shadow: 0 0 0 1px rgba(201, 163, 109, .38);
+  }
+  .settingsLauncher:hover {
+    box-shadow:
+      inset 0 0 0 1px rgba(201, 163, 109, .34),
+      inset 0 1px 0 rgba(255, 255, 255, .5),
+      0 10px 22px -16px rgba(101, 80, 58, .5);
+  }
+  #questionConfirm:hover,
+  .castPrimary:hover,
+  #coinQuickBtn:hover {
+    filter: brightness(1.06);
+  }
+  #questionConfirm:hover > b {
+    transform: translate(2px, -2px) scale(1.06);
+  }
+  .settingsSheetClose:hover,
+  #questionArchive:hover {
+    background: rgba(101, 80, 58, .08);
+  }
+  details > summary:hover {
+    background: rgba(101, 80, 58, .045);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   9 · 降级：减少动态
+   ──────────────────────────────────────────────────────────────────────────
+   reduced-motion 不是「关掉全部」，而是**去掉位移、保留理解所需的
+   透明度变化**。空间运动塌缩为 ≤150ms 的交叉淡入。
+   ══════════════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  #questionOverlay:not([hidden]) .qForm > *,
+  #questionOverlay:not([hidden]) .qIntro > *,
+  #questionOverlay:not([hidden]) .qCard,
+  #settleOverlay.show .settleCard,
+  #settleOverlay.show .settleCard > *,
+  #setupOverlay:not([hidden]) .settingsSheetPanel,
+  #setupOverlay:not([hidden]) .settingsSheetScrim {
+    animation-name: v4Fade;
+    animation-duration: 150ms;
+    animation-delay: 0ms;
+  }
+  .guaHexagramDiagram .guaYao path,
+  .guaHexagramDiagram .guaYao line,
+  .guaHexagramDiagram .guaYao rect,
+  .guaHexagramDiagram .guaYaoMarks path,
+  .guaHexagramDiagram .guaYaoMarks line,
+  .guaHexagramDiagram .guaYaoMarks rect {
+    animation: none;
+    stroke-dasharray: none;
+  }
+  button:not(:disabled):active,
+  .readingModeOption:active,
+  .drawStyleOption:active {
+    transform: none;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   10 · 小屏收敛
+   ──────────────────────────────────────────────────────────────────────────
+   320–430px 下把托盘环收细、显示级字号回落，避免横向溢出与拥挤。
+   绝不使用 h-screen；全高一律 min-height:100dvh。
+   ══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+  :root {
+    --v4-r-tray: 20px;
+    --v4-r-core: 15px;
+    --v4-gap-tray: 5px;
+  }
+  #questionTitle {
+    font-size: clamp(32px, 9.2vw, 42px);
+    letter-spacing: -.028em;
+  }
+  .qSub { max-width: none; }
+}
+@media (max-width: 380px) {
+  :root { --v4-gap-tray: 4px; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   11 · 摇卦舞台
+   ──────────────────────────────────────────────────────────────────────────
+   这是全站唯一的「仪式」动作，值得最多的工艺。铜钱竞技场要像一个内凹的
+   仪器井（内阴影 + 径向暗角），而不是一块贴上去的深色矩形。
+   ══════════════════════════════════════════════════════════════════════════ */
+.coinCard {
+  border-radius: var(--v4-r-tray);
+  box-shadow:
+    var(--v4-hairline),
+    var(--v4-tray-ring),
+    var(--v4-lift),
+    var(--v4-machined);
+}
+
+.coinStage {
+  border-radius: var(--v4-r-core);
+  box-shadow:
+    inset 0 0 0 1px rgba(226, 190, 134, .10),
+    inset 0 26px 60px -30px rgba(0, 0, 0, .9),
+    inset 0 -18px 40px -26px rgba(201, 163, 109, .16);
+  background-image:
+    radial-gradient(78% 62% at 50% 34%, rgba(201, 163, 109, .09), transparent 70%),
+    radial-gradient(120% 90% at 50% 118%, rgba(3, 2, 8, .8), transparent 62%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* 井口的顶部一线高光，把「凹陷」交代清楚 */
+.coinStage::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(226, 190, 134, .3), transparent);
+  pointer-events: none;
+}
+
+/* 状态胶囊：像仪表上的指示灯 */
+.coinStageStatus {
+  border-radius: var(--v4-r-pill);
+  box-shadow:
+    inset 0 0 0 1px rgba(226, 190, 134, .16),
+    inset 0 1px 0 rgba(255, 255, 255, .05);
+}
+.coinDot {
+  box-shadow: 0 0 0 3px rgba(201, 163, 109, .16), 0 0 10px rgba(201, 163, 109, .55);
+}
+
+/* 铜钱落定后，竞技场闪一下金 —— 报「收到了」，不是装饰 */
+@keyframes v4ArenaLand {
+  0%   { box-shadow: inset 0 0 0 1px rgba(226, 190, 134, .10), inset 0 26px 60px -30px rgba(0,0,0,.9); }
+  35%  { box-shadow: inset 0 0 0 1px rgba(226, 190, 134, .5), inset 0 0 70px -10px rgba(201,163,109,.42); }
+  100% { box-shadow: inset 0 0 0 1px rgba(226, 190, 134, .10), inset 0 26px 60px -30px rgba(0,0,0,.9); }
+}
+.coinStage[data-landed="1"] { animation: v4ArenaLand 620ms var(--v4-ease-out) both; }
+
+/* ── 按钮层级：摇一次是主角，一键是配角 ─────────────────────────────────── */
+.coinPrimaryBtn {
+  border-radius: var(--v4-r-pill);
+  box-shadow:
+    0 12px 26px -16px rgba(201, 163, 109, .8),
+    inset 0 1px 0 rgba(255, 255, 255, .26);
+  transition:
+    transform var(--v4-dur-press) var(--v4-ease-out),
+    filter var(--v4-dur-fast) var(--v4-ease-out),
+    box-shadow var(--v4-dur-base) var(--v4-ease-out);
+}
+.coinGhostBtn,
+.coinResetBtn {
+  border-radius: var(--v4-r-pill);
+  box-shadow:
+    inset 0 0 0 1px rgba(226, 190, 134, .42),
+    inset 0 1px 0 rgba(255, 255, 255, .05);
+  transition:
+    transform var(--v4-dur-press) var(--v4-ease-out),
+    background-color var(--v4-dur-base) var(--v4-ease-out),
+    box-shadow var(--v4-dur-base) var(--v4-ease-out);
+}
+
+/* ── 六爻列表：这是这张牌的核心读数器 ───────────────────────────────────── */
+.coinYao {
+  border-radius: var(--v4-r-row);
+  transition:
+    background-color var(--v4-dur-base) var(--v4-ease-out),
+    box-shadow var(--v4-dur-base) var(--v4-ease-out),
+    opacity var(--v4-dur-base) var(--v4-ease-out);
+}
+.coinYao[data-filled="false"] { opacity: .48; }
+.coinYao[data-filled="true"] { opacity: 1; }
+
+/* 爻画：阳一长条，阴两短条 */
+.coinYaoSymbol i {
+  border-radius: 2px;
+  background: rgba(238, 231, 220, .30);
+  transition: background-color var(--v4-dur-base) var(--v4-ease-out),
+              box-shadow var(--v4-dur-base) var(--v4-ease-out);
+}
+.coinYao[data-filled="true"] .coinYaoSymbol i {
+  background: linear-gradient(180deg, var(--gold-bright, #f0dab1), var(--gold, #c9a36d));
+  box-shadow: 0 0 12px -2px rgba(201, 163, 109, .55);
+}
+.coinYao[data-moving="true"] .coinYaoSymbol i {
+  background: linear-gradient(180deg, #e6b98a, #b97a4e);
+  box-shadow: 0 0 14px -2px rgba(230, 185, 138, .8);
+}
+
+/* 当前这一爻：加一圈金环，眼睛知道该看哪里 */
+.coinYao[data-active="true"] {
+  background: rgba(201, 163, 109, .08);
+  box-shadow: inset 0 0 0 1px rgba(201, 163, 109, .34);
+}
+
+/* 落爻：爻画自中心向两侧长出（scaleX），不是突然出现 */
+@keyframes v4YaoLand {
+  from { transform: scaleX(.15); opacity: .2; }
+  to   { transform: scaleX(1);   opacity: 1; }
+}
+.coinYao[data-filled="true"] .coinYaoSymbol i {
+  animation: v4YaoLand 340ms var(--v4-ease-out) both;
+  transform-origin: center;
+}
+
+/* 本轮落定：一块读数铭牌 */
+.coinOutcome {
+  border-radius: var(--v4-r-row);
+  box-shadow:
+    inset 0 0 0 1px rgba(226, 190, 134, .14),
+    inset 0 1px 0 rgba(255, 255, 255, .045);
+}
+
+/* 摇卦页入场：左右两栏分别从两侧推入 */
+@keyframes v4SlideL {
+  from { opacity: 0; transform: translate3d(-14px, 0, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes v4SlideR {
+  from { opacity: 0; transform: translate3d(14px, 0, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+#coinOverlay:not([hidden]) .coinStageColumn {
+  animation: v4SlideL var(--v4-dur-panel) var(--v4-ease-drawer) both;
+}
+#coinOverlay:not([hidden]) .coinSide {
+  animation: v4SlideR var(--v4-dur-panel) var(--v4-ease-drawer) both;
+  animation-delay: 70ms;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   12 · 结算页
+   ══════════════════════════════════════════════════════════════════════════ */
+#settlePanel {
+  border-radius: var(--v4-r-tray);
+}
+
+/* 卦象结构面板：一块嵌进结算页的读数板 */
+.guaStructureSummary,
+.readingSnapshot {
+  border-radius: var(--v4-r-core);
+  box-shadow:
+    inset 0 0 0 1px rgba(226, 190, 134, .12),
+    inset 0 1px 0 rgba(255, 255, 255, .04);
+}
+
+/* 「AI 解读」「卦象结构」这类小标：做成眉标，前加一道金线 */
+#settlePanel section > h3,
+.settleCard > section > h3,
+.guaStructureHeader h3 {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: .06em;
+}
+#settlePanel section > h3::before,
+.guaStructureHeader h3::before {
+  content: "";
+  width: 16px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold, #c9a36d));
+  flex: none;
+}
+
+/* 读数事实条（本卦 · 时间 · 方式）做成胶囊 */
+.readingSnapshot div span,
+#snapshotFacts span,
+.guaFacts span {
+  border-radius: var(--v4-r-pill);
+}
+
+/* 牌面 / 卦象图：抬起一点点，像放在台面上的一张牌 */
+.guaHexagramDiagram {
+  border-radius: var(--v4-r-row);
+  box-shadow:
+    inset 0 0 0 1px rgba(226, 190, 134, .10),
+    0 14px 30px -22px rgba(3, 2, 8, .9);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   13 · 悬停与降级的补充
+   ══════════════════════════════════════════════════════════════════════════ */
+@media (hover: hover) and (pointer: fine) {
+  .coinPrimaryBtn:hover { filter: brightness(1.08); }
+  .coinGhostBtn:hover,
+  .coinResetBtn:hover { box-shadow: inset 0 0 0 1px rgba(226, 190, 134, .5); }
+  .coinYaoList li:hover { background: rgba(201, 163, 109, .05); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #coinOverlay:not([hidden]) .coinStageColumn,
+  #coinOverlay:not([hidden]) .coinSide,
+  .coinYao[data-filled="true"] .coinYaoSymbol i,
+  .coinStage[data-landed="1"] {
+    animation: none;
+  }
+}

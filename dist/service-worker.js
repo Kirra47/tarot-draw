@@ -1,4 +1,4 @@
-﻿const CACHE_VERSION = "astral-tarot-v73-preserve-pass-20260928";
+const CACHE_VERSION = "astral-tarot-v74-craft-pass-20260929";
 const CORE_CACHE = `${CACHE_VERSION}-core`;
 const ASSET_CACHE = `${CACHE_VERSION}-assets`;
 
@@ -9,6 +9,7 @@ const CORE_ASSETS = [
   "./settings-trial.css?v=20260926-local-sheet-1",
   "./tarot-ui-v3.css?v=20260928-preserve-pass-1",
   "./coin-cast.css?v=20260926-coin-1",
+  "./tarot-ui-v4.css?v=20260929-craft-1",
   "./tarot-bg.png",
   "./manifest.webmanifest",
   "./assets/icons/tarot-icon.svg",

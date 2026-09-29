@@ -762,6 +762,9 @@ body::after{
   <link rel="stylesheet" href="./settings-trial.css?v=20260926-local-sheet-1">
   <link rel="stylesheet" href="./tarot-ui-v3.css?v=20260928-preserve-pass-1">
 <link rel="stylesheet" href="./coin-cast.css?v=20260926-coin-1">
+<!-- Craft pass: depth, grain, type presence and motion. Added last so it can
+     layer over the four structural sheets without rewriting any of them. -->
+<link rel="stylesheet" href="./tarot-ui-v4.css?v=20260929-craft-1">
 </head>
 <body>
 <canvas id="c"></canvas>
@@ -1394,7 +1397,7 @@ let drawStyle=allowedPreference(savedPreferences.drawStyle,['quick','manual'],DE
 // answer. It must be bumped with every release — it read v69-coin-default while
 // the code had moved on, so the stamp told visitors they were stale when they
 // were not. verify-coin-ui.cjs now fails if it drifts from CACHE_VERSION.
-const APP_BUILD='v73-preserve-pass · 2026-09-28';
+const APP_BUILD='v74-craft-pass · 2026-09-29';
 // Rebuild the shareable setup link from the live controls rather than from
 // savedPreferences, so a link copied from the open sheet already reflects the
 // pending choices.
@@ -4307,6 +4310,10 @@ function coinRecord(toss){
   coinFromFaces=[...toss.faces];
   coinRenderLines();
   coinSyncControls();
+  // 落定闪光：先清标记再读一次 offsetWidth 强制重排，动画才会重新播放。
+  // 一局最多触发六次，这点同步布局的代价可以忽略。
+  const arena=coinEl('coinStage');
+  if(arena){ arena.removeAttribute('data-landed'); void arena.offsetWidth; arena.setAttribute('data-landed','1'); }
   const outcome=coinEl('coinOutcomeText');
   const detail=coinEl('coinOutcomeDetail');
   const hint=coinEl('coinRoundHint');
