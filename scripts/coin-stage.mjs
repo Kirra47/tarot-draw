@@ -1,4 +1,4 @@
-// Three-coin (三钱) stage for the reading flow.
+﻿// Three-coin (三钱) stage for the reading flow.
 //
 // This is the interactive half of the coin-3q-1 profile: it renders three aged
 // bronze coins and reports the six tossed lines upward. It never decides what a
@@ -124,48 +124,64 @@ export function createCoinStage({ canvas, stage, prefersReducedMotion = () => fa
     const c = color.getContext('2d');
     const b = bump.getContext('2d');
     const rand = seededRandom(back ? 75331 : 18019);
-    c.fillStyle = '#947b52';
+    /* Base tone. This was #947b52, a dull olive-brown: brass is a warm yellow
+       metal and at metalness 0.86 the map colour is the metal's reflectance, so a
+       desaturated base reads as dull plastic rather than old brass. */
+    c.fillStyle = '#9d7b33';
     c.fillRect(0, 0, size, size);
     b.fillStyle = '#777777';
     b.fillRect(0, 0, size, size);
-    for (let i = 0; i < 520; i += 1) {
+    /* Patina. The first pass used 520 blobs of radius 12-79, and at coin size
+       they blended into one soft mottle that read as blur, not as oxidation. More
+       and smaller patches at higher contrast give the surface a grain instead of
+       a wash — this is the difference between "old metal" and "out of focus". */
+    for (let i = 0; i < 1400; i += 1) {
       const x = rand() * size;
       const y = rand() * size;
-      const r = 12 + rand() * 67;
+      const r = 5 + rand() * 26;
       const gradient = c.createRadialGradient(x, y, 0, x, y, r);
-      gradient.addColorStop(0, i % 4 === 0 ? 'rgba(37,72,57,.23)' : 'rgba(44,35,20,.16)');
+      const verdigris = i % 3 === 0;
+      gradient.addColorStop(0, verdigris ? 'rgba(52,104,80,.5)' : 'rgba(38,27,11,.44)');
+      gradient.addColorStop(0.62, verdigris ? 'rgba(46,88,68,.2)' : 'rgba(44,32,14,.18)');
       gradient.addColorStop(1, 'rgba(60,50,25,0)');
       c.fillStyle = gradient;
       c.fillRect(x - r, y - r, r * 2, r * 2);
     }
-    for (let i = 0; i < 75000; i += 1) {
+    for (let i = 0; i < 90000; i += 1) {
       const x = rand() * size;
       const y = rand() * size;
-      const r = 0.2 + rand() * 1.4;
-      c.fillStyle = rand() > 0.5 ? 'rgba(242,212,146,.13)' : 'rgba(15,25,19,.24)';
+      const r = 0.2 + rand() * 1.2;
+      c.fillStyle = rand() > 0.5 ? 'rgba(255,235,180,.26)' : 'rgba(18,28,20,.42)';
       c.fillRect(x, y, r, r);
-      const level = Math.floor(83 + rand() * 86);
+      const level = Math.floor(70 + rand() * 112);
       b.fillStyle = `rgb(${level},${level},${level})`;
       b.fillRect(x, y, r, r);
     }
-    c.lineWidth = 0.7;
-    c.strokeStyle = 'rgba(229,205,163,.18)';
-    for (let i = 0; i < 240; i += 1) {
-      const a = rand() * TAU;
-      const r = 130 + rand() * 355;
-      const x = 512 + Math.cos(a) * r;
-      const y = 512 + Math.sin(a) * r;
-      c.beginPath();
-      c.moveTo(x, y);
-      c.lineTo(x + rand() * 26 - 13, y + rand() * 22 - 11);
-      c.stroke();
+    /* Fine scratches. 240 at 0.8px over a 1024 texture is below what survives
+       the coin's on-screen size, so they never showed at all. More, longer and
+       brighter so a few of them actually catch the light. */
+    for (const pass of [{ n: 420, w: 0.9, a: 0.34 }, { n: 90, w: 1.6, a: 0.22 }]) {
+      c.lineWidth = pass.w;
+      c.strokeStyle = `rgba(255,238,192,${pass.a})`;
+      for (let i = 0; i < pass.n; i += 1) {
+        const a = rand() * TAU;
+        const r = 150 + rand() * 340;
+        const x = 512 + Math.cos(a) * r;
+        const y = 512 + Math.sin(a) * r;
+        const len = 18 + rand() * 54;
+        const ang = rand() * TAU;
+        c.beginPath();
+        c.moveTo(x, y);
+        c.lineTo(x + Math.cos(ang) * len, y + Math.sin(ang) * len);
+        c.stroke();
+      }
     }
     const ring = (r, w) => {
       for (const ctx of [c, b]) {
         ctx.beginPath();
         ctx.arc(512, 512, r, 0, TAU);
         ctx.lineWidth = w;
-        ctx.strokeStyle = ctx === c ? '#b19969' : '#bcbcbc';
+        ctx.strokeStyle = ctx === c ? '#d5b877' : '#cfcfcf';
         ctx.stroke();
       }
     };
@@ -174,7 +190,7 @@ export function createCoinStage({ canvas, stage, prefersReducedMotion = () => fa
     ring(195, 3);
     for (const ctx of [c, b]) {
       ctx.lineWidth = 9;
-      ctx.strokeStyle = ctx === c ? '#aa9265' : '#b8b8b8';
+      ctx.strokeStyle = ctx === c ? '#c9ab6b' : '#c4c4c4';
       ctx.strokeRect(367, 367, 290, 290);
     }
     if (!back) {
@@ -183,11 +199,16 @@ export function createCoinStage({ canvas, stage, prefersReducedMotion = () => fa
         c.font = 'bold 154px "STKaiti", "KaiTi", "SimSun", serif';
         c.textAlign = 'center';
         c.textBaseline = 'middle';
-        c.shadowColor = '#2e291d';
-        c.shadowBlur = 3;
+        /* Cast characters stand proud of the field and wear bright, while the
+           field around them stays oxidised. The glyph was #b79b67 on a #947b52
+           field: about 1.5:1, which is why the inscription could not be read at
+           all. Bright metal on an oxidised field is also what the real object
+           does, so this is a correction rather than a stylistic choice. */
+        c.shadowColor = '#2b2312';
+        c.shadowBlur = 4;
         c.shadowOffsetX = 3;
         c.shadowOffsetY = 4;
-        c.fillStyle = '#b79b67';
+        c.fillStyle = '#f0d79b';
         c.fillText(glyph, x, y);
         c.shadowBlur = 0;
         c.shadowOffsetX = 0;
@@ -195,7 +216,8 @@ export function createCoinStage({ canvas, stage, prefersReducedMotion = () => fa
         b.font = c.font;
         b.textAlign = 'center';
         b.textBaseline = 'middle';
-        b.fillStyle = '#c2c2c2';
+        // Raised in the bump map too, so the relief catches the light on its own.
+        b.fillStyle = '#f4f4f4';
         b.fillText(glyph, x, y);
       }
     } else {
@@ -331,11 +353,19 @@ export function createCoinStage({ canvas, stage, prefersReducedMotion = () => fa
     const frontTexture = makeTextures(false);
     const backTexture = makeTextures(true);
     const faceMaterials = [frontTexture, backTexture].map((texture) => new THREE.MeshPhysicalMaterial({
-      map: texture.map, bumpMap: texture.bumpMap, bumpScale: 0.016, metalness: 0.72, roughness: 0.57,
-      clearcoat: 0.06, clearcoatRoughness: 0.68, envMapIntensity: 0.72,
+      /* bumpScale was 0.016, which flattened every bit of relief the texture
+         carries — the casting, the rings, the square frame, all of it. That is
+         the single line that made three engraved coins look like blank discs.
+         metalness stays in "high but not a mirror" territory and roughness stays
+         inside the 0.45-0.65 band the brief asked for; the lift comes from the
+         relief and the reflection, not from making it glossy. */
+      map: texture.map, bumpMap: texture.bumpMap, bumpScale: 0.06, metalness: 0.88, roughness: 0.5,
+      clearcoat: 0.05, clearcoatRoughness: 0.7, envMapIntensity: 1.0,
     }));
-    const edgeMaterial = new THREE.MeshStandardMaterial({ color: 0x625039, metalness: 0.78, roughness: 0.48, envMapIntensity: 0.75 });
-    const rimMaterial = new THREE.MeshStandardMaterial({ color: 0x91764e, metalness: 0.82, roughness: 0.44, envMapIntensity: 0.76 });
+    // Edge slightly darker than the faces, as asked: the struck surface is the
+    // part that gets handled and polished, the rim stays oxidised.
+    const edgeMaterial = new THREE.MeshStandardMaterial({ color: 0x6d5734, metalness: 0.8, roughness: 0.55, envMapIntensity: 0.8 });
+    const rimMaterial = new THREE.MeshStandardMaterial({ color: 0xa98c52, metalness: 0.86, roughness: 0.46, envMapIntensity: 0.9 });
     const coinShape = new THREE.Shape();
     coinShape.absarc(0, 0, 0.74, 0, TAU, false);
     const hole = new THREE.Path();
