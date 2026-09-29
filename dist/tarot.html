@@ -38,7 +38,7 @@
 // every .readingModeOption ships aria-checked="false" and the app flips one to
 // "true" — so this needs no cooperation from the module.
 (function(){
-  var BUILD='v78-toss';
+  var BUILD='v79-cube-scope';
   var shown=false;
   function booted(){
     try{
@@ -1439,7 +1439,7 @@ let drawStyle=allowedPreference(savedPreferences.drawStyle,['quick','manual'],DE
 // answer. It must be bumped with every release — it read v69-coin-default while
 // the code had moved on, so the stamp told visitors they were stale when they
 // were not. verify-coin-ui.cjs now fails if it drifts from CACHE_VERSION.
-const APP_BUILD='v78-toss · 2026-09-29';
+const APP_BUILD='v79-cube-scope · 2026-09-29';
 // Rebuild the shareable setup link from the live controls rather than from
 // savedPreferences, so a link copied from the open sheet already reflects the
 // pending choices.
@@ -1634,6 +1634,9 @@ const cubeTurnGroup=new THREE.Group();
 cubeRoot.add(cubeTurnGroup);
 const cubeTurn={phase:'pause',pauseUntil:.42,startedAt:0,duration:0,axis:'y',layer:0,angle:0,selected:[],chain:0};
 let cubeMotionTime=0;
+// Tracks whether the cube canvas is currently displayed, so the frame loop only
+// touches the DOM when the answer actually changes.
+let cubeLastVisible=true;
 let lastCubeTurn=null;
 function cubeTierForViewport(width){return width>=1200?CUBE_TUNING.desktop:width>=768?CUBE_TUNING.tablet:CUBE_TUNING.mobile;}
 function cubeRandomRange(range){return range[0]+Math.random()*(range[1]-range[0]);}
@@ -1728,6 +1731,22 @@ function finishCubeTurn(){
   cubeTurn.pauseUntil=cubeMotionTime+cubeRandomRange(cubeConfig.pauseDuration)/1000;
 }
 function updateCubeBackground(dt){
+  /* The cube is the entry's visual and exists only while the entry is open.
+     Sample it rather than trusting a flag: the overlay is the single source of
+     truth for whether the entry is on screen, and this runs every frame. */
+  const introOpen=!document.getElementById('questionOverlay').classList.contains('hidden');
+  if(!introOpen){
+    if(cubeCanvas.style.display!=='none'){
+      cubeCanvas.style.display='none';
+      cubeLastVisible=false;
+    }
+    return;
+  }
+  if(!cubeLastVisible){
+    cubeCanvas.style.display='';
+    cubeLastVisible=true;
+    resizeCubeBackground();
+  }
   cubeMotionTime+=dt;
   if(!reduceMotion){
     // A small attitude drift adds depth; the root never performs a full spin.
@@ -4563,10 +4582,18 @@ document.getElementById('questionConfirm').onclick=()=>{
   closeHistoryPanel();
   userQuestion=document.getElementById('questionInput').value.trim();
   currentReadingSaved=false;
-  // Keep the cube behind the reading scene after the entry card closes.
-  document.body.appendChild(cubeCanvas);
-  resizeCubeBackground();
+  /* The cube used to be re-parented onto <body> here so it could sit behind the
+     reading as a full-page background. It does not belong there. The card stage
+     is its OWN full-screen 3D scene (#c) with a transparent clear colour, so the
+     cube showed straight through it — a second scene spinning behind the cards.
+     It also meant a permanently running second WebGL render loop for a surface
+     nobody could see, and re-parenting broke the entry's own framing on reopen:
+     resizeCubeBackground() would take the not-in-intro branch and centre the cube
+     instead of putting it back in the panel.
+     The cube is the entry's visual. It stays in .qIntro and stops with the entry;
+     updateCubeBackground() gates the render on that. */
   document.getElementById('questionOverlay').classList.add('hidden');
+  updateCubeBackground(0);
   // 三钱摇卦：单起卦可亲手摇或一键完成；二合一固定一键起卦。
   if(castRequest.mode==='coin'&&readingMode!=='tarot'){
     if(readingMode==='gua'&&drawStyle==='manual')openCoinStage();

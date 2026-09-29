@@ -1,4 +1,4 @@
-﻿const CACHE_VERSION = "astral-tarot-v78-toss-20260929";
+﻿const CACHE_VERSION = "astral-tarot-v79-cube-scope-20260929";
 const CORE_CACHE = `${CACHE_VERSION}-core`;
 const ASSET_CACHE = `${CACHE_VERSION}-assets`;
 
