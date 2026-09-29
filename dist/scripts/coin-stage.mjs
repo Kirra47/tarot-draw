@@ -1,4 +1,4 @@
-﻿// Three-coin (三钱) stage for the reading flow.
+// Three-coin (三钱) stage for the reading flow.
 //
 // This is the interactive half of the coin-3q-1 profile: it renders three aged
 // bronze coins and reports the six tossed lines upward. It never decides what a
@@ -194,7 +194,14 @@ export function createCoinStage({ canvas, stage, prefersReducedMotion = () => fa
       ctx.strokeRect(367, 367, 290, 290);
     }
     if (!back) {
-      const glyphs = [['乾', 512, 263], ['坤', 512, 778], ['通', 779, 520], ['寶', 248, 520]];
+      /* The inscription is self-coined, as the brief asked: four characters
+         reading OO宝通 with the OO chosen by us, and specifically not a real
+         reign title. It was 乾坤通寶, which the brief never asked for and which
+         opens with the same character as 乾隆通寶 — close enough to read as a
+         period coin at a glance. 星象 is this app's own name (星象塔罗), so the
+         pair cannot be taken for a dynasty, and the order is the standard 上下右左
+         used by every Chinese cash coin: top, bottom, right, left. */
+      const glyphs = [['星', 512, 263], ['象', 512, 778], ['通', 779, 520], ['寶', 248, 520]];
       for (const [glyph, x, y] of glyphs) {
         c.font = 'bold 154px "STKaiti", "KaiTi", "SimSun", serif';
         c.textAlign = 'center';

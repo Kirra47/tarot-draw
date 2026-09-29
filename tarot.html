@@ -38,7 +38,7 @@
 // every .readingModeOption ships aria-checked="false" and the app flips one to
 // "true" — so this needs no cooperation from the module.
 (function(){
-  var BUILD='v80-coins';
+  var BUILD='v81-inscription';
   var shown=false;
   function booted(){
     try{
@@ -805,7 +805,7 @@ body::after{
 <link rel="stylesheet" href="./coin-cast.css?v=20260926-coin-1">
 <!-- Craft pass: depth, grain, type presence and motion. Added last so it can
      layer over the four structural sheets without rewriting any of them. -->
-<link rel="stylesheet" href="./tarot-ui-v4.css?v=20260929-craft-6">
+<link rel="stylesheet" href="./tarot-ui-v4.css?v=20260929-craft-7">
 </head>
 <body>
 <canvas id="c"></canvas>
@@ -1439,7 +1439,7 @@ let drawStyle=allowedPreference(savedPreferences.drawStyle,['quick','manual'],DE
 // answer. It must be bumped with every release — it read v69-coin-default while
 // the code had moved on, so the stamp told visitors they were stale when they
 // were not. verify-coin-ui.cjs now fails if it drifts from CACHE_VERSION.
-const APP_BUILD='v80-coins · 2026-09-29';
+const APP_BUILD='v81-inscription · 2026-09-29';
 // Rebuild the shareable setup link from the live controls rather than from
 // savedPreferences, so a link copied from the open sheet already reflects the
 // pending choices.
