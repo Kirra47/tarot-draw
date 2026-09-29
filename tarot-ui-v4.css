@@ -423,13 +423,17 @@ summary:focus-visible {
   stroke-dashoffset: 0;
   animation: v4DrawYao var(--v4-dur-draw) var(--v4-ease-out) both;
 }
-/* 自下而上：第一爻最先，第六爻最后（.guaYao-1 是初爻） */
-.guaHexagramDiagram .guaYao-1 { animation-delay: 60ms; }
-.guaHexagramDiagram .guaYao-2 { animation-delay: 140ms; }
-.guaHexagramDiagram .guaYao-3 { animation-delay: 220ms; }
-.guaHexagramDiagram .guaYao-4 { animation-delay: 300ms; }
-.guaHexagramDiagram .guaYao-5 { animation-delay: 380ms; }
-.guaHexagramDiagram .guaYao-6 { animation-delay: 460ms; }
+/* 自下而上：初爻最先落定，上爻最后。
+   两个坑：其一，动画在叶子 path/rect/line 上，延迟写在 <g> 上不会继承；
+   其二，行的 class 是 guaYao-yang / guaYao-yin（爻的**类型**，不是序号），
+   所以只能靠 nth-child。hexagramLinesTopToBottom 输出的是自上而下，
+   因此 nth-child 要从 6 数回 1 才是自下而上。 */
+.guaHexagramDiagram .guaYaoMarks > .guaYao:nth-child(6) :is(path, rect, line) { animation-delay: 60ms; }
+.guaHexagramDiagram .guaYaoMarks > .guaYao:nth-child(5) :is(path, rect, line) { animation-delay: 140ms; }
+.guaHexagramDiagram .guaYaoMarks > .guaYao:nth-child(4) :is(path, rect, line) { animation-delay: 220ms; }
+.guaHexagramDiagram .guaYaoMarks > .guaYao:nth-child(3) :is(path, rect, line) { animation-delay: 300ms; }
+.guaHexagramDiagram .guaYaoMarks > .guaYao:nth-child(2) :is(path, rect, line) { animation-delay: 380ms; }
+.guaHexagramDiagram .guaYaoMarks > .guaYao:nth-child(1) :is(path, rect, line) { animation-delay: 460ms; }
 
 /* ══════════════════════════════════════════════════════════════════════════
    8 · 悬停 —— 只在真有指针的设备上
