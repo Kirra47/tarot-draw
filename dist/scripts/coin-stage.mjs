@@ -194,16 +194,20 @@ export function createCoinStage({ canvas, stage, prefersReducedMotion = () => fa
       ctx.strokeRect(367, 367, 290, 290);
     }
     if (!back) {
-      /* The inscription is self-coined, as the brief asked: four characters
-         reading OO宝通 with the OO chosen by us, and specifically not a real
-         reign title. It was 乾坤通寶, which the brief never asked for and which
-         opens with the same character as 乾隆通寶 — close enough to read as a
-         period coin at a glance. 星象 is this app's own name (星象塔罗), so the
-         pair cannot be taken for a dynasty, and the order is the standard 上下右左
-         used by every Chinese cash coin: top, bottom, right, left. */
-      const glyphs = [['星', 512, 263], ['象', 512, 778], ['通', 779, 520], ['寶', 248, 520]];
+      /* The inscription is OO通寶 and the OO is LITERAL: two letter O's, not a
+         placeholder for two Chinese characters. The brief wrote them as "OO宝通"
+         and that was read as "you pick two characters", so 乾坤通寶 was inherited
+         and then replaced with 星象. It was never a placeholder. The two O's sit
+         top and bottom; 通 stays right and 寶 left, which is the standard 上下右左
+         reading order shared by every Chinese cash coin. */
+      const glyphs = [['O', 512, 263], ['O', 512, 778], ['通', 779, 520], ['寶', 248, 520]];
       for (const [glyph, x, y] of glyphs) {
-        c.font = 'bold 154px "STKaiti", "KaiTi", "SimSun", serif';
+        /* A Latin cap only fills about two thirds of the em that a Chinese glyph
+           fills, so at one shared size the two O's came out visibly smaller and
+           lighter than 通 and 寶. Scale the Latin up so all four carry the same
+           weight on the coin face. */
+        const latin = /[A-Za-z0-9]/.test(glyph);
+        c.font = `bold ${latin ? 218 : 154}px "STKaiti", "KaiTi", "SimSun", serif`;
         c.textAlign = 'center';
         c.textBaseline = 'middle';
         /* Cast characters stand proud of the field and wear bright, while the
