@@ -1,4 +1,4 @@
-﻿const CACHE_VERSION = "astral-tarot-v72-preserve-pass-20260928";
+﻿const CACHE_VERSION = "astral-tarot-v73-preserve-pass-20260928";
 const CORE_CACHE = `${CACHE_VERSION}-core`;
 const ASSET_CACHE = `${CACHE_VERSION}-assets`;
 

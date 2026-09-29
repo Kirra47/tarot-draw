@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -1390,8 +1390,11 @@ const MIN_DRAWS=3, MAX_DRAWS=5;
 let targetDraws=Number(savedPreferences.targetDraws)===5?5:3;
 let readingMode=allowedPreference(savedPreferences.readingMode,['tarot','gua','combo'],'gua');
 let drawStyle=allowedPreference(savedPreferences.drawStyle,['quick','manual'],DEFAULT_DRAW_STYLE);
-// Build marker: makes "my phone looks different from my computer" a one-glance answer.
-const APP_BUILD='v69-coin-default · 2026-09-27';
+// Build marker: makes "my phone looks different from my computer" a one-glance
+// answer. It must be bumped with every release — it read v69-coin-default while
+// the code had moved on, so the stamp told visitors they were stale when they
+// were not. verify-coin-ui.cjs now fails if it drifts from CACHE_VERSION.
+const APP_BUILD='v73-preserve-pass · 2026-09-28';
 // Rebuild the shareable setup link from the live controls rather than from
 // savedPreferences, so a link copied from the open sheet already reflects the
 // pending choices.

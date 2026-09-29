@@ -182,6 +182,15 @@ async function run() {
     return active ? active.dataset.drawStyle : null;
   });
   check('切换起卦方法不会误改抽牌方式', styleAfterChip === 'manual', String(styleAfterChip));
+
+  // The build stamp answers "is my phone on the new build?". It read
+  // v69-coin-default while the code had moved on, which told visitors they were
+  // stale when they were not, so it must track the release.
+  const appBuild = await entryPage.$eval('#appBuildLabel', (el) => el.textContent.trim());
+  const cacheVersion = fs.readFileSync(path.join(__dirname, '..', 'service-worker.js'), 'utf8').match(/CACHE_VERSION = "([^"]+)"/)[1];
+  const releaseToken = (value) => ((value.match(/v\d+-[a-z0-9-]+/) || [''])[0]).replace(/-\d{8}$/, '');
+  check('构建标记与缓存版本一致', releaseToken(appBuild) === releaseToken(cacheVersion), `build="${appBuild}" cache="${cacheVersion}"`);
+  check('构建标记不是上一版遗留', !/v69/.test(appBuild), appBuild);
   await entryPage.close();
 
   // ── A. 单起卦 + 铜钱摇卦, manual toss then one-click ─────────────────────
