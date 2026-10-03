@@ -1,4 +1,4 @@
-﻿const CACHE_VERSION = "astral-tarot-v86-ai-hatcloud-20261003";
+﻿const CACHE_VERSION = "astral-tarot-v87-performance-20261003";
 const CORE_CACHE = `${CACHE_VERSION}-core`;
 const ASSET_CACHE = `${CACHE_VERSION}-assets`;
 
@@ -137,21 +137,31 @@ function warmCardCache() {
     let completed = cached.filter(Boolean).length;
     let failed = 0;
     await broadcast({ type: "CARD_CACHE_PROGRESS", completed, total: CARD_ASSETS.length, failed });
-    await Promise.all(CARD_ASSETS.map(async (url, index) => {
-      if (cached[index]) return;
-      try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
-        await cache.put(url, response);
-      } catch {
-        failed++;
-      } finally {
-        completed++;
-        if (completed === CARD_ASSETS.length || completed % 6 === 0) {
-          await broadcast({ type: "CARD_CACHE_PROGRESS", completed, total: CARD_ASSETS.length, failed });
-        }
+    // Keep the optional offline-deck download from flooding mobile networks
+    // (and starving the page's own requests) with 78 simultaneous fetches.
+    const concurrency = 3;
+    for (let start = 0; start < CARD_ASSETS.length; start += concurrency) {
+      const batch = [];
+      for (let index = start; index < Math.min(start + concurrency, CARD_ASSETS.length); index++) {
+        if (cached[index]) continue;
+        const url = CARD_ASSETS[index];
+        batch.push((async () => {
+          try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
+            await cache.put(url, response);
+          } catch {
+            failed++;
+          } finally {
+            completed++;
+            if (completed === CARD_ASSETS.length || completed % 6 === 0) {
+              await broadcast({ type: "CARD_CACHE_PROGRESS", completed, total: CARD_ASSETS.length, failed });
+            }
+          }
+        })());
       }
-    }));
+      await Promise.all(batch);
+    }
     await broadcast({ type: "CARD_CACHE_READY", total: CARD_ASSETS.length, failed });
   })().finally(() => { warmPromise = null; });
   return warmPromise;

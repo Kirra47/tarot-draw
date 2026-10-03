@@ -38,8 +38,10 @@
 // every .readingModeOption ships aria-checked="false" and the app flips one to
 // "true" — so this needs no cooperation from the module.
 (function(){
-  var BUILD='v85-ui';
+  var BUILD='v87-performance';
   var shown=false;
+  var noticeTimer=0;
+  var observer=null;
   function booted(){
     try{
       return Boolean(document.querySelector('.readingModeOption[aria-checked="true"]'));
@@ -47,8 +49,19 @@
       return true; /* cannot tell: stay quiet rather than cry wolf */
     }
   }
+  function dismiss(){
+    if(noticeTimer){clearTimeout(noticeTimer);noticeTimer=0;}
+    if(observer){observer.disconnect();observer=null;}
+    document.getElementById('bootNotice')?.remove();
+  }
+  function checkReady(){
+    if(!booted())return false;
+    dismiss();
+    return true;
+  }
   function show(){
-    if(shown||booted()||!document.body)return;
+    noticeTimer=0;
+    if(shown||checkReady()||!document.body)return;
     shown=true;
     var d=document.createElement('div');
     d.id='bootNotice';
@@ -58,19 +71,22 @@
       +'background:rgba(18,14,23,.97);border:1px solid rgba(226,190,134,.36);'
       +'color:#eee7dc;font:14px/1.65 "Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;'
       +'box-shadow:0 24px 60px -32px rgba(3,2,8,.95)';
-    d.innerHTML='<strong style="display:block;margin-bottom:6px;font-size:15px">页面没有启动</strong>'
-      +'可能是浏览器里存着旧版本。'
+    d.innerHTML='<strong style="display:block;margin-bottom:6px;font-size:15px">页面仍在启动</strong>'
+      +'初始化比平时更久。若页面持续无响应，请检查网络后重新加载；本地观测记录不会因此清除。'
       +'<button type="button" id="bootReload" style="display:block;margin-top:12px;min-height:42px;'
       +'padding:0 20px;border-radius:999px;border:1px solid rgba(226,190,134,.5);background:transparent;'
-      +'color:#f0dab1;font:inherit;cursor:pointer">重新加载</button>'
+      +'color:#f0dab1;font:inherit;cursor:pointer">重新加载页面</button>'
       +'<small style="display:block;margin-top:10px;color:#9a909f;font-size:12px">'
-      +'若反复出现，请在浏览器设置里清除本站数据后重开。构建 '+BUILD+'</small>';
+      +'版本 '+BUILD+'</small>';
     document.body.appendChild(d);
     var btn=document.getElementById('bootReload');
     if(btn)btn.addEventListener('click',function(){location.reload();});
   }
-  window.addEventListener('load',function(){setTimeout(show,6000);});
-  setTimeout(show,8000);
+  if(!checkReady()){
+    observer=new MutationObserver(checkReady);
+    observer.observe(document.documentElement,{attributes:true,subtree:true,attributeFilter:['aria-checked']});
+    noticeTimer=setTimeout(show,20000);
+  }
 })();
 </script>
 <link rel="manifest" href="./manifest.webmanifest">
@@ -1444,7 +1460,7 @@ let drawStyle=allowedPreference(savedPreferences.drawStyle,['quick','manual'],DE
 // answer. It must be bumped with every release — it read v69-coin-default while
 // the code had moved on, so the stamp told visitors they were stale when they
 // were not. verify-coin-ui.cjs now fails if it drifts from CACHE_VERSION.
-const APP_BUILD='v85-ui · 2026-10-03';
+const APP_BUILD='v87-performance · 2026-10-03';
 // Rebuild the shareable setup link from the live controls rather than from
 // savedPreferences, so a link copied from the open sheet already reflects the
 // pending choices.
@@ -1523,7 +1539,7 @@ const canvas=document.getElementById('c');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
 const isMobile=matchMedia('(max-width: 768px)').matches;
 const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
-renderer.setPixelRatio(Math.min(window.devicePixelRatio,isMobile?1.5:2));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,isMobile?1.25:1.8));
 renderer.setSize(window.innerWidth,window.innerHeight);
 renderer.setClearColor(0x000000,0);
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
@@ -4854,8 +4870,13 @@ function exitHands({silent=false}={}){
   if(!silent)showHint('手势模式已退出');
 }
 window.addEventListener('pagehide',()=>{if(inputMode==='gesture')exitHands({silent:true});});
+let animationFrameId=0;
 document.addEventListener('visibilitychange',()=>{
-  if(document.hidden&&inputMode==='gesture')exitHands({silent:true});
+  if(document.hidden){
+    if(animationFrameId){cancelAnimationFrame(animationFrameId);animationFrameId=0;}
+    if(inputMode==='gesture')exitHands({silent:true});
+  }
+  if(!document.hidden&&!animationFrameId)animate();
 });
 function classifyGesture(lms){
   if(!lms||!lms.length)return'NONE';
@@ -5006,19 +5027,24 @@ window.addEventListener('resize',()=>{
 
 const clock=new THREE.Clock();
 function animate(){
-  requestAnimationFrame(animate);
+  if(document.hidden){animationFrameId=0;return;}
+  animationFrameId=requestAnimationFrame(animate);
   const dt=Math.min(clock.getDelta(),0.05);
   const t=clock.getElapsedTime();
-  // Subtle camera drift for spatial depth
-  camera.position.x=reduceMotion?0:Math.sin(t*0.08)*0.15;
-  camera.position.y=reduceMotion?3.2:3.2+Math.sin(t*0.06)*0.08;
-  camera.lookAt(0,1.4,0);
-  // glow ring uTime is set in updateAnimations
-  processGesture();
-  updateHover();
-  updateAnimations(dt);
-  updateParticles(dt);
-  renderer.render(scene,camera);
+  const introOpen=!document.getElementById('questionOverlay').classList.contains('hidden');
+  if(!introOpen){
+    // The entry overlay has its own cube canvas; the card-table scene is empty
+    // until it closes, so avoid a second full-screen WebGL render on phones.
+    camera.position.x=reduceMotion?0:Math.sin(t*0.08)*0.15;
+    camera.position.y=reduceMotion?3.2:3.2+Math.sin(t*0.06)*0.08;
+    camera.lookAt(0,1.4,0);
+    // glow ring uTime is set in updateAnimations
+    processGesture();
+    updateHover();
+    updateAnimations(dt);
+    updateParticles(dt);
+    renderer.render(scene,camera);
+  }
   updateCubeBackground(dt);
 }
 
@@ -5092,7 +5118,7 @@ function showNetworkStatus(){
     showAppNotice({title:'当前处于离线模式',detail:'抽牌、牌图与本地观照仍然可用',sticky:true,kind:'offline'});
   }else{
     showAppNotice({title:'网络已经恢复',detail:'智能解读与资源更新重新可用'});
-    (pwaRegistration?.active||navigator.serviceWorker?.controller)?.postMessage({type:'WARM_CARD_CACHE'});
+    queueOfflineCardWarmup();
   }
 }
 window.addEventListener('offline',showNetworkStatus);
@@ -5103,6 +5129,36 @@ function offerAppUpdate(worker){
     title:'发现新版本',detail:'更新不会影响你的本地观测档案',actionLabel:'立即更新',sticky:true,
     onAction:()=>{updateRequested=true;worker.postMessage({type:'SKIP_WAITING'});showAppNotice({title:'正在更新',detail:'完成后会自动重新打开',progress:70,sticky:true});}
   });
+}
+let cardWarmupQueued=false;
+let cardWarmupRequested=false;
+let cardWarmupTimer=0;
+function queueOfflineCardWarmup(registration=pwaRegistration){
+  if(cardWarmupQueued||cardWarmupRequested||!navigator.onLine)return;
+  const connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+  if(connection?.saveData||['slow-2g','2g'].includes(connection?.effectiveType))return;
+  cardWarmupQueued=true;
+  const start=()=>{
+    cardWarmupTimer=0;
+    const currentConnection=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+    if(!navigator.onLine||currentConnection?.saveData||['slow-2g','2g'].includes(currentConnection?.effectiveType)){
+      cardWarmupQueued=false;
+      return;
+    }
+    if(document.hidden){
+      cardWarmupQueued=false;
+      document.addEventListener('visibilitychange',()=>{if(!document.hidden)queueOfflineCardWarmup(registration);},{once:true});
+      return;
+    }
+    const worker=registration?.active||navigator.serviceWorker?.controller;
+    if(!worker){cardWarmupQueued=false;return;}
+    cardWarmupQueued=false;
+    cardWarmupRequested=true;
+    worker.postMessage({type:'WARM_CARD_CACHE'});
+  };
+  const afterIdle=()=>{cardWarmupTimer=setTimeout(start,15000);};
+  if('requestIdleCallback' in window)window.requestIdleCallback(afterIdle,{timeout:6000});
+  else cardWarmupTimer=setTimeout(start,20000);
 }
 function refreshPwaAndCastControls(){
   updateCastModeUI();
@@ -5150,7 +5206,9 @@ async function initOfflineSupport(){
       }
     });
     const registration=await navigator.serviceWorker.ready;
-    (registration.active||navigator.serviceWorker.controller)?.postMessage({type:'WARM_CARD_CACHE'});
+    queueOfflineCardWarmup(registration);
+    const connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+    connection?.addEventListener?.('change',()=>queueOfflineCardWarmup(registration));
   }catch(error){
     console.warn('Offline support unavailable:',error);
     showAppNotice({title:'离线功能暂时不可用',detail:'仍可在联网状态下正常抽牌'});
