@@ -125,6 +125,36 @@ const readEnvironment = (name, runtimeEnvironment) => {
   return undefined;
 };
 
+const isAllowedOrigin = (origin, allowedOrigins) => {
+  if (!origin) return false;
+  if (allowedOrigins.includes(origin)) return true;
+
+  let parsedOrigin;
+  try {
+    parsedOrigin = new URL(origin);
+  } catch {
+    return false;
+  }
+  if (parsedOrigin.protocol !== "https:" || parsedOrigin.origin !== origin || parsedOrigin.port) return false;
+
+  return allowedOrigins.some((rule) => {
+    if (!rule.startsWith("https://") || !rule.includes("*")) return false;
+    const hostPattern = rule.slice("https://".length);
+    if (!/^[a-z0-9.*-]+$/i.test(hostPattern) || (hostPattern.match(/\*/g) || []).length !== 1) return false;
+    const wildcardIndex = hostPattern.indexOf("*");
+    const prefix = hostPattern.slice(0, wildcardIndex);
+    const suffix = hostPattern.slice(wildcardIndex + 1);
+    if (!parsedOrigin.hostname.startsWith(prefix) || !parsedOrigin.hostname.endsWith(suffix)) return false;
+    const wildcardValue = parsedOrigin.hostname.slice(prefix.length, parsedOrigin.hostname.length - suffix.length || undefined);
+    return /^[a-z0-9-]+$/i.test(wildcardValue);
+  });
+};
+
+// HatCloud creates a new preview subdomain for each build. Keep this narrow
+// rule in code so previews can use the existing CloudBase AI function without
+// exposing the API to arbitrary origins or overwriting its secret variables.
+const HAT_CLOUD_PREVIEW_ORIGIN_RULES = ["https://*-kirra47-3uu831r.maozi.io"];
+
 const truncationMarker = "【受长度限制，后续内容未发送】";
 const boundedText = (value, limit, controlPattern = /[\u0000-\u001f\u007f]/g) => {
   const text = String(value || "").replace(controlPattern, " ").trim();
@@ -139,7 +169,7 @@ export const handleTarotReading = async (request, runtimeEnvironment) => {
     .split(",")
     .map((value) => value.trim())
     .filter(Boolean);
-  const originIsAllowed = Boolean(origin && allowedOrigins.includes(origin));
+  const originIsAllowed = isAllowedOrigin(origin, [...allowedOrigins, ...HAT_CLOUD_PREVIEW_ORIGIN_RULES]);
   const corsHeaders = originIsAllowed
     ? {
         "access-control-allow-origin": origin,
@@ -167,7 +197,7 @@ export const handleTarotReading = async (request, runtimeEnvironment) => {
   if (contentLength > 65536) return respondJson(413, { error: "请求内容过长。" });
 
   const fetchSite = request.headers.get("sec-fetch-site");
-  if (origin && allowedOrigins.length && !allowedOrigins.includes(origin)) {
+  if (origin && allowedOrigins.length && !originIsAllowed) {
     return respondJson(403, { error: "来源验证失败。" });
   }
   if (fetchSite === "cross-site" && !allowedOrigins.length) {

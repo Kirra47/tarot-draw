@@ -14,7 +14,7 @@
         "AI_PROVIDER": "deepseek",
         "DEEPSEEK_API_KEY": "{{env.DEEPSEEK_API_KEY}}",
         "DEEPSEEK_MODEL": "deepseek-flash",
-        "TAROT_ALLOWED_ORIGINS": "https://peas47-d0g4dt5f002ccf6ba-1309640856.ap-shanghai.app.tcloudbase.com,https://peas47-d0g4dt5f002ccf6ba-1309640856.tcloudbaseapp.com,https://kirra47-3uu831r.maozi.io,https://svrmdlo8k-kirra47-3uu831r.maozi.io"
+        "TAROT_ALLOWED_ORIGINS": "https://peas47-d0g4dt5f002ccf6ba-1309640856.ap-shanghai.app.tcloudbase.com,https://peas47-d0g4dt5f002ccf6ba-1309640856.tcloudbaseapp.com,https://kirra47-3uu831r.maozi.io,https://svrmdlo8k-kirra47-3uu831r.maozi.io,https://*-kirra47-3uu831r.maozi.io"
       }
     }
   ]

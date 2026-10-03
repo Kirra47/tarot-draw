@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import tarotReading from "../netlify/functions/tarot-reading.mjs";
 import siteWorker from "../worker/index.js";
+import { handleTarotReading as cloudBaseReading } from "../cloudbase/tarot-ai/tarot-reading.mjs";
 
 const testEnvironment = { DASHSCOPE_API_KEY: "test-key" };
 globalThis.Netlify = { env: { get: (name) => testEnvironment[name] || "" } };
@@ -86,6 +87,35 @@ const preflight = await siteWorker.fetch(new Request("https://tarot.test/api/tar
 }), { TAROT_ALLOWED_ORIGINS: "https://tarot.test" });
 assert.equal(preflight.status, 204);
 assert.equal(preflight.headers.get("access-control-allow-origin"), "https://tarot.test");
+
+const hatCloudPreviewOrigin = "https://yhnuc9s0i-kirra47-3uu831r.maozi.io";
+const cloudBasePreviewPreflight = await cloudBaseReading(new Request("https://cloudbase.test/tarot-api/tarot-reading", {
+  method: "OPTIONS",
+  headers: {
+    origin: hatCloudPreviewOrigin,
+    host: "cloudbase.test",
+  },
+}), { TAROT_ALLOWED_ORIGINS: "https://svrmdlo8k-kirra47-3uu831r.maozi.io" });
+assert.equal(cloudBasePreviewPreflight.status, 204);
+assert.equal(cloudBasePreviewPreflight.headers.get("access-control-allow-origin"), hatCloudPreviewOrigin);
+
+const rejectedHatCloudOrigin = await cloudBaseReading(new Request("https://cloudbase.test/tarot-api/tarot-reading", {
+  method: "OPTIONS",
+  headers: {
+    origin: "https://yhnuc9s0i-kirra47-3uu831r.maozi.io.attacker.test",
+    host: "cloudbase.test",
+  },
+}), { TAROT_ALLOWED_ORIGINS: "https://svrmdlo8k-kirra47-3uu831r.maozi.io" });
+assert.equal(rejectedHatCloudOrigin.status, 403);
+
+const rejectedInsecureHatCloudOrigin = await cloudBaseReading(new Request("https://cloudbase.test/tarot-api/tarot-reading", {
+  method: "OPTIONS",
+  headers: {
+    origin: "http://yhnuc9s0i-kirra47-3uu831r.maozi.io",
+    host: "cloudbase.test",
+  },
+}), { TAROT_ALLOWED_ORIGINS: "https://svrmdlo8k-kirra47-3uu831r.maozi.io" });
+assert.equal(rejectedInsecureHatCloudOrigin.status, 403);
 
 const rejectedOrigin = await siteWorker.fetch(request({ cards: "星星" }, {
   origin: "https://attacker.test",
@@ -226,6 +256,9 @@ console.log(JSON.stringify({
   followupRoles: upstreamCalls[1].body.messages.map((message) => message.role),
   codexWorkerEndpoint: workerReading.status,
   credentialedCorsPreflight: preflight.status,
+  hatCloudPreviewCorsPreflight: cloudBasePreviewPreflight.status,
+  hatCloudOriginSpoofRejected: rejectedHatCloudOrigin.status,
+  insecureHatCloudOriginRejected: rejectedInsecureHatCloudOrigin.status,
   rejectedOriginStatus: rejectedOrigin.status,
   unconfiguredKeyStatus: unconfiguredWorker.status,
   forgedSystemMessageRemoved: true,
