@@ -107,11 +107,12 @@ const QIMEN_FOCUS_PROMPT = `这次只做“奇门白话解释”，不要输出�
 4. 给出一个现实中可以核对或执行的小建议。
 所有结论都写成观察角度或可能性，不写成必然吉凶、事实证明或确定预言。若节气标为近似，要明确说“近似”。不要重新起局，不要擅自修改资料中的数字、宫位或名称。标题只用“## 奇门白话解释”。`;
 
-const json = (status, body) => new Response(JSON.stringify(body), {
+const json = (status, body, extraHeaders = {}) => new Response(JSON.stringify(body), {
   status,
   headers: {
     "content-type": "application/json; charset=utf-8",
     "cache-control": "no-store",
+    ...extraHeaders,
   },
 });
 
@@ -132,31 +133,53 @@ const boundedText = (value, limit, controlPattern = /[\u0000-\u001f\u007f]/g) =>
 };
 
 export const handleTarotReading = async (request, runtimeEnvironment) => {
-  if (request.method !== "POST") return json(405, { error: "Method not allowed" });
-
-  const contentLength = Number(request.headers.get("content-length") || 0);
-  if (contentLength > 65536) return json(413, { error: "请求内容过长。" });
-
-  const fetchSite = request.headers.get("sec-fetch-site");
   const origin = request.headers.get("origin");
   const host = request.headers.get("host");
   const allowedOrigins = String(readEnvironment("TAROT_ALLOWED_ORIGINS", runtimeEnvironment) || "")
     .split(",")
     .map((value) => value.trim())
     .filter(Boolean);
+  const originIsAllowed = Boolean(origin && allowedOrigins.includes(origin));
+  const corsHeaders = originIsAllowed
+    ? {
+        "access-control-allow-origin": origin,
+        "vary": "Origin",
+      }
+    : {};
+  const respondJson = (status, body) => json(status, body, corsHeaders);
+
+  if (request.method === "OPTIONS") {
+    if (!originIsAllowed) return json(403, { error: "来源验证失败。" });
+    return new Response(null, {
+      status: 204,
+      headers: {
+        ...corsHeaders,
+        "access-control-allow-methods": "POST, OPTIONS",
+        "access-control-allow-headers": "Content-Type",
+        "access-control-max-age": "86400",
+      },
+    });
+  }
+
+  if (request.method !== "POST") return respondJson(405, { error: "Method not allowed" });
+
+  const contentLength = Number(request.headers.get("content-length") || 0);
+  if (contentLength > 65536) return respondJson(413, { error: "请求内容过长。" });
+
+  const fetchSite = request.headers.get("sec-fetch-site");
   if (origin && allowedOrigins.length && !allowedOrigins.includes(origin)) {
-    return json(403, { error: "来源验证失败。" });
+    return respondJson(403, { error: "来源验证失败。" });
   }
   if (fetchSite === "cross-site" && !allowedOrigins.length) {
-    return json(403, { error: "不允许跨站调用。" });
+    return respondJson(403, { error: "不允许跨站调用。" });
   }
   if (origin && host) {
     try {
       if (!allowedOrigins.length && new URL(origin).host !== host) {
-        return json(403, { error: "来源验证失败。" });
+        return respondJson(403, { error: "来源验证失败。" });
       }
     } catch {
-      return json(403, { error: "来源验证失败。" });
+      return respondJson(403, { error: "来源验证失败。" });
     }
   }
 
@@ -176,18 +199,18 @@ export const handleTarotReading = async (request, runtimeEnvironment) => {
           endpoint: "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
         }
       : null;
-  if (!provider) return json(503, { error: "AI_PROVIDER 配置无效，请选择 deepseek 或 dashscope。" });
+  if (!provider) return respondJson(503, { error: "AI_PROVIDER 配置无效，请选择 deepseek 或 dashscope。" });
   const model = /^[a-z0-9._-]{1,80}$/i.test(provider.configuredModel || "")
     ? provider.configuredModel
     : provider.defaultModel;
   const apiKey = provider.apiKey;
-  if (!apiKey) return json(503, { error: "智能解读尚未配置，请联系站点维护者。" });
+  if (!apiKey) return respondJson(503, { error: "智能解读尚未配置，请联系站点维护者。" });
 
   let payload;
   try {
     payload = await request.json();
   } catch {
-    return json(400, { error: "请求格式不正确。" });
+    return respondJson(400, { error: "请求格式不正确。" });
   }
 
   const question = boundedText(payload.question, 240);
@@ -207,7 +230,7 @@ export const handleTarotReading = async (request, runtimeEnvironment) => {
   const recordProfile = meihua.match(/^\s*规则档案：([^\s（]+)/mu)?.[1] || "";
   const profileConflict = Boolean(declaredProfile && recordProfile && declaredProfile !== recordProfile);
   const castProfile = profileConflict ? "conflict" : declaredProfile || recordProfile;
-  if (!cards && !meihua) return json(400, { error: "请先完成抽牌或起卦。" });
+  if (!cards && !meihua) return respondJson(400, { error: "请先完成抽牌或起卦。" });
 
   const conversation = Array.isArray(payload.conversation)
     ? payload.conversation.slice(-11).flatMap((turn) => {
@@ -283,7 +306,7 @@ export const handleTarotReading = async (request, runtimeEnvironment) => {
 
     if (!upstream.ok) {
       console.error("DashScope error", upstream.status, await upstream.text());
-      return json(502, { error: "智能解读暂时不可用，请稍后重试。" });
+      return respondJson(502, { error: "智能解读暂时不可用，请稍后重试。" });
     }
 
     return new Response(upstream.body, {
@@ -291,11 +314,12 @@ export const handleTarotReading = async (request, runtimeEnvironment) => {
       headers: {
         "content-type": "text/event-stream; charset=utf-8",
         "cache-control": "no-cache, no-store",
+        ...corsHeaders,
       },
     });
   } catch (error) {
     console.error("Tarot reading function failed", error);
-    return json(502, { error: "连接解读服务失败，请稍后重试。" });
+    return respondJson(502, { error: "连接解读服务失败，请稍后重试。" });
   }
 };
 

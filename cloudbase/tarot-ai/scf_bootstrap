@@ -1,3 +1,4 @@
 #!/bin/bash
+set -e
 export PORT=9000
-/var/lang/node20/bin/node index.js
+exec /var/lang/node20/bin/node index.js

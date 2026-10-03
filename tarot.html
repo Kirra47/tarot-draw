@@ -1242,6 +1242,8 @@ const AI_READING_ENDPOINT=location.hostname==='peas47-d0g4dt5f002ccf6ba-13096408
   ?'/tarot-api/tarot-reading'
   :location.hostname==='peas47-d0g4dt5f002ccf6ba-1309640856.tcloudbaseapp.com'
     ?CLOUDBASE_AI_GATEWAY
+  :location.hostname.endsWith('.maozi.io')
+    ?CLOUDBASE_AI_GATEWAY
   :location.hostname==='tarot-sea-transition-preview.bull686.chatgpt.site'
     ?'https://astral-tarot-ai-924.bull686.chatgpt.site/api/tarot-reading'
   :location.hostname==='astral-tarot.bull686.chatgpt.site'
@@ -3535,7 +3537,7 @@ async function requestQimenAI({auto=false}={}){
   const controller=makeAIController();
   try{
     const resp=await fetch(AI_READING_ENDPOINT,{
-      method:'POST',credentials:'include',headers:{'Content-Type':'text/plain'},
+      method:'POST',credentials:'omit',headers:{'Content-Type':'text/plain'},
       signal:controller.signal,
       body:JSON.stringify({readingMode,question:userQuestion,cards:getCardsDescription(),meihua:getMeihuaDescription(),traditional:getTraditionalDescription(),focus:'qimen'})
     });
@@ -3587,7 +3589,7 @@ async function requestAIReading(){
   let textDiv=null,streamedText='';
   try{
     const resp=await fetch(AI_READING_ENDPOINT,{
-      method:'POST',credentials:'include',headers:{'Content-Type':'text/plain'},
+      method:'POST',credentials:'omit',headers:{'Content-Type':'text/plain'},
       signal:controller.signal,
       body:JSON.stringify({readingMode,question:userQuestion,questionType:castRequest.questionType||'general',depth:'brief',cards:getCardsDescription(),meihua:getMeihuaDescription(),traditional:getTraditionalDescription(),...getAICastMethodContext()})
     });
@@ -3654,7 +3656,7 @@ async function requestAIDetail(){
   let streamedText='';
   try{
     const resp=await fetch(AI_READING_ENDPOINT,{
-      method:'POST',credentials:'include',headers:{'Content-Type':'text/plain'},
+      method:'POST',credentials:'omit',headers:{'Content-Type':'text/plain'},
       signal:controller.signal,
       body:JSON.stringify({readingMode,question:userQuestion,questionType:castRequest.questionType||'general',depth:'detail',cards:getCardsDescription(),meihua:getMeihuaDescription(),traditional:getTraditionalDescription(),conversation:aiConversation.slice(-11).filter(turn=>turn.contextType!=='detail'),...getAICastMethodContext()})
     });
@@ -3707,7 +3709,7 @@ async function requestFollowUp(rawQuestion,{retry=false,pending=null}={}){
   const priorConversation=aiConversation.slice(-11);
   try{
     const resp=await fetch(AI_READING_ENDPOINT,{
-      method:'POST',credentials:'include',headers:{'Content-Type':'text/plain'},
+      method:'POST',credentials:'omit',headers:{'Content-Type':'text/plain'},
       signal:controller.signal,
       body:JSON.stringify({readingMode,question:userQuestion,questionType:castRequest.questionType||'general',cards:getCardsDescription(),meihua:getMeihuaDescription(),traditional:getTraditionalDescription(),followUp,conversation:priorConversation,...getAICastMethodContext()})
     });

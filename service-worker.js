@@ -1,4 +1,4 @@
-﻿const CACHE_VERSION = "astral-tarot-v85-ui-20261003";
+﻿const CACHE_VERSION = "astral-tarot-v86-ai-hatcloud-20261003";
 const CORE_CACHE = `${CACHE_VERSION}-core`;
 const ASSET_CACHE = `${CACHE_VERSION}-assets`;
 
