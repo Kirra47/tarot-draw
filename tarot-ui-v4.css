@@ -927,6 +927,16 @@ summary:focus-visible {
   vertical-align: -.16em;
 }
 
+/* 快捷方法与设置抽取均保留完整触控高度，形状与工作台按钮保持一致。 */
+#questionOverlay .drawStyleOptions {
+  gap: 8px;
+}
+#questionOverlay .drawStyleOptions .drawStyleOption,
+#setupOverlay .settingsSheetBody .drawStyleOption {
+  min-height: 44px;
+  border-radius: 7px;
+}
+
 /* ══════════════════════════════════════════════════════════════════════════
    17 · 六爻成卦：自下而上
    ──────────────────────────────────────────────────────────────────────────

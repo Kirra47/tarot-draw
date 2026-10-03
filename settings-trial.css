@@ -45,7 +45,7 @@
 .settingsSheetHeader>div>span{color:#728778;font-size:12px;font-weight:600}
 .settingsSheetHeader h2{margin:5px 0 3px;color:#292c28;font:500 25px/1.3 var(--serif)}
 .settingsSheetHeader p{margin:0;color:#73736c;font-size:13px;line-height:1.55}
-.settingsSheetClose{flex:0 0 40px;width:40px;height:40px;border:1px solid #d5d1c7;border-radius:50%;background:#fbfaf6;color:#4c524c;font:24px/1 var(--sans);cursor:pointer}
+.settingsSheetClose{flex:0 0 44px;width:44px;height:44px;border:1px solid #d5d1c7;border-radius:50%;background:#fbfaf6;color:#4c524c;font:24px/1 var(--sans);cursor:pointer}
 .settingsSheetBody{flex:1 1 auto;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:#b9b7ab transparent;padding:16px 18px 20px}
 .settingsSheetBody::-webkit-scrollbar{width:7px}
 .settingsSheetBody::-webkit-scrollbar-thumb{border:2px solid #f4f1e9;border-radius:9px;background:#c3c0b5}
