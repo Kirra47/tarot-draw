@@ -39,7 +39,7 @@ const testCases = [
       const firstSentence = answer.split(/[。！？\n]/, 1)[0] || '';
       const firstChoice = firstSentence.match(/初[一二三]/)?.[0] || '';
       const sentences = answer.split(/[。！？\n]/);
-      const rankingSentence = sentences.find((sentence) => /排序|排名|三项|三档|依次/.test(sentence))
+      const rankingSentence = sentences.find((sentence) => /排序|排名|三项|三选项|三档|依次|强弱排/.test(sentence))
         || sentences.find((sentence) => /其次|次之|最强|最弱|[>＞→]/.test(sentence))
         || '';
       const ranked = [...new Set(rankingSentence.match(/初[一二三]/g) || [])];
