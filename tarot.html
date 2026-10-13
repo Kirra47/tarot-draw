@@ -38,7 +38,7 @@
 // every .readingModeOption ships aria-checked="false" and the app flips one to
 // "true" — so this needs no cooperation from the module.
 (function(){
-  var BUILD='v88-home-stamp';
+  var BUILD='v89-static-hexagram';
   var shown=false;
   var noticeTimer=0;
   var observer=null;
@@ -822,7 +822,7 @@ body::after{
 <!-- Craft pass: depth, grain, type presence and motion. Added last so it can
      layer over the four structural sheets without rewriting any of them. -->
 <link rel="stylesheet" href="./tarot-ui-v4.css?v=20261002-ui-refine-1">
-<link rel="stylesheet" href="./tarot-ui-v5.css?v=20261005-home-build-stamp-1">
+<link rel="stylesheet" href="./tarot-ui-v5.css?v=20261013-static-hexagram-1">
 </head>
 <body>
 <canvas id="c"></canvas>
@@ -1464,7 +1464,7 @@ let drawStyle=allowedPreference(savedPreferences.drawStyle,['quick','manual'],DE
 // answer. It must be bumped with every release — it read v69-coin-default while
 // the code had moved on, so the stamp told visitors they were stale when they
 // were not. verify-coin-ui.cjs now fails if it drifts from CACHE_VERSION.
-const APP_BUILD='v88-home-stamp · 2026-10-05';
+const APP_BUILD='v89-static-hexagram · 2026-10-13';
 // Rebuild the shareable setup link from the live controls rather than from
 // savedPreferences, so a link copied from the open sheet already reflects the
 // pending choices.
@@ -2931,6 +2931,7 @@ function renderMeihuaPanel(){
   // A 三钱 cast reports six tossed lines: several (or no) moving lines, and no
   // 体/用 pair. It must never be rendered with 梅花 体用 or 互卦 language.
   const isCoinCast=Array.isArray(value.movingLines);
+  const isStaticCoin=isCoinCast&&value.movingLines.length===0;
   const movingText=isCoinCast?coinMovingLabel(value):movingLineLabel(value.movingLine);
   const relationText=isCoinCast?'':(value.relation||'—');
   const mode=value.mode||'time';
@@ -2939,7 +2940,7 @@ function renderMeihuaPanel(){
   const statusNote=calendar.status==='fallback'?'（当前浏览器未提供农历接口，已用公历简式演示）':'';
   const structureEntries=isCoinCast?[
     {label:'本卦',role:'当前主线',meta:base},
-    {label:'变卦',role:'变化趋向',meta:changed},
+    {label:'变卦',role:isStaticCoin?'六爻皆静 · 本卦不变':'变化趋向',meta:changed,isStatic:isStaticCoin},
   ]:[
     {label:'本卦',role:'当前主线',meta:base},
     {label:'互卦',role:'内在过程',meta:mutual},
@@ -2952,7 +2953,11 @@ function renderMeihuaPanel(){
       const classical=hexagramText(entry.meta.number);
       const sourceUrl=note?.sourceUrl||ZHOUYI_SOURCE_URL;
       const sourceChapter=note?.chapter||entry.meta.name;
-      return `<article class="guaMeaningCard${index===0?' isPrimary':''}">
+      const theme=entry.isStatic?'六爻皆静 · 本卦不变':(note?.theme||'卦义待核');
+      const meaning=entry.isStatic
+        ?'六爻皆无变动，变卦与本卦相同。依《周易》筮法通例“六爻皆静者，以本卦卦辞专断”，情势平稳发展，以左侧本卦主线为准。'
+        :(note?.meaning||'本站暂未载入这一卦的现代导读。');
+      return `<article class="guaMeaningCard${index===0?' isPrimary':''}${entry.isStatic?' isStatic':''}">
         <div class="guaMeaningCardLead">
           <div class="guaMeaningCardTop"><span>${entry.label}</span><small>${entry.role}</small></div>
           <h4>${escapeHTML(hexagramTitle(entry.meta))}</h4>
@@ -2963,8 +2968,8 @@ function renderMeihuaPanel(){
           <p>${escapeHTML(classical?.guaCi||'原文暂未载入。')}</p>
           <a href="${escapeHTML(sourceUrl)}" target="_blank" rel="noopener noreferrer">查看经文出处 ↗</a>
         </details>
-        <strong>${escapeHTML(note?.theme||'卦义待核')}</strong>
-        <p>${escapeHTML(note?.meaning||'本站暂未载入这一卦的现代导读。')}</p>
+        <strong>${escapeHTML(theme)}</strong>
+        <p>${escapeHTML(meaning)}</p>
       </article>`;
     }).join('');
     structureMeta.innerHTML=isCoinCast
@@ -3004,7 +3009,7 @@ function renderMeihuaPanel(){
     <div class="baseReadingHero">
       <figure class="hexagramFigure"><div class="hexagramLines" role="img" aria-label="${escapeHTML(insight.name)}，自下而上六爻，${escapeHTML(movingText)}">
         ${[...insight.lines].reverse().map(line=>`<div class="hexagramLine${line.yang?' yang':' yin'}${line.moving?' moving':''}" aria-hidden="true"><span>${line.label}</span><i></i><b>${line.moving?'动':''}</b></div>`).join('')}
-      </div><figcaption>第 ${insight.number} 卦 · 金色为动爻</figcaption></figure>
+      </div><figcaption>第 ${insight.number} 卦 · ${isStaticCoin?'六爻皆静（无动爻）':'金色为动爻'}</figcaption></figure>
       <div class="baseReadingCopy"><span>本卦主题</span><h4>${escapeHTML(insight.theme)}</h4><p>${escapeHTML(insight.meaning)}</p></div>
     </div>
     <div class="baseReadingFocus"><span>用白话读这一卦</span><p>${escapeHTML(insight.focus)}</p></div>

@@ -339,3 +339,9 @@ body::after{opacity:.025}
   #questionOverlay .readingModeOption strong{font-size:13px}
   #questionOverlay .readingModeOption em{font-size:11px}
 }
+
+.guaMeaningCard.isStatic{border-color:rgba(104,87,64,.42);background:rgba(23,27,30,.45)}
+.guaMeaningCard.isStatic .guaHexagramDiagram{opacity:.5}
+.guaMeaningCard.isStatic .guaMeaningCardTop small{color:#c9ab79}
+.guaMeaningCard.isStatic>strong{color:#c5b49d}
+.guaMeaningCard.isStatic>p{color:#aba091}

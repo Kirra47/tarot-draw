@@ -473,7 +473,7 @@ async function run() {
     const hero = el.closest('.qIntro').getBoundingClientRect();
     return { text: el.textContent.trim(), visible: getComputedStyle(el).display !== 'none', insideHero: stamp.left >= hero.left && stamp.bottom <= hero.bottom };
   });
-  check('手机入口版本号留在主视觉左下角', mobileBuildStamp.visible && mobileBuildStamp.insideHero && mobileBuildStamp.text.startsWith('版本 v88'), JSON.stringify(mobileBuildStamp));
+  check('手机入口版本号留在主视觉左下角', mobileBuildStamp.visible && mobileBuildStamp.insideHero && mobileBuildStamp.text.startsWith('版本 v'), JSON.stringify(mobileBuildStamp));
   await mobilePage.click('[data-reading-mode="gua"]');
   await openSettingsForCoin(mobilePage);
   await mobilePage.click('#questionConfirm');
