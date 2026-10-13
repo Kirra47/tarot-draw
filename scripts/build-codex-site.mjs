@@ -21,14 +21,16 @@ for (const directory of ["assets", "books", "knowledge", "scripts", "vendor"]) {
 const stylesheets = (await readdir(root, { withFileTypes: true }))
   .filter((entry) => entry.isFile() && entry.name.endsWith(".css"))
   .map((entry) => entry.name);
+const htmlFiles = (await readdir(root, { withFileTypes: true }))
+  .filter((entry) => entry.isFile() && entry.name.endsWith(".html"))
+  .map((entry) => entry.name);
 
 for (const filename of [
-  "index.html",
-  "tarot.html",
   "manifest.webmanifest",
   "service-worker.js",
   "tarot-bg.jpg",
   "tarot-bg.png",
+  ...htmlFiles,
   ...stylesheets,
 ]) {
   await cp(join(root, filename), join(dist, filename));
