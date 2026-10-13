@@ -2,6 +2,12 @@
 // quiet when it boots normally? Both directions matter.
 const CHROME = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 const BASE = 'http://127.0.0.1:8888';
+const fs = require('node:fs');
+const html = fs.readFileSync('D:/codex/tarot-draw/tarot.html', 'utf8');
+const timeoutMs = Number((html.match(/noticeTimer=setTimeout\(show,(\d+)\)/) || [, '0'])[1]);
+if (!timeoutMs) throw new Error('boot watchdog timeout not found');
+const appBuild = (html.match(/const APP_BUILD='([^']+)'/) || [, ''])[1];
+const token = (appBuild.match(/v\d+-[a-z0-9-]+/) || [''])[0];
 function loadChromium() {
   for (const id of ['playwright', 'playwright-core', 'D:/npm-global/node_modules/openclaw/node_modules/playwright-core']) {
     try { return require(id).chromium; } catch {}
@@ -19,7 +25,7 @@ const check = (l, ok, d = '') => { rows.push(`  ${ok ? 'ok  ' : 'FAIL'} ${l}${ok
   const p1 = await ok.newPage();
   await p1.goto(`${BASE}/tarot.html`, { waitUntil: 'domcontentloaded' });
   await p1.waitForSelector('#questionOverlay', { timeout: 30000 });
-  await p1.waitForTimeout(9500);
+  await p1.waitForTimeout(timeoutMs + 500);
   const healthy = await p1.evaluate(() => Boolean(document.getElementById('bootNotice')));
   check('正常启动时不报警', !healthy, healthy ? 'notice appeared on a healthy boot' : '');
 
@@ -36,21 +42,20 @@ const check = (l, ok, d = '') => { rows.push(`  ${ok ? 'ok  ' : 'FAIL'} ${l}${ok
     await route.fulfill({ response: res, body, headers: { ...res.headers(), 'content-type': 'text/html; charset=utf-8' } });
   });
   await p2.goto(`${BASE}/tarot.html`, { waitUntil: 'domcontentloaded' });
-  await p2.waitForTimeout(9500);
+  await p2.waitForTimeout(timeoutMs + 500);
   const dead = await p2.evaluate(() => {
     const el = document.getElementById('bootNotice');
     return el ? { text: el.innerText.replace(/\s+/g, ' ').trim().slice(0, 90), hasBtn: Boolean(document.getElementById('bootReload')) } : null;
   });
   check('启动失败时给出可见提示', Boolean(dead && dead.hasBtn), JSON.stringify(dead));
-  // Read the expected stamp from the source instead of hardcoding it — a
-  // hardcoded release token is exactly the drift this project keeps getting bitten by.
-  const fs = require('node:fs');
-  const html = fs.readFileSync('D:/codex/tarot-draw/tarot.html', 'utf8');
-  const appBuild = (html.match(/const APP_BUILD='([^']+)'/) || [, ''])[1];
-  const token = (appBuild.match(/v\d+-[a-z0-9-]+/) || [''])[0];
+  check('提示说明初始化延迟且不建议清站点数据', Boolean(dead && dead.text.includes('页面仍在启动') && dead.text.includes('本地观测记录不会因此清除') && !dead.text.includes('清除本站数据')), JSON.stringify(dead));
   check('提示里带构建号便于定位', Boolean(dead && token && dead.text.includes(token)), `expect "${token}" in "${dead ? dead.text : ''}"`);
-  check('看门狗版本与页面构建标记一致', Boolean(token) && html.includes(`var BUILD='${token}'`), `token=${token}`);
   await p2.screenshot({ path: 'D:/codex/tarot-draw/output/boot-watchdog.png' });
+  // A delayed module boot must dismiss a notice that has already appeared.
+  await p2.evaluate(() => document.querySelector('.readingModeOption')?.setAttribute('aria-checked', 'true'));
+  await p2.waitForFunction(() => !document.getElementById('bootNotice'), null, { timeout: 2000 });
+  check('应用晚启动后自动收起提示', await p2.evaluate(() => !document.getElementById('bootNotice')));
+  check('看门狗版本与页面构建标记一致', Boolean(token) && html.includes(`var BUILD='${token}'`), `token=${token}`);
 
   await browser.close();
   console.log(rows.join('\n'));

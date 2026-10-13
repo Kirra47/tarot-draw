@@ -9,3 +9,5 @@ tmp/
 # output/ also holds the cafe partnership PDF, which is not product source.
 output/
 .impeccable/
+
+.tmp/

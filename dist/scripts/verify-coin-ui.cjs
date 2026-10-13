@@ -187,6 +187,8 @@ async function run() {
   // v69-coin-default while the code had moved on, which told visitors they were
   // stale when they were not, so it must track the release.
   const appBuild = await entryPage.$eval('#appBuildLabel', (el) => el.textContent.trim());
+  const heroBuild = await entryPage.$eval('#introBuildLabel', (el) => el.textContent.trim());
+  check('入口主视觉左下角显示当前构建版本', heroBuild === `版本 ${appBuild}`, `hero="${heroBuild}" app="${appBuild}"`);
   const cacheVersion = fs.readFileSync(path.join(__dirname, '..', 'service-worker.js'), 'utf8').match(/CACHE_VERSION = "([^"]+)"/)[1];
   const releaseToken = (value) => ((value.match(/v\d+-[a-z0-9-]+/) || [''])[0]).replace(/-\d{8}$/, '');
   check('构建标记与缓存版本一致', releaseToken(appBuild) === releaseToken(cacheVersion), `build="${appBuild}" cache="${cacheVersion}"`);
@@ -466,6 +468,12 @@ async function run() {
   mobilePage.on('pageerror', (error) => errors.push(`mobile pageerror: ${error.message}`));
   await mobilePage.goto(`${BASE}/tarot.html`, { waitUntil: 'domcontentloaded' });
   await mobilePage.waitForSelector('#questionOverlay', { timeout: 15000 });
+  const mobileBuildStamp = await mobilePage.$eval('#introBuildLabel', (el) => {
+    const stamp = el.getBoundingClientRect();
+    const hero = el.closest('.qIntro').getBoundingClientRect();
+    return { text: el.textContent.trim(), visible: getComputedStyle(el).display !== 'none', insideHero: stamp.left >= hero.left && stamp.bottom <= hero.bottom };
+  });
+  check('手机入口版本号留在主视觉左下角', mobileBuildStamp.visible && mobileBuildStamp.insideHero && mobileBuildStamp.text.startsWith('版本 v88'), JSON.stringify(mobileBuildStamp));
   await mobilePage.click('[data-reading-mode="gua"]');
   await openSettingsForCoin(mobilePage);
   await mobilePage.click('#questionConfirm');

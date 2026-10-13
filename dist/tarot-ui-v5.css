@@ -50,6 +50,12 @@ body::after{opacity:.025}
   top:auto;bottom:9%;left:10%;gap:18px;padding-top:14px;
   border-color:#49443e;color:#a99f90;font-size:12px;
 }
+#questionOverlay .qIntro>.introBuildLabel{
+  position:absolute;left:10%;bottom:2.8%;z-index:1;display:block;
+  max-width:80%;overflow:hidden;margin:0;color:var(--ink-muted);
+  font:11px/1.4 var(--sans);font-variant-numeric:tabular-nums;
+  letter-spacing:.035em;opacity:.9;white-space:nowrap;text-overflow:ellipsis;
+}
 #questionOverlay .qForm{
   justify-content:center;padding:clamp(24px,3.2vw,42px) clamp(24px,3.4vw,48px);
   border-left:1px solid #48443d;background:#1b1e21;background-image:none;
@@ -97,6 +103,16 @@ body::after{opacity:.025}
 }
 #questionOverlay #castMethodQuick .drawStyleOption.active{
   border-color:#be9c6a;background:#413329;color:#f2d5a7;
+}
+#questionOverlay #threeNumberFields{margin:6px 0 12px;padding:0}
+#questionOverlay #threeNumberFields label{color:#eedfcb;font-size:13px;font-weight:600}
+#questionOverlay #threeNumberFields label small{color:#bba993}
+#questionOverlay .threeNumberRow input{
+  min-height:44px;border:1px solid #5b5346;border-radius:6px;
+  background:#26292b;color:#f3eadc;box-shadow:none;font-size:14px;
+}
+#questionOverlay .threeNumberRow input:focus{
+  border-color:#be9c6a;background:#2d3032;box-shadow:0 0 0 2px rgba(201,171,121,.15);
 }
 #questionOverlay #advancedSetup.settingsLauncher{
   min-height:63px;margin:0 0 12px;padding:9px 0;border:0;
@@ -149,6 +165,7 @@ body::after{opacity:.025}
 .settingsSheetBody .spreadOption strong{color:#f0e7d8}
 .settingsSheetBody .spreadOption em{color:#b6aa98}
 .settingsSheetBody .drawStyleOptions{border-color:#514a41}
+.settingsSheetBody #spreadSettings[hidden]+.drawStyleOptions{margin-top:0;padding-top:0;border-top:0}
 .settingsSheetBody .drawStyleOptions>span{color:#f0e7d8}
 .settingsSheetBody .drawStyleOption{border-color:#695d50;border-radius:6px;background:#272a2c;color:#e3d7c6}
 .settingsSheetBody .drawStyleOption.active{border-color:#b99766;background:#39312b;color:#f3d6a5;box-shadow:none}
@@ -275,6 +292,7 @@ body::after{opacity:.025}
     font-size:11px;line-height:1.55;
   }
   #questionOverlay .qIntro>.ritualLegend{display:none}
+  #questionOverlay .qIntro>.introBuildLabel{left:20px;bottom:7px;max-width:calc(100% - 40px);font-size:10px}
   #questionOverlay .qForm{
     flex:1 0 auto;width:100%;height:auto;max-height:none;min-height:0;
     overflow:visible;justify-content:flex-start;padding:19px 20px calc(27px + env(safe-area-inset-bottom));
@@ -316,7 +334,7 @@ body::after{opacity:.025}
 @media(max-width:350px){
   #questionOverlay .qIntro>#cubeBg{right:-7px;width:52%}
   #questionOverlay .qIntro>#questionTitle{max-width:55%;font-size:24px}
-  #questionOverlay .qIntro>.qSub{max-width:52%}
+  #questionOverlay .qIntro>.qSub{top:143px;max-width:52%;font-size:10px;line-height:1.45}
   #questionOverlay .qForm{padding-right:15px;padding-bottom:calc(80px + env(safe-area-inset-bottom));padding-left:15px}
   #questionOverlay .readingModeOption strong{font-size:13px}
   #questionOverlay .readingModeOption em{font-size:11px}

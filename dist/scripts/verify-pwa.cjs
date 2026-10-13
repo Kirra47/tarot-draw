@@ -1,5 +1,3 @@
-const { chromium } = require("playwright");
-const sharp = require("sharp");
 const fs = require("node:fs/promises");
 const path = require("node:path");
 const assert = require("node:assert/strict");
@@ -7,15 +5,31 @@ const assert = require("node:assert/strict");
 const root = path.resolve(__dirname, "..");
 const baseUrl = process.env.TAROT_URL || "http://127.0.0.1:8766";
 
-async function waitForCardCache(page, timeoutMs = 30_000) {
+function loadChromium() {
+  for (const id of ["playwright", "playwright-core", "D:/npm-global/node_modules/openclaw/node_modules/playwright-core"]) {
+    try { return require(id).chromium; } catch {}
+  }
+  throw new Error("No playwright/playwright-core found; cannot run the browser checks.");
+}
+
+function pngDimensions(buffer) {
+  assert.equal(buffer.toString("hex", 0, 8), "89504e470d0a1a0a", "icon must be a PNG");
+  return { width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) };
+}
+
+async function cardCacheCount(page, cacheVersion) {
+  return page.evaluate(async (version) => {
+    const key = `${version}-assets`;
+    if (!(await caches.keys()).includes(key)) return 0;
+    const requests = await (await caches.open(key)).keys();
+    return requests.filter((request) => new URL(request.url).pathname.includes("/assets/cards/")).length;
+  }, cacheVersion);
+}
+
+async function waitForCardCache(page, cacheVersion, timeoutMs = 45_000) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
-    const count = await page.evaluate(async () => {
-      const key = (await caches.keys()).find((name) => name.includes("astral-tarot-v21-qimen-ai-readable-20260907") && name.endsWith("-assets"));
-      if (!key) return 0;
-      const requests = await (await caches.open(key)).keys();
-      return requests.filter((request) => new URL(request.url).pathname.includes("/assets/cards/")).length;
-    });
+    const count = await cardCacheCount(page, cacheVersion);
     if (count === 78) return count;
     await page.waitForTimeout(500);
   }
@@ -23,6 +37,9 @@ async function waitForCardCache(page, timeoutMs = 30_000) {
 }
 
 (async () => {
+  const workerSource = await fs.readFile(path.join(root, "service-worker.js"), "utf8");
+  const cacheVersion = (workerSource.match(/const CACHE_VERSION = "([^"]+)"/) || [])[1];
+  assert.ok(cacheVersion, "service worker cache version is defined");
   const manifest = JSON.parse(await fs.readFile(path.join(root, "manifest.webmanifest"), "utf8"));
   const expectedIcons = [
     ["tarot-icon-192.png", 192],
@@ -32,7 +49,7 @@ async function waitForCardCache(page, timeoutMs = 30_000) {
   ];
   const iconMetadata = [];
   for (const [name, expectedSize] of expectedIcons) {
-    const metadata = await sharp(path.join(root, "assets", "icons", name)).metadata();
+    const metadata = pngDimensions(await fs.readFile(path.join(root, "assets", "icons", name)));
     assert.equal(metadata.width, expectedSize);
     assert.equal(metadata.height, expectedSize);
     iconMetadata.push({ name, width: metadata.width, height: metadata.height });
@@ -41,7 +58,7 @@ async function waitForCardCache(page, timeoutMs = 30_000) {
   assert.ok(manifest.icons.some((icon) => icon.sizes === "512x512" && icon.purpose === "maskable"));
   assert.equal(manifest.shortcuts.length, 2);
 
-  const browser = await chromium.launch({
+  const browser = await loadChromium().launch({
     headless: true,
     executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe",
   });
@@ -53,7 +70,10 @@ async function waitForCardCache(page, timeoutMs = 30_000) {
 
   await page.goto(`${baseUrl}/tarot.html`, { waitUntil: "domcontentloaded", timeout: 30_000 });
   await page.waitForFunction(() => navigator.serviceWorker?.controller, null, { timeout: 15_000 });
-  const offlineCardCount = await waitForCardCache(page);
+  await page.waitForTimeout(2_000);
+  const earlyCardCacheCount = await cardCacheCount(page, cacheVersion);
+  assert.ok(earlyCardCacheCount < 78, `card cache warmup should be deferred, got ${earlyCardCacheCount}`);
+  const offlineCardCount = await waitForCardCache(page, cacheVersion);
 
   await context.setOffline(true);
   await page.waitForFunction(() => document.querySelector("#appNoticeTitle")?.textContent.includes("离线模式"));
@@ -93,11 +113,11 @@ async function waitForCardCache(page, timeoutMs = 30_000) {
   const iosInstallDetail = await iosPage.locator("#appNoticeDetail").textContent();
   await iosPage.screenshot({ path: "D:/codex/outputs/tarot-pwa-ios.png", fullPage: true });
 
-  const workerSource = await fs.readFile(path.join(root, "service-worker.js"), "utf8");
   const result = {
     manifest: { icons: manifest.icons.length, shortcuts: manifest.shortcuts.length, startUrl: manifest.start_url },
     iconMetadata,
     offlineCardCount,
+    earlyCardCacheCount,
     offlineReloadTitle,
     installPromptCalled,
     iosInstallGuide: iosInstallDetail,

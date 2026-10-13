@@ -53,9 +53,11 @@ chk(`eyebrow 数量 ≤ ceil(${sectionCount}/3)=${eyebrowBudget}`, eyebrowTotal 
 const numbering = [...visible.matchAll(/\b0\d\s*[·/]\s*/g)];
 chk('无「序号型」小节眉标', numbering.length === 0, `${numbering.length} 处: ${numbering.slice(0, 4).map((m) => m[0]).join(' ')}`);
 
-// Version footer / build stamp on a marketing surface.
-const versionFooter = /Build\s*\d|v\d+\.\d+\.\d+/.test(visible);
-chk('营销面不出现版本号', !versionFooter, versionFooter ? '可见文本里有版本号' : '');
+// The entry hero intentionally carries a quiet build stamp for release checks.
+const hasEntryBuildStamp = /id="introBuildLabel"/.test(html)
+  && /introBuildLabel\)introBuildLabel\.textContent='版本 '\+APP_BUILD/.test(html);
+chk('入口主视觉版本号由统一构建标记注入', hasEntryBuildStamp,
+  hasEntryBuildStamp ? '' : '缺少主视觉版本标签或 APP_BUILD 绑定');
 
 // Viewport stability: no full-height 100vh / h-screen. A `max-height` fallback
 // that is immediately superseded by a dvh line is the correct progressive

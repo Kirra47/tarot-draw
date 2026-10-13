@@ -38,8 +38,10 @@
 // every .readingModeOption ships aria-checked="false" and the app flips one to
 // "true" — so this needs no cooperation from the module.
 (function(){
-  var BUILD='v85-ui';
+  var BUILD='v88-home-stamp';
   var shown=false;
+  var noticeTimer=0;
+  var observer=null;
   function booted(){
     try{
       return Boolean(document.querySelector('.readingModeOption[aria-checked="true"]'));
@@ -47,8 +49,19 @@
       return true; /* cannot tell: stay quiet rather than cry wolf */
     }
   }
+  function dismiss(){
+    if(noticeTimer){clearTimeout(noticeTimer);noticeTimer=0;}
+    if(observer){observer.disconnect();observer=null;}
+    document.getElementById('bootNotice')?.remove();
+  }
+  function checkReady(){
+    if(!booted())return false;
+    dismiss();
+    return true;
+  }
   function show(){
-    if(shown||booted()||!document.body)return;
+    noticeTimer=0;
+    if(shown||checkReady()||!document.body)return;
     shown=true;
     var d=document.createElement('div');
     d.id='bootNotice';
@@ -58,19 +71,22 @@
       +'background:rgba(18,14,23,.97);border:1px solid rgba(226,190,134,.36);'
       +'color:#eee7dc;font:14px/1.65 "Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;'
       +'box-shadow:0 24px 60px -32px rgba(3,2,8,.95)';
-    d.innerHTML='<strong style="display:block;margin-bottom:6px;font-size:15px">页面没有启动</strong>'
-      +'可能是浏览器里存着旧版本。'
+    d.innerHTML='<strong style="display:block;margin-bottom:6px;font-size:15px">页面仍在启动</strong>'
+      +'初始化比平时更久。若页面持续无响应，请检查网络后重新加载；本地观测记录不会因此清除。'
       +'<button type="button" id="bootReload" style="display:block;margin-top:12px;min-height:42px;'
       +'padding:0 20px;border-radius:999px;border:1px solid rgba(226,190,134,.5);background:transparent;'
-      +'color:#f0dab1;font:inherit;cursor:pointer">重新加载</button>'
+      +'color:#f0dab1;font:inherit;cursor:pointer">重新加载页面</button>'
       +'<small style="display:block;margin-top:10px;color:#9a909f;font-size:12px">'
-      +'若反复出现，请在浏览器设置里清除本站数据后重开。构建 '+BUILD+'</small>';
+      +'版本 '+BUILD+'</small>';
     document.body.appendChild(d);
     var btn=document.getElementById('bootReload');
     if(btn)btn.addEventListener('click',function(){location.reload();});
   }
-  window.addEventListener('load',function(){setTimeout(show,6000);});
-  setTimeout(show,8000);
+  if(!checkReady()){
+    observer=new MutationObserver(checkReady);
+    observer.observe(document.documentElement,{attributes:true,subtree:true,attributeFilter:['aria-checked']});
+    noticeTimer=setTimeout(show,20000);
+  }
 })();
 </script>
 <link rel="manifest" href="./manifest.webmanifest">
@@ -806,7 +822,7 @@ body::after{
 <!-- Craft pass: depth, grain, type presence and motion. Added last so it can
      layer over the four structural sheets without rewriting any of them. -->
 <link rel="stylesheet" href="./tarot-ui-v4.css?v=20261002-ui-refine-1">
-<link rel="stylesheet" href="./tarot-ui-v5.css?v=20261003-reading-backdrop-2">
+<link rel="stylesheet" href="./tarot-ui-v5.css?v=20261005-home-build-stamp-1">
 </head>
 <body>
 <canvas id="c"></canvas>
@@ -871,6 +887,7 @@ body::after{
       <h2 id="questionTitle">把问题说清楚</h2>
       <p class="qSub">牌面、卦象，选一种你喜欢的方式。</p>
       <div class="ritualLegend"><span><i>01</i> 提问</span><span><i>02</i> 抽取</span><span><i>03</i> 解读</span></div>
+      <small id="introBuildLabel" class="introBuildLabel" aria-label="当前应用版本"></small>
     </section>
     <section class="qForm">
       <label class="fieldLabel" for="questionInput"><span>你想问什么？</span><small>选填</small></label>
@@ -898,6 +915,7 @@ body::after{
       <div id="castMethodQuick" class="drawStyleOptions castMethodQuick" role="radiogroup" aria-label="起卦方法">
         <span>起卦方法</span>
         <button type="button" class="drawStyleOption" role="radio" aria-checked="false" data-cast-method="time">按时间</button>
+        <button type="button" class="drawStyleOption" role="radio" aria-checked="false" data-cast-method="three">三个数字</button>
         <button type="button" class="drawStyleOption" role="radio" aria-checked="false" data-cast-method="coin">铜钱摇卦</button>
         <button type="button" class="drawStyleOption" id="castMethodMore" aria-controls="setupOverlay" aria-haspopup="dialog">更多…</button>
       </div>
@@ -1272,6 +1290,8 @@ if(setupOverlay&&setupOverlayRoot)setupOverlayRoot.append(setupOverlay);
 const castMethodQuickRow=document.getElementById('castMethodQuick');
 const readingModeNoteRow=document.querySelector('.readingModeNote');
 if(castMethodQuickRow&&readingModeNoteRow)castMethodQuickRow.after(readingModeNoteRow);
+const threeNumberFieldsEl=document.getElementById('threeNumberFields');
+if(castMethodQuickRow&&threeNumberFieldsEl)castMethodQuickRow.after(threeNumberFieldsEl);
 let settingsFocusReturn=null;
 let settingsCloseTimer=0;
 let settingsBackgroundState=[];
@@ -1444,7 +1464,7 @@ let drawStyle=allowedPreference(savedPreferences.drawStyle,['quick','manual'],DE
 // answer. It must be bumped with every release — it read v69-coin-default while
 // the code had moved on, so the stamp told visitors they were stale when they
 // were not. verify-coin-ui.cjs now fails if it drifts from CACHE_VERSION.
-const APP_BUILD='v85-ui · 2026-10-03';
+const APP_BUILD='v88-home-stamp · 2026-10-05';
 // Rebuild the shareable setup link from the live controls rather than from
 // savedPreferences, so a link copied from the open sheet already reflects the
 // pending choices.
@@ -1477,6 +1497,8 @@ async function copyPreferencesLink(button){
 }
 const appBuildLabel=document.getElementById('appBuildLabel');
 if(appBuildLabel)appBuildLabel.textContent=APP_BUILD;
+const introBuildLabel=document.getElementById('introBuildLabel');
+if(introBuildLabel)introBuildLabel.textContent='版本 '+APP_BUILD;
 const shareSetupButton=document.getElementById('shareSetupLink');
 shareSetupButton?.addEventListener('click',()=>{copyPreferencesLink(shareSetupButton);});
 console.info('[星象塔罗] build',APP_BUILD);
@@ -1523,7 +1545,7 @@ const canvas=document.getElementById('c');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
 const isMobile=matchMedia('(max-width: 768px)').matches;
 const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
-renderer.setPixelRatio(Math.min(window.devicePixelRatio,isMobile?1.5:2));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,isMobile?1.25:1.8));
 renderer.setSize(window.innerWidth,window.innerHeight);
 renderer.setClearColor(0x000000,0);
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
@@ -3934,6 +3956,8 @@ function updateReadingModeUI(){
   }[mode]||{};
   if(spreadSettings)spreadSettings.hidden=mode==='gua';
   if(divinationOptions)divinationOptions.hidden=mode==='tarot';
+  const castGroup=document.getElementById('advancedCastSettingsTitle')?.closest('.advancedSettingGroup');
+  if(castGroup)castGroup.hidden=mode==='tarot';
   if(hint)hint.textContent=copy.hint||'';
   if(confirmLabel)confirmLabel.textContent=copy.button||'开始观测';
   // 抽牌方式 is shown by updateCastModeUI, because 单起卦 only offers the
@@ -4001,7 +4025,7 @@ function updateCastMethodQuickUI(){
   });
   const more=document.getElementById('castMethodMore');
   if(more){
-    const inQuick=method==='auto'||method==='time'||method==='coin';
+    const inQuick=method==='auto'||method==='time'||method==='coin'||method==='three';
     more.textContent=inQuick?'更多…':`更多… ${CAST_METHOD_SHORT[method]||''}`.trim();
     more.classList.toggle('active',!inQuick);
     more.setAttribute('aria-checked',String(!inQuick));
@@ -4010,12 +4034,14 @@ function updateCastMethodQuickUI(){
   if(hint&&readingMode==='gua'){
     hint.textContent=method==='coin'
       ?'铜钱摇卦：亲手摇六次成卦，也可以一键成卦。'
+      :method==='three'
+        ?'三个数字起卦：输入三组数字依次定上卦、下卦和动爻。'
       :method==='auto'
         ?'自动起卦：问题里写明数字时按数字，否则按时间。'
         :`${CAST_METHOD_SHORT[method]||'按时间'}起卦。`;
   }
   if(hint&&readingMode==='combo'){
-    hint.textContent=method==='coin'?'铜钱六次成卦，并同步抽牌。':'起卦与抽牌一次完成。';
+    hint.textContent=method==='coin'?'铜钱六次成卦，并同步抽牌。':(method==='three'?'三个数字起卦，并同步抽牌。':'起卦与抽牌一次完成。');
   }
 }
 document.querySelectorAll('#castMethodQuick [data-cast-method]').forEach(button=>button.addEventListener('click',()=>{
@@ -4063,8 +4089,8 @@ function explicitThreeNumbers(value){
   const hasThreePhrase=/三个?数字|三数|数字起卦|用数字起卦/.test(normalized);
   const hasExplicitNumberCast=/(?:用|按|以)\s*[0-9０-９][^。！？!?；;]{0,24}(?:起卦|取卦)/.test(normalized);
   if(!hasThreePhrase&&!hasExplicitNumberCast)return null;
-  if(numbers.length!==3)return {error:numbers.length<3?'你指定了三个数字起卦，请补齐三个正整数。':'数字起卦请只给三个整数，避免系统替你猜哪三个。'};
-  return {mode:'three',numbers,auto:true};
+  if(numbers.length===3)return {mode:'three',numbers,auto:true};
+  return {phraseOnly:true,count:numbers.length};
 }
 function inferQuestionType(question){
   if(/射覆|手里(?:握|拿|捏)|握着什么|拿着什么|什么东西|什么物件|什么物品/.test(question))return 'shooting';
@@ -4088,20 +4114,26 @@ function collectCastRequest(){
   const detail=document.getElementById('castDetailInput')?.value.trim()||'';
   const count=Number(document.getElementById('castCountInput')?.value);
   const questionType=currentQuestionType(question);
-  const explicit=explicitThreeNumbers(question);
-  if(explicit?.error)return explicit;
   const fields=[1,2,3].map(index=>String(document.getElementById(`castNum${index}`)?.value||'').trim());
   const anyField=fields.some(Boolean);
-  let numbers=explicit?.numbers||null;
-  if(method==='three'){
-    if(anyField){
-      if(!fields.every(Boolean))return {error:'三个数字都要填完整。'};
-      const entered=fields.map(Number);
-      if(!entered.every(number=>Number.isSafeInteger(number)&&number>=1))return {error:'三个数字都要是正整数。'};
-      if(numbers&&numbers.some((number,index)=>number!==entered[index]))return {error:'问题里写的数字与输入框不一致，请统一成同一组。'};
-      numbers=entered;
+  let numbers=null;
+  if(anyField){
+    if(!fields.every(Boolean))return {error:'三个数字都要填完整。'};
+    const entered=fields.map(Number);
+    if(!entered.every(number=>Number.isSafeInteger(number)&&number>=1))return {error:'三个数字都要是正整数。'};
+    numbers=entered;
+  }
+  const explicit=explicitThreeNumbers(question);
+  if(explicit?.numbers){
+    if(numbers&&numbers.some((number,index)=>number!==explicit.numbers[index])){
+      return {error:'问题里写的数字与输入框不一致，请统一成同一组。'};
     }
-    if(!numbers)return {error:'请填三个数字，或在问题里明确写“用三个数字起卦”。'};
+    if(!numbers)numbers=explicit.numbers;
+  }else if(explicit?.phraseOnly&&!numbers&&method!=='three'){
+    return {error:explicit.count<3?'你指定了三个数字起卦，请在数字输入框填齐三个正整数。':'数字起卦请只给三个整数，避免系统替你猜哪三个。'};
+  }
+  if(method==='three'&&!numbers){
+    return {error:'请在三个数字输入框里填齐数字，也可以在问题里写明。'};
   }
   if(method!=='three'&&method!=='auto'&&method!=='time')numbers=null;
   let mode=method==='auto'?(numbers?'three':'time'):method;
@@ -4139,7 +4171,7 @@ function updateCastModeUI(){
   const numbers=document.getElementById('threeNumberFields');
   const detail=document.getElementById('castDetailField');
   const count=document.getElementById('castCountField');
-  if(numbers)numbers.hidden=method!=='three';
+  if(numbers)numbers.hidden=readingMode==='tarot'||method!=='three';
   const displayType=questionType==='general'&&method==='text'?'text':questionType;
   if(detail)detail.hidden=!['shooting','object','person','lost','text','omen'].includes(displayType);
   if(count)count.hidden=method==='three'||(!['sound','count'].includes(method)&&!['sound','count'].includes(questionType));
@@ -4186,15 +4218,21 @@ function updateDrawStyleOptionsUI(){
   const coinCasting=readingMode==='gua'&&method==='coin';
   const combined=readingMode==='combo';
   const options=document.getElementById('drawStyleOptions');
-  if(options)options.hidden=combined||(readingMode==='gua'&&!coinCasting);
+  if(options){
+    options.hidden=combined||(readingMode==='gua'&&!coinCasting);
+    options.setAttribute('aria-label',coinCasting?'摇卦方式':'翻牌方式');
+  }
   const drawStyleLabel=options?.querySelector(':scope > span');
-  if(drawStyleLabel)drawStyleLabel.textContent=coinCasting?'摇卦方式':'翻牌方式';
+  if(drawStyleLabel){
+    drawStyleLabel.textContent=coinCasting?'摇卦方式':'翻牌方式';
+    drawStyleLabel.hidden=coinCasting;
+  }
   const cardGroup=document.getElementById('advancedCardSettingsTitle')?.closest('.advancedSettingGroup');
   if(cardGroup)cardGroup.hidden=readingMode==='gua'&&!coinCasting;
   const cardTitle=document.getElementById('advancedCardSettingsTitle');
   if(cardTitle)cardTitle.textContent=coinCasting?'摇卦方式':'牌阵与抽取';
   const cardSubtitle=cardTitle?.nextElementSibling;
-  if(cardSubtitle)cardSubtitle.textContent=coinCasting?'六次亲手摇，或一键成卦':'牌数和翻牌方式';
+  if(cardSubtitle)cardSubtitle.textContent=coinCasting?'六次亲手摇，或一键成卦':(combined?'牌阵张数':'牌数和翻牌方式');
   const quick=options?.querySelector('[data-draw-style="quick"]');
   const manual=options?.querySelector('[data-draw-style="manual"]');
   if(quick)quick.textContent=coinCasting?'一键起卦':'一键翻牌';
@@ -4854,8 +4892,13 @@ function exitHands({silent=false}={}){
   if(!silent)showHint('手势模式已退出');
 }
 window.addEventListener('pagehide',()=>{if(inputMode==='gesture')exitHands({silent:true});});
+let animationFrameId=0;
 document.addEventListener('visibilitychange',()=>{
-  if(document.hidden&&inputMode==='gesture')exitHands({silent:true});
+  if(document.hidden){
+    if(animationFrameId){cancelAnimationFrame(animationFrameId);animationFrameId=0;}
+    if(inputMode==='gesture')exitHands({silent:true});
+  }
+  if(!document.hidden&&!animationFrameId)animate();
 });
 function classifyGesture(lms){
   if(!lms||!lms.length)return'NONE';
@@ -5006,19 +5049,24 @@ window.addEventListener('resize',()=>{
 
 const clock=new THREE.Clock();
 function animate(){
-  requestAnimationFrame(animate);
+  if(document.hidden){animationFrameId=0;return;}
+  animationFrameId=requestAnimationFrame(animate);
   const dt=Math.min(clock.getDelta(),0.05);
   const t=clock.getElapsedTime();
-  // Subtle camera drift for spatial depth
-  camera.position.x=reduceMotion?0:Math.sin(t*0.08)*0.15;
-  camera.position.y=reduceMotion?3.2:3.2+Math.sin(t*0.06)*0.08;
-  camera.lookAt(0,1.4,0);
-  // glow ring uTime is set in updateAnimations
-  processGesture();
-  updateHover();
-  updateAnimations(dt);
-  updateParticles(dt);
-  renderer.render(scene,camera);
+  const introOpen=!document.getElementById('questionOverlay').classList.contains('hidden');
+  if(!introOpen){
+    // The entry overlay has its own cube canvas; the card-table scene is empty
+    // until it closes, so avoid a second full-screen WebGL render on phones.
+    camera.position.x=reduceMotion?0:Math.sin(t*0.08)*0.15;
+    camera.position.y=reduceMotion?3.2:3.2+Math.sin(t*0.06)*0.08;
+    camera.lookAt(0,1.4,0);
+    // glow ring uTime is set in updateAnimations
+    processGesture();
+    updateHover();
+    updateAnimations(dt);
+    updateParticles(dt);
+    renderer.render(scene,camera);
+  }
   updateCubeBackground(dt);
 }
 
@@ -5092,7 +5140,7 @@ function showNetworkStatus(){
     showAppNotice({title:'当前处于离线模式',detail:'抽牌、牌图与本地观照仍然可用',sticky:true,kind:'offline'});
   }else{
     showAppNotice({title:'网络已经恢复',detail:'智能解读与资源更新重新可用'});
-    (pwaRegistration?.active||navigator.serviceWorker?.controller)?.postMessage({type:'WARM_CARD_CACHE'});
+    queueOfflineCardWarmup();
   }
 }
 window.addEventListener('offline',showNetworkStatus);
@@ -5103,6 +5151,36 @@ function offerAppUpdate(worker){
     title:'发现新版本',detail:'更新不会影响你的本地观测档案',actionLabel:'立即更新',sticky:true,
     onAction:()=>{updateRequested=true;worker.postMessage({type:'SKIP_WAITING'});showAppNotice({title:'正在更新',detail:'完成后会自动重新打开',progress:70,sticky:true});}
   });
+}
+let cardWarmupQueued=false;
+let cardWarmupRequested=false;
+let cardWarmupTimer=0;
+function queueOfflineCardWarmup(registration=pwaRegistration){
+  if(cardWarmupQueued||cardWarmupRequested||!navigator.onLine)return;
+  const connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+  if(connection?.saveData||['slow-2g','2g'].includes(connection?.effectiveType))return;
+  cardWarmupQueued=true;
+  const start=()=>{
+    cardWarmupTimer=0;
+    const currentConnection=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+    if(!navigator.onLine||currentConnection?.saveData||['slow-2g','2g'].includes(currentConnection?.effectiveType)){
+      cardWarmupQueued=false;
+      return;
+    }
+    if(document.hidden){
+      cardWarmupQueued=false;
+      document.addEventListener('visibilitychange',()=>{if(!document.hidden)queueOfflineCardWarmup(registration);},{once:true});
+      return;
+    }
+    const worker=registration?.active||navigator.serviceWorker?.controller;
+    if(!worker){cardWarmupQueued=false;return;}
+    cardWarmupQueued=false;
+    cardWarmupRequested=true;
+    worker.postMessage({type:'WARM_CARD_CACHE'});
+  };
+  const afterIdle=()=>{cardWarmupTimer=setTimeout(start,15000);};
+  if('requestIdleCallback' in window)window.requestIdleCallback(afterIdle,{timeout:6000});
+  else cardWarmupTimer=setTimeout(start,20000);
 }
 function refreshPwaAndCastControls(){
   updateCastModeUI();
@@ -5150,7 +5228,9 @@ async function initOfflineSupport(){
       }
     });
     const registration=await navigator.serviceWorker.ready;
-    (registration.active||navigator.serviceWorker.controller)?.postMessage({type:'WARM_CARD_CACHE'});
+    queueOfflineCardWarmup(registration);
+    const connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+    connection?.addEventListener?.('change',()=>queueOfflineCardWarmup(registration));
   }catch(error){
     console.warn('Offline support unavailable:',error);
     showAppNotice({title:'离线功能暂时不可用',detail:'仍可在联网状态下正常抽牌'});
