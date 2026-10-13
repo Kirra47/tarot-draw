@@ -79,6 +79,19 @@ function loadChromium() {
   await mobPage.screenshot({ path: path.join(OUT, 'mobile-01-initial.png') });
   console.log('Saved mobile-01-initial.png');
 
+  // Scroll down to the dedicated cube frame on mobile
+  console.log('Scrolling down to dedicated cube frame on mobile...');
+  await mobPage.evaluate(() => {
+    document.getElementById('cubeDedicatedFrame')?.scrollIntoView({ behavior: 'instant', block: 'center' });
+  });
+  await mobPage.waitForTimeout(800);
+  await mobPage.screenshot({ path: path.join(OUT, 'mobile-02-cube-frame.png') });
+  console.log('Saved mobile-02-cube-frame.png');
+
+  // Test auxiliary button click on cube (e.g. left rotate)
+  await mobPage.click('#btnRotateRight');
+  await mobPage.waitForTimeout(400);
+
   await browser.close();
 
   console.log('Total page errors caught:', errors.length);

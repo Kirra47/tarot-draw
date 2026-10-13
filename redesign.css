@@ -4,39 +4,64 @@
    ========================================================================== */
 
 :root {
-  --bg-space: #080a0d;
-  --bg-desk: #101418;
-  --bg-surface: #161a1f;
-  --bg-surface-raised: #1d2229;
+  /* ========================================================================
+     星象塔罗 · 优化色彩系统 (Astral Midnight & Starlight Gold)
+     深邃星夜绀蓝 + 琉璃星辉金 + 皇家朱砂红 + 珍珠文墨，彻底消除灰浊暗沉感
+     ======================================================================== */
+  --bg-space: #070b16;
+  --bg-desk: #0e1528;
+  --bg-surface: #131c35;
+  --bg-surface-raised: #1b2646;
   
-  --line-gold: rgba(201, 171, 121, 0.22);
-  --line-gold-soft: rgba(201, 171, 121, 0.12);
-  --line-gold-bright: rgba(201, 171, 121, 0.45);
-  --line-dark: rgba(255, 255, 255, 0.06);
+  --line-gold: rgba(234, 197, 126, 0.32);
+  --line-gold-soft: rgba(234, 197, 126, 0.16);
+  --line-gold-bright: rgba(234, 197, 126, 0.65);
+  --line-dark: rgba(255, 255, 255, 0.08);
+  --line-cyan: rgba(56, 189, 248, 0.28);
   
-  --gold: #c9ab79;
-  --gold-light: #ecd5aa;
-  --gold-dim: #988057;
+  --gold: #ecc87a;
+  --gold-light: #fbe5ad;
+  --gold-dim: #b89349;
+  --gold-glow: rgba(236, 200, 122, 0.35);
   
-  --ink: #f4ecdf;
-  --ink-soft: #d3c7b5;
-  --ink-muted: #9e9282;
-  --ink-dark: #635b50;
+  --ink: #f8fafc;
+  --ink-soft: #e2e8f0;
+  --ink-muted: #94a3b8;
+  --ink-dark: #64748b;
   
-  --cinnabar: #9f493e;
-  --cinnabar-hover: #b65447;
-  --cinnabar-glow: rgba(162, 75, 63, 0.32);
+  /* 皇家朱砂主色：鲜活厚重、内蕴光华 */
+  --cinnabar: #c43e37;
+  --cinnabar-hover: #dc4a42;
+  --cinnabar-glow: rgba(196, 62, 55, 0.45);
   
   --font-serif: "Songti SC", "STSong", "Noto Serif SC", SimSun, serif;
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
   
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
   --radius-full: 999px;
   
   --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* 主题支持：紫微玄天 & 曜石金 */
+[data-theme="amethyst"] {
+  --bg-space: #0b0716;
+  --bg-desk: #140d27;
+  --bg-surface: #1b1235;
+  --bg-surface-raised: #251949;
+  --cinnabar: #9d3dc7;
+  --cinnabar-hover: #b44ae3;
+  --cinnabar-glow: rgba(157, 61, 199, 0.45);
+}
+
+[data-theme="obsidian"] {
+  --bg-space: #050608;
+  --bg-desk: #0b0d12;
+  --bg-surface: #11141c;
+  --bg-surface-raised: #181d28;
 }
 
 *, *::before, *::after {
@@ -52,13 +77,14 @@ body {
   min-height: 100dvh;
   background-color: var(--bg-space);
   background-image: 
-    radial-gradient(ellipse 60% 40% at 50% -10%, rgba(201, 171, 121, 0.08), transparent 70%),
-    radial-gradient(ellipse 50% 50% at 80% 50%, rgba(30, 40, 52, 0.3), transparent 70%),
-    radial-gradient(ellipse 40% 40% at 15% 85%, rgba(159, 73, 62, 0.06), transparent 60%);
+    radial-gradient(ellipse 65% 50% at 50% -10%, rgba(99, 102, 241, 0.14), transparent 70%),
+    radial-gradient(ellipse 55% 55% at 85% 40%, rgba(56, 189, 248, 0.10), transparent 70%),
+    radial-gradient(ellipse 45% 45% at 15% 85%, rgba(234, 197, 126, 0.08), transparent 60%);
   color: var(--ink);
   font-family: var(--font-sans);
   overflow-x: hidden;
   position: relative;
+  transition: background-color 300ms ease;
 }
 
 /* 顶部极简仪式感航头 */
@@ -116,10 +142,40 @@ body {
   padding: 4px 10px;
   border-radius: var(--radius-full);
   border: 1px solid var(--line-gold);
-  background: rgba(201, 171, 121, 0.08);
-  color: var(--gold);
+  background: rgba(234, 197, 126, 0.1);
+  color: var(--gold-light);
   letter-spacing: 0.5px;
   white-space: nowrap;
+}
+
+.themeSwitchGroup {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line-gold-soft);
+  border-radius: var(--radius-full);
+  padding: 2px 3px;
+  gap: 2px;
+}
+
+.themeBtn {
+  background: transparent;
+  border: none;
+  color: var(--ink-muted);
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all 160ms ease;
+  user-select: none;
+}
+.themeBtn:hover {
+  color: var(--ink);
+}
+.themeBtn.active {
+  background: rgba(234, 197, 126, 0.2);
+  color: var(--gold-light);
+  font-weight: 500;
 }
 
 @media (max-width: 480px) {
@@ -208,11 +264,12 @@ body {
   border: 1px solid var(--line-gold);
   border-radius: var(--radius-lg);
   background: 
-    linear-gradient(135deg, rgba(29, 34, 41, 0.85) 0%, rgba(18, 22, 27, 0.95) 100%);
+    linear-gradient(145deg, rgba(19, 27, 50, 0.88) 0%, rgba(10, 16, 32, 0.95) 100%);
   padding: 34px 38px 28px;
   box-shadow: 
-    0 24px 64px -16px rgba(0, 0, 0, 0.6),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    0 24px 64px -16px rgba(0, 0, 0, 0.75),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 0 32px rgba(99, 102, 241, 0.08);
   backdrop-filter: blur(16px);
   overflow: hidden;
   transition: border-color 220ms ease, box-shadow 220ms ease;
@@ -221,9 +278,9 @@ body {
 .questionBookCard:hover {
   border-color: var(--line-gold-bright);
   box-shadow: 
-    0 28px 72px -16px rgba(0, 0, 0, 0.75),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    0 0 32px rgba(201, 171, 121, 0.08);
+    0 28px 72px -16px rgba(0, 0, 0, 0.85),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 0 36px rgba(234, 197, 126, 0.15);
 }
 
 /* 顶部装饰线与章节指示 */
@@ -559,23 +616,140 @@ body {
   flex-direction: column;
   gap: 16px;
   align-items: center;
+  width: 100%;
 }
 
+/* 专属单独框体：手势隔离的魔方控制台 */
+.cubeDedicatedFrame {
+  width: 100%;
+  max-width: 520px;
+  background: linear-gradient(165deg, rgba(19, 27, 48, 0.9) 0%, rgba(10, 15, 29, 0.96) 100%);
+  border: 1px solid var(--line-gold);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px 16px;
+  position: relative;
+  box-shadow: 
+    0 24px 64px -16px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 0 32px rgba(99, 102, 241, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  touch-action: none !important; /* 关键：阻止框体内任何默认手势向上传递 */
+  overscroll-behavior: none !important;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+
+/* 四角仪式刻度装饰 Corner Reticles */
+.cubeDedicatedFrame::before, .cubeDedicatedFrame::after {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: var(--gold);
+  border-style: solid;
+  pointer-events: none;
+  opacity: 0.65;
+  transition: opacity 200ms ease, border-color 200ms ease;
+}
+.cubeDedicatedFrame::before {
+  top: 8px; left: 8px;
+  border-width: 2px 0 0 2px;
+}
+.cubeDedicatedFrame::after {
+  bottom: 8px; right: 8px;
+  border-width: 0 2px 2px 0;
+}
+
+/* 触碰旋转活跃状态反馈 */
+.cubeDedicatedFrame.is-touching {
+  border-color: var(--gold-bright);
+  box-shadow: 
+    0 28px 72px -16px rgba(0, 0, 0, 0.9),
+    0 0 36px var(--gold-glow);
+}
+.cubeDedicatedFrame.is-touching::before, .cubeDedicatedFrame.is-touching::after {
+  opacity: 1;
+  border-color: var(--gold-light);
+}
+
+.cubeDedicatedHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line-gold-soft);
+  gap: 10px;
+}
+
+.cubeDeckTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-serif);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gold-light);
+  letter-spacing: 1px;
+}
+
+.cubeDeckTitle .sigil {
+  color: var(--gold);
+  font-size: 13px;
+}
+
+.cubeLockIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.5px;
+  transition: all 180ms ease;
+}
+
+.cubeDedicatedFrame.is-touching .cubeLockIndicator {
+  background: rgba(236, 200, 122, 0.2);
+  border-color: var(--gold);
+  color: var(--gold-light);
+}
+
+.lockDot {
+  width: 6px;
+  height: 6px;
+  background: #38bdf8;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #38bdf8;
+}
+
+.cubeDedicatedFrame.is-touching .lockDot {
+  background: var(--gold);
+  box-shadow: 0 0 8px var(--gold);
+}
+
+/* 3D 魔方画布容器（全隔离触控区） */
 .cubeCanvasWrapper {
   width: 100%;
   aspect-ratio: 1 / 1;
-  max-width: 520px;
   background: 
-    radial-gradient(circle at 50% 50%, rgba(201, 171, 121, 0.05) 0%, transparent 68%),
-    linear-gradient(180deg, rgba(22, 26, 31, 0.6) 0%, rgba(12, 15, 19, 0.8) 100%);
+    radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 68%),
+    linear-gradient(180deg, rgba(13, 18, 34, 0.7) 0%, rgba(7, 10, 20, 0.85) 100%);
   border: 1px solid var(--line-gold-soft);
-  border-radius: 24px;
+  border-radius: var(--radius-md);
   position: relative;
   overflow: hidden;
-  box-shadow: 0 32px 80px -20px rgba(0, 0, 0, 0.8);
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
+  touch-action: none !important; /* 关键：强制阻止浏览器原生上下滑动 */
+  overscroll-behavior: none !important;
 }
 
 #cubeCanvasRedesign {
@@ -583,57 +757,70 @@ body {
   height: 100%;
   display: block;
   cursor: grab;
+  touch-action: none !important;
 }
 #cubeCanvasRedesign:active {
   cursor: grabbing;
 }
 
-/* 围绕魔方的悬浮微标 */
-.cubeHeaderBadge {
+/* 四角指引小刻度 */
+.cubeCornerGuide {
   position: absolute;
-  top: 20px;
-  left: 24px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
   color: var(--gold);
-  letter-spacing: 1px;
-  background: rgba(10, 13, 17, 0.7);
-  padding: 5px 12px;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--line-gold-soft);
-  backdrop-filter: blur(8px);
+  opacity: 0.35;
+  font-size: 12px;
+  pointer-events: none;
+  line-height: 1;
 }
+.cubeCornerGuide.tl { top: 8px; left: 8px; }
+.cubeCornerGuide.tr { top: 8px; right: 8px; }
+.cubeCornerGuide.bl { bottom: 8px; left: 8px; }
+.cubeCornerGuide.br { bottom: 8px; right: 8px; }
 
-.cubePulseDot {
-  width: 6px;
-  height: 6px;
-  background: #4b9177;
-  border-radius: 50%;
-  box-shadow: 0 0 8px #4b9177;
-  animation: pulse 2s infinite ease-in-out;
-}
-
-.cubeFooterHint {
-  position: absolute;
-  bottom: 18px;
+/* 控台底部快捷操作与触控提示栏 */
+.cubeDeckFooter {
   display: flex;
   align-items: center;
-  gap: 14px;
-  font-size: 11px;
-  color: var(--ink-muted);
-  background: rgba(10, 13, 17, 0.65);
-  padding: 6px 14px;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--line-dark);
-  backdrop-filter: blur(8px);
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid var(--line-gold-soft);
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-.cubeFooterHint span {
+.cubeGestureTip {
   display: flex;
   align-items: center;
   gap: 5px;
+  font-size: 11px;
+  color: var(--ink-muted);
+  letter-spacing: 0.5px;
+}
+
+.cubeAuxButtons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btnCubeAux {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line-gold-soft);
+  color: var(--ink-soft);
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 160ms ease;
+  user-select: none;
+}
+.btnCubeAux:hover {
+  background: rgba(236, 200, 122, 0.14);
+  border-color: var(--gold);
+  color: var(--gold-light);
+}
+.btnCubeAux:active {
+  transform: scale(0.96);
 }
 
 /* 魔方下方的象意哲思卡 */
@@ -642,11 +829,12 @@ body {
   max-width: 520px;
   border: 1px solid var(--line-gold-soft);
   border-radius: var(--radius-md);
-  background: rgba(22, 26, 31, 0.4);
-  padding: 18px 22px;
+  background: rgba(19, 27, 48, 0.45);
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
   gap: 6px;
+  backdrop-filter: blur(8px);
 }
 
 .altarPhilosophyCard strong {
@@ -761,5 +949,35 @@ body {
   }
   .modeSegmentedGroup {
     grid-template-columns: 1fr;
+  }
+  
+  .themeSwitchGroup {
+    padding: 2px;
+  }
+  .themeBtn .themeLabel {
+    display: none;
+  }
+  .themeBtn {
+    padding: 3px 6px;
+    font-size: 12px;
+  }
+  
+  .cubeDedicatedFrame {
+    padding: 14px 14px 12px;
+  }
+  .cubeDeckFooter {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .cubeAuxButtons {
+    justify-content: space-between;
+    width: 100%;
+  }
+  .btnCubeAux {
+    flex: 1;
+    text-align: center;
+    padding: 7px 4px;
+    font-size: 11px;
   }
 }

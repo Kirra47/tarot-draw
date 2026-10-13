@@ -177,6 +177,19 @@
       <span class="tagline">Question Book & Permutation Altar</span>
     </div>
     <div class="navControls">
+      <!-- 快捷色彩主题切换 -->
+      <div class="themeSwitchGroup" id="themeSwitchGroup" role="radiogroup" aria-label="视觉主题切换">
+        <button type="button" class="themeBtn active" data-theme="astral" role="radio" aria-checked="true" title="星夜深蓝">
+          <span class="themeIcon">🌌</span><span class="themeLabel"> 星夜</span>
+        </button>
+        <button type="button" class="themeBtn" data-theme="amethyst" role="radio" aria-checked="false" title="紫微玄天">
+          <span class="themeIcon">🔮</span><span class="themeLabel"> 紫微</span>
+        </button>
+        <button type="button" class="themeBtn" data-theme="obsidian" role="radio" aria-checked="false" title="曜石纯金">
+          <span class="themeIcon">🌑</span><span class="themeLabel"> 曜石</span>
+        </button>
+      </div>
+
       <span class="badgePrototype">全新设计原型</span>
       <a href="./tarot.html" class="returnProductionLink" title="返回经典生产版本">
         <span>返回经典原版</span>
@@ -304,21 +317,44 @@
 
     <!-- ══════════════════════════════════════════════════════════
          右栏：运律天机 3D 魔方舞台 (The Permutation Altar)
+         独立框定手势隔离区，严禁触发网页上下滚动
          ══════════════════════════════════════════════════════════ -->
     <aside class="cubeAltarStage">
       
-      <div class="cubeCanvasWrapper">
-        <canvas id="cubeCanvasRedesign" aria-label="三阶运律魔方 3D 画布"></canvas>
+      <!-- 专属框出的魔方控制台 -->
+      <div class="cubeDedicatedFrame" id="cubeDedicatedFrame">
         
-        <div class="cubeHeaderBadge">
-          <span class="cubePulseDot"></span>
-          <span>运律天机 · 变易不居</span>
+        <div class="cubeDedicatedHeader">
+          <div class="cubeDeckTitle">
+            <span class="sigil">❖</span>
+            <span>运律天机 · 3D 旋转控制区</span>
+          </div>
+          <span class="cubeLockIndicator" id="cubeLockIndicator">
+            <span class="lockDot"></span>
+            <span>手势已锁定 · 隔离翻页</span>
+          </span>
         </div>
 
-        <div class="cubeFooterHint">
-          <span>⤹ 拖拽旋动视角</span>
-          <span>✦ 翻页即动天机</span>
+        <div class="cubeCanvasWrapper" id="cubeCanvasWrapper">
+          <canvas id="cubeCanvasRedesign" aria-label="三阶运律魔方 3D 画布"></canvas>
+          <span class="cubeCornerGuide tl">⌜</span>
+          <span class="cubeCornerGuide tr">⌝</span>
+          <span class="cubeCornerGuide bl">⌞</span>
+          <span class="cubeCornerGuide br">⌟</span>
         </div>
+
+        <div class="cubeDeckFooter">
+          <div class="cubeGestureTip">
+            <span>⤹ 短滑即转魔方</span>
+          </div>
+          <div class="cubeAuxButtons">
+            <button type="button" class="btnCubeAux" id="btnRotateLeft" title="向左旋转视角">⟲ 左旋</button>
+            <button type="button" class="btnCubeAux" id="btnRotateRight" title="向右旋转视角">⟳ 右旋</button>
+            <button type="button" class="btnCubeAux" id="btnTwistLayer" title="随机拧转一层">✦ 拧转</button>
+            <button type="button" class="btnCubeAux" id="btnResetView" title="重置视角">↺ 复位</button>
+          </div>
+        </div>
+
       </div>
 
       <div class="altarPhilosophyCard">
@@ -532,6 +568,26 @@
       });
     });
 
+    // 视觉色彩主题切换
+    const themeButtons = document.querySelectorAll('.themeBtn');
+    themeButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        themeButtons.forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-checked', 'false');
+        });
+        btn.classList.add('active');
+        btn.setAttribute('aria-checked', 'true');
+        const theme = btn.dataset.theme;
+        if (theme === 'astral') {
+          document.documentElement.removeAttribute('data-theme');
+        } else {
+          document.documentElement.setAttribute('data-theme', theme);
+        }
+        showToast(`已切换视觉色彩：${btn.textContent.trim()}`);
+      });
+    });
+
     // 气泡提示
     let toastTimer = null;
     function showToast(msg) {
@@ -731,12 +787,12 @@
     camera.position.set(4.8, 3.4, 7.6).normalize().multiplyScalar(cameraBaseDist);
     camera.lookAt(0, 0, 0);
 
-    // 光照系统：温润金光与冷冽背光互映
-    scene.add(new THREE.AmbientLight(0xebe5da, 1.1));
-    const rimLight = new THREE.PointLight(0xc9ab79, 1.8, 20, 2);
+    // 光照系统：温润星金主光与深空冰蓝侧逆光
+    scene.add(new THREE.AmbientLight(0xfffbf2, 1.25));
+    const rimLight = new THREE.PointLight(0xe5c378, 2.2, 22, 2);
     rimLight.position.set(-5, 5, -5);
     scene.add(rimLight);
-    const fillLight = new THREE.PointLight(0xecd5aa, 1.6, 16, 2);
+    const fillLight = new THREE.PointLight(0x38bdf8, 1.8, 18, 2);
     fillLight.position.set(3, 2, 6);
     scene.add(fillLight);
 
@@ -750,18 +806,18 @@
     const cubieGeometry = new THREE.BoxGeometry(CUBIE_SIZE, CUBIE_SIZE, CUBIE_SIZE);
     const cubieEdgeGeometry = new THREE.EdgesGeometry(cubieGeometry, 18);
     const cubieEdgeMaterial = new THREE.LineBasicMaterial({
-      color: 0xc9ab79,
+      color: 0xe5c378,
       transparent: true,
-      opacity: 0.35,
+      opacity: 0.42,
       depthTest: true,
       depthWrite: false
     });
     const cubieBodyMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0x14181d,
-      roughness: 0.52,
-      metalness: 0.12,
-      clearcoat: 0.28,
-      clearcoatRoughness: 0.32
+      color: 0x0f1526,
+      roughness: 0.46,
+      metalness: 0.16,
+      clearcoat: 0.35,
+      clearcoatRoughness: 0.28
     });
 
     // 圆角贴纸
@@ -778,23 +834,23 @@
     stickerShape.quadraticCurveTo(-stickerHalf, -stickerHalf, -stickerHalf + stickerRadius, -stickerHalf);
     const stickerGeometry = new THREE.ShapeGeometry(stickerShape);
 
-    // 六面色系（黑曜红/朱砂/旧金/青玉/夜蓝/素锦象牙）
+    // 六面宝光色系（璀璨朱砂 / 熔金暖橙 / 素锦珍珠 / 琉璃纯金 / 碧玺翡玉 / 天穹星蓝）
     const STICKER_COLORS = [
-      0x9f493e, // +X 朱砂赤红
-      0xca8c42, // -X 暖琥珀橙
-      0xf0e7d5, // +Y 素锦象牙
-      0xc9ab79, // -Y 沉金古黄
-      0x4a8c75, // +Z 苍玉松青
-      0x48698f  // -Z 幽夜星蓝
+      0xc53d34, // +X 璀璨朱砂 (Vibrant Carmine)
+      0xef9436, // -X 熔金暖橙 (Luminous Amber)
+      0xfaf6ec, // +Y 素锦珍珠 (Pearl Starlight)
+      0xebd07b, // -Y 琉璃纯金 (Imperial Gold)
+      0x34d399, // +Z 碧玺翡玉 (Emerald Jade)
+      0x38bdf8  // -Z 天穹星蓝 (Sky Sapphire)
     ];
     const stickerMaterials = STICKER_COLORS.map(color => new THREE.MeshPhysicalMaterial({
       color,
-      roughness: 0.45,
+      roughness: 0.38,
       metalness: 0.08,
-      clearcoat: 0.35,
-      clearcoatRoughness: 0.25,
+      clearcoat: 0.45,
+      clearcoatRoughness: 0.22,
       emissive: color,
-      emissiveIntensity: 0.14,
+      emissiveIntensity: 0.16,
       side: THREE.DoubleSide
     }));
 
@@ -917,34 +973,78 @@
       startTurn();
     };
 
-    // ── 交互式视差拖拽控制 ──────────────────────────────────────
+    // ── 交互式视差拖拽控制 (手势独占隔离，彻底阻止网页翻页) ───────────────────
     let isDragging = false;
     let prevPointer = { x: 0, y: 0 };
     let dragVelocity = { x: 0, y: 0 };
+    const cubeFrame = document.getElementById('cubeDedicatedFrame');
+    const cubeCanvasWrapper = document.getElementById('cubeCanvasWrapper');
+
+    // 关键：对 canvas 及框体彻底拦截触控默认上下翻页
+    ['touchstart', 'touchmove', 'touchend', 'touchcancel'].forEach(evtName => {
+      canvas.addEventListener(evtName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }, { passive: false });
+      if (cubeCanvasWrapper) {
+        cubeCanvasWrapper.addEventListener(evtName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }, { passive: false });
+      }
+    });
 
     canvas.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       isDragging = true;
       prevPointer = { x: e.clientX, y: e.clientY };
       canvas.setPointerCapture(e.pointerId);
+      if (cubeFrame) cubeFrame.classList.add('is-touching');
     });
 
     window.addEventListener('pointermove', (e) => {
       if (!isDragging) return;
+      e.preventDefault();
+      e.stopPropagation();
       const dx = e.clientX - prevPointer.x;
       const dy = e.clientY - prevPointer.y;
       prevPointer = { x: e.clientX, y: e.clientY };
 
-      dragVelocity.x = dx * 0.006;
-      dragVelocity.y = dy * 0.006;
+      // 大幅提升短滑响应灵敏度 (短距离划动即产生灵敏清晰旋转)
+      dragVelocity.x = dx * 0.009;
+      dragVelocity.y = dy * 0.009;
 
       cubeRoot.rotation.y += dragVelocity.x;
       cubeRoot.rotation.x += dragVelocity.y;
     });
 
-    window.addEventListener('pointerup', (e) => {
+    const stopDrag = (e) => {
       if (!isDragging) return;
       isDragging = false;
+      if (cubeFrame) cubeFrame.classList.remove('is-touching');
       try { canvas.releasePointerCapture(e.pointerId); } catch (_) {}
+    };
+
+    window.addEventListener('pointerup', stopDrag);
+    window.addEventListener('pointercancel', stopDrag);
+
+    // 专属辅助旋转控制按钮
+    document.getElementById('btnRotateLeft')?.addEventListener('click', () => {
+      dragVelocity.x -= 0.08;
+      cubeRoot.rotation.y -= Math.PI / 4;
+    });
+    document.getElementById('btnRotateRight')?.addEventListener('click', () => {
+      dragVelocity.x += 0.08;
+      cubeRoot.rotation.y += Math.PI / 4;
+    });
+    document.getElementById('btnTwistLayer')?.addEventListener('click', () => {
+      window.triggerCubeSingleTurn();
+    });
+    document.getElementById('btnResetView')?.addEventListener('click', () => {
+      cubeRoot.rotation.set(0.18, -0.45, 0.05);
+      dragVelocity.x = 0;
+      dragVelocity.y = 0;
     });
 
     // 自适应尺寸变化
