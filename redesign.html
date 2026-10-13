@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>星象塔罗 · 问心玄境 (全新概念原型)</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✦</text></svg>">
+  <link rel="stylesheet" href="./redesign.css">
+  <style>
+    /* 局部微调与浮动提示条 */
+    .toastNotification {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(22, 26, 31, 0.95);
+      border: 1px solid var(--line-gold);
+      color: var(--gold-light);
+      padding: 10px 22px;
+      border-radius: var(--radius-full);
+      font-size: 13px;
+      letter-spacing: 0.5px;
+      box-shadow: 0 12px 36px rgba(0,0,0,0.6);
+      backdrop-filter: blur(12px);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 260ms var(--ease-spring);
+      z-index: 999;
+    }
+    .toastNotification.is-visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    
+    /* 启卷仪式全屏模拟层 */
+    .ritualOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 10, 13, 0.92);
+      backdrop-filter: blur(20px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 300ms ease;
+    }
+    .ritualOverlay.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .ritualModal {
+      max-width: 580px;
+      width: 100%;
+      background: linear-gradient(145deg, #181d24, #0f1317);
+      border: 1px solid var(--line-gold-bright);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.8), 0 0 50px rgba(201, 171, 121, 0.12);
+      text-align: center;
+      position: relative;
+      transform: scale(0.95) translateY(12px);
+      transition: transform 300ms var(--ease-spring);
+    }
+    .ritualOverlay.is-open .ritualModal {
+      transform: scale(1) translateY(0);
+    }
+    .ritualModal .modalCloseBtn {
+      position: absolute;
+      top: 18px;
+      right: 20px;
+      background: none;
+      border: none;
+      color: var(--ink-muted);
+      font-size: 24px;
+      cursor: pointer;
+      line-height: 1;
+      transition: color 150ms ease;
+    }
+    .ritualModal .modalCloseBtn:hover {
+      color: var(--gold-light);
+    }
+    .modalSigil {
+      font-size: 28px;
+      color: var(--gold);
+      margin-bottom: 12px;
+      text-shadow: 0 0 20px rgba(201, 171, 121, 0.6);
+    }
+    .modalTitle {
+      font-family: var(--font-serif);
+      font-size: 26px;
+      font-weight: 500;
+      letter-spacing: 2px;
+      color: var(--ink);
+      margin-bottom: 12px;
+    }
+    .modalQuestionBox {
+      background: rgba(10, 13, 17, 0.7);
+      border: 1px solid var(--line-gold-soft);
+      border-radius: var(--radius-md);
+      padding: 18px 22px;
+      margin: 22px 0 26px;
+      font-family: var(--font-serif);
+      font-size: 18px;
+      line-height: 1.6;
+      color: var(--gold-light);
+    }
+    .modalMetaList {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 28px;
+      font-size: 13px;
+      color: var(--ink-soft);
+    }
+    .modalMetaList span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .modalMetaList b {
+      color: var(--gold);
+      font-weight: 500;
+    }
+    .modalActionRow {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+    }
+    .btnModalPrimary {
+      flex: 1;
+      height: 48px;
+      background: linear-gradient(180deg, var(--cinnabar-hover), var(--cinnabar));
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: var(--radius-md);
+      color: #fff;
+      font-family: var(--font-serif);
+      font-size: 16px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      transition: all 180ms ease;
+    }
+    .btnModalPrimary:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+    }
+    .btnModalSecondary {
+      height: 48px;
+      padding: 0 22px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--line-gold);
+      border-radius: var(--radius-md);
+      color: var(--ink);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 180ms ease;
+    }
+    .btnModalSecondary:hover {
+      background: rgba(255,255,255,0.1);
+      color: var(--gold-light);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 顶部极简仪式感航头 -->
+  <header class="sanctuaryNav">
+    <div class="brandSign">
+      <span class="sigil">✦</span>
+      <h1>星象塔罗 · 问心玄境</h1>
+      <span class="tagline">Question Book & Permutation Altar</span>
+    </div>
+    <div class="navControls">
+      <span class="badgePrototype">全新设计原型</span>
+      <a href="./tarot.html" class="returnProductionLink" title="返回经典生产版本">
+        <span>返回经典原版</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+  </header>
+
+  <!-- 主舞台双栏布局 -->
+  <main class="stageContainer">
+    
+    <!-- ══════════════════════════════════════════════════════════
+         左栏：问题之书与观象台 (Inquiry Sanctuary)
+         ══════════════════════════════════════════════════════════ -->
+    <section class="inquirySanctuary">
+      
+      <div class="inquiryHeader">
+        <div class="kickerRow">
+          <span class="ruleLine"></span>
+          <span>问题之书 · THE QUESTION BOOK</span>
+        </div>
+        <h2>心有所惑 · 借象问真</h2>
+        <p>举棋不定之时，翻开这一页。不必急于占断结果，先让直击内核的观照之问，唤醒你内心被纷乱思绪遮蔽的直觉。</p>
+        
+        <!-- 卷册快速筛选标签 -->
+        <nav class="chapterTabsRow" id="chapterTabsRow" aria-label="卷册分类筛选">
+          <button type="button" class="chapterTabBtn active" data-chapter="all">全部 (108)</button>
+          <button type="button" class="chapterTabBtn" data-chapter="卷一 · 迷津与方向">卷一 · 迷津</button>
+          <button type="button" class="chapterTabBtn" data-chapter="卷二 · 执念与羁绊">卷二 · 羁绊</button>
+          <button type="button" class="chapterTabBtn" data-chapter="卷三 · 心相与境遇">卷三 · 心相</button>
+          <button type="button" class="chapterTabBtn" data-chapter="卷四 · 动静与时机">卷四 · 时机</button>
+          <button type="button" class="chapterTabBtn" data-chapter="卷五 · 舍得与归途">卷五 · 归途</button>
+        </nav>
+      </div>
+
+      <!-- 核心卡片：问题之书 -->
+      <article class="questionBookCard" id="questionBookCard" aria-live="polite">
+        
+        <div class="bookMetaHeader">
+          <div class="bookChapterBadge">
+            <i></i>
+            <span id="bookChapterLabel">卷一 · 迷津与方向</span>
+          </div>
+          <div class="bookPageCounter">
+            <span id="bookPageIndex">第 001 问</span>
+            <span style="opacity: 0.5;"> / 108</span>
+          </div>
+        </div>
+
+        <div class="bookPromptSurface">
+          <span class="promptQuotes">“</span>
+          <p class="promptText" id="promptTextDisplay">
+            若放下对“必须完美”的执念，当下真正渴望迈出的第一步是什么？
+          </p>
+          <p class="promptReflectionHint" id="promptReflectionHint">
+            观象提示：坎为水，习坎重重，常德行，习教事。以诚意照破迷障。
+          </p>
+        </div>
+
+        <div class="bookActionToolbar">
+          <div class="leftActions">
+            <button type="button" class="btnNextPrompt" id="btnNextPrompt" aria-label="换一个问题">
+              <span class="flipIcon">↻</span>
+              <span>换一个问题</span>
+            </button>
+            <button type="button" class="btnAdoptPrompt" id="btnAdoptPrompt" aria-label="以此题入卦">
+              <span>✓ 以此题起测</span>
+            </button>
+          </div>
+          <div class="rightActions">
+            <button type="button" class="btnToggleCustom" id="btnToggleCustom">
+              自主补充描述
+            </button>
+          </div>
+        </div>
+
+        <!-- 自由自定义补充输入框 (可展开/折叠) -->
+        <div class="customInputDrawer" id="customInputDrawer" hidden>
+          <label for="customPromptInput" style="font-size: 12px; color: var(--ink-muted);">
+            你的专属心念（可在此微调或补充背景细节）：
+          </label>
+          <textarea 
+            id="customPromptInput" 
+            class="customTextarea" 
+            maxlength="240" 
+            rows="3" 
+            placeholder="写下你当前最关心的具体情境或疑虑..."></textarea>
+          <div style="display: flex; justify-content: flex-end; font-size: 11px; color: var(--ink-muted);">
+            <span id="charCount">0</span> / 240
+          </div>
+        </div>
+
+      </article>
+
+      <!-- 仪式与模式选择控制器 -->
+      <section class="ritualController">
+        
+        <div class="modeSelectionBar">
+          <label>选择契合心灵的观照法门</label>
+          <div class="modeSegmentedGroup" role="radiogroup">
+            <button type="button" class="modeSegmentItem active" data-mode="tarot" role="radio" aria-checked="true">
+              <strong>塔罗牌阵</strong>
+              <span>78张象征 · 觉察潜意识</span>
+            </button>
+            <button type="button" class="modeSegmentItem" data-mode="gua" role="radio" aria-checked="false">
+              <strong>周易六爻</strong>
+              <span>大衍天机 · 洞察动静生克</span>
+            </button>
+            <button type="button" class="modeSegmentItem" data-mode="hybrid" role="radio" aria-checked="false">
+              <strong>天人相参</strong>
+              <span>易塔二合一 · 乾坤互证</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 核心启卷主按钮 -->
+        <button type="button" class="primaryCastButton" id="primaryCastButton">
+          <span>启卷入境 · 沉思推演</span>
+          <span class="arrowMark">→</span>
+        </button>
+
+      </section>
+
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════
+         右栏：运律天机 3D 魔方舞台 (The Permutation Altar)
+         ══════════════════════════════════════════════════════════ -->
+    <aside class="cubeAltarStage">
+      
+      <div class="cubeCanvasWrapper">
+        <canvas id="cubeCanvasRedesign" aria-label="三阶运律魔方 3D 画布"></canvas>
+        
+        <div class="cubeHeaderBadge">
+          <span class="cubePulseDot"></span>
+          <span>运律天机 · 变易不居</span>
+        </div>
+
+        <div class="cubeFooterHint">
+          <span>⤹ 拖拽旋动视角</span>
+          <span>✦ 翻页即动天机</span>
+        </div>
+      </div>
+
+      <div class="altarPhilosophyCard">
+        <strong>大衍易变 · 动静由心</strong>
+        <p>
+          三阶二十七象，如世事因缘交织错落。万事万物皆在变动不居之中。当你翻动问题之书，魔方分层即随之转动，暗合“变易、简易、不易”之道。
+        </p>
+      </div>
+
+    </aside>
+
+  </main>
+
+  <!-- 提示条浮层 -->
+  <div class="toastNotification" id="toastNotification" role="status"></div>
+
+  <!-- 启卷仪式全屏模拟层 -->
+  <div class="ritualOverlay" id="ritualOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="ritualModal">
+      <button type="button" class="modalCloseBtn" id="modalCloseBtn" aria-label="关闭">×</button>
+      <div class="modalSigil">✦</div>
+      <h3 class="modalTitle" id="modalTitle">入境明心 · 已定所问</h3>
+      <p style="font-size: 13px; color: var(--ink-soft);">
+        心念已聚，机缘将显。请静心三息，以澄澈之境迎接启示。
+      </p>
+      
+      <div class="modalQuestionBox" id="modalQuestionDisplay">
+        若放下对“必须完美”的执念，当下真正渴望迈出的第一步是什么？
+      </div>
+
+      <div class="modalMetaList">
+        <span>所选法门：<b id="modalSelectedModeLabel">塔罗牌阵</b></span>
+        <span>卷轴题序：<b id="modalPromptIndexLabel">第 001 问</b></span>
+      </div>
+
+      <div class="modalActionRow">
+        <button type="button" class="btnModalSecondary" id="btnModalClose">稍作沉吟</button>
+        <a href="./tarot.html" class="btnModalPrimary" id="btnModalConfirm">进入实操推演 →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 交互逻辑脚本与 Three.js 3D 魔方实现 -->
+  <script type="module">
+    import * as THREE from './vendor/three/three.module.min.js';
+
+    // ══════════════════════════════════════════════════════════════════
+    // 1. 问题之书 (The Question Book) 精选 108 题库
+    // ══════════════════════════════════════════════════════════════════
+    const QUESTION_BOOK = [
+      // 卷一 · 迷津与方向 (1-22)
+      { id: 1, chapter: "卷一 · 迷津与方向", text: "若放下对“必须完美”的执念，当下真正渴望迈出的第一步是什么？", hint: "乾卦 · 潜龙勿用，阳在下也。蓄力而动，不急于成。" },
+      { id: 2, chapter: "卷一 · 迷津与方向", text: "眼前反复令我纠结的两种选择，究竟哪一个更能带来长久的安宁？", hint: "同人卦 · 同人于野，亨。观照大局，心无私蔽。" },
+      { id: 3, chapter: "卷一 · 迷津与方向", text: "我一直在等待所谓的“最佳时机”，这究竟是深思熟虑还是在逃避开始？", hint: "震卦 · 震惊百里，不丧匕鬯。起步之勇，胜于千般思虑。" },
+      { id: 4, chapter: "卷一 · 迷津与方向", text: "若不再取悦外界的期待，我内心深处最想为自己做成的一件事是什么？", hint: "大有卦 · 火在天上，顺天休命。明辨本心，自天佑之。" },
+      { id: 5, chapter: "卷一 · 迷津与方向", text: "我当前所坚持的目标，是在滋养我的灵魂，还是在过度透支我的元气？", hint: "颐卦 · 观颐，自求口实。审察所养，顺应身心。" },
+      { id: 6, chapter: "卷一 · 迷津与方向", text: "如果失败不会被任何人评判，我今天会做出怎样截然不同的抉择？", hint: "谦卦 · 谦谦君子，卑以自牧。放下荣辱，坦荡前行。" },
+      { id: 7, chapter: "卷一 · 迷津与方向", text: "眼下的迷茫与停滞，是否正是一段必经的沉淀与蓄能期？", hint: "坤卦 · 地势坤，君子以厚德载物。承载包容，静待生发。" },
+      { id: 8, chapter: "卷一 · 迷津与方向", text: "在追求更高远的目标之前，我有哪一项被忽略的基础尚未扎稳？", hint: "蒙卦 · 山下出泉，蒙。君子以果行育德。求教于内，脚踏实地。" },
+      { id: 9, chapter: "卷一 · 迷津与方向", text: "我是否错把“忙碌”当成了“前行”，而忽视了真正核心的质变？", hint: "剥卦 · 不利有攸往。顺而止之，观象于晨。" },
+      { id: 10, chapter: "卷一 · 迷津与方向", text: "未来三个月内，我最应该把有限的心力收拢聚焦在哪个单一点上？", hint: "师卦 · 地中有水，师。贞丈人吉，心志专一。" },
+      { id: 11, chapter: "卷一 · 迷津与方向", text: "我所害怕的未知风险，真实的概率究竟有多大，还是被想象放大了？", hint: "习坎卦 · 水洊至，习坎。维心亨，行有尚。" },
+      { id: 12, chapter: "卷一 · 迷津与方向", text: "当下的瓶颈，需要的是更加坚毅的冲刺，还是适时转换思维与跑道？", hint: "困卦 · 困，亨，贞大人吉。致命遂志，逢变则通。" },
+      { id: 13, chapter: "卷一 · 迷津与方向", text: "若把当下的困难视作一场磨炼，它正在淬炼我哪一项欠缺的能力？", hint: "小畜卦 · 密云不雨，自我西郊。潜移默化，修善于微。" },
+      { id: 14, chapter: "卷一 · 迷津与方向", text: "在我所走的道路上，哪一位导师、伙伴或灵感是我尚未注意到的贵人？", hint: "益卦 · 风雷益，见善则迁，有过则改。" },
+      { id: 15, chapter: "卷一 · 迷津与方向", text: "如果现在的我可以写信给一年后的自己，我最想确认的改变是什么？", hint: "复卦 · 复其见天地之心乎。剥极必复，初心不灭。" },
+      { id: 16, chapter: "卷一 · 迷津与方向", text: "我是否把短期的挫折当成了长期的定局，从而轻视了自己的潜力？", hint: "晋卦 · 顺而丽乎大明，柔进而上行。拨云见日之象。" },
+      { id: 17, chapter: "卷一 · 迷津与方向", text: "在工作与事业上，我究竟是在创造价值，还是仅仅在被动应对惯性？", hint: "需卦 · 需于泥，致寇至。审时度势，行其所当行。" },
+      { id: 18, chapter: "卷一 · 迷津与方向", text: "若必须舍弃一项长期耗费精力却无实质产出的事物，它会是什么？", hint: "损卦 · 损下益上，其道上行。损益有时，适可而止。" },
+      { id: 19, chapter: "卷一 · 迷津与方向", text: "是什么信念或过往经历，在潜移默化中限制了我对自身上限的想象？", hint: "随卦 · 元亨利贞，无咎。随时变通，勿固执己见。" },
+      { id: 20, chapter: "卷一 · 迷津与方向", text: "面对即将到来的重大变故，我内心准备好迎接崭新的角色了吗？", hint: "革卦 · 巳日乃孚，元亨利贞。顺天应人，蜕旧生新。" },
+      { id: 21, chapter: "卷一 · 迷津与方向", text: "如果一切重新洗牌，我是否依然拥有从头再来的笃定与坦然？", hint: "恒卦 · 雷风恒，立不易方。恒其德，操之在我。" },
+      { id: 22, chapter: "卷一 · 迷津与方向", text: "我一直在向外求索道路，然而心中早已知晓的答案究竟为何不敢正视？", hint: "中孚卦 · 豚鱼吉，信及豚鱼也。诚者自成，道不远人。" },
+
+      // 卷二 · 执念与羁绊 (23-44)
+      { id: 23, chapter: "卷二 · 执念与羁绊", text: "在这段关系里，我所执着的究竟是真实的对方，还是自己执念构建的幻象？", hint: "离卦 · 丽也，日月丽乎天，百谷草木丽乎土。明辨真伪。" },
+      { id: 24, chapter: "卷二 · 执念与羁绊", text: "我们之间沟通的堵塞，是因为害怕冲突，还是因为彼此期待错位？", hint: "蹇卦 · 蹇难也，险在前也。反身修德，寻根问底。" },
+      { id: 25, chapter: "卷二 · 执念与羁绊", text: "在付出与给予的过程中，我是否悄然期待着某种不对等的掌控或补偿？", hint: "损卦 · 二簋可用享，孚乃利用缶。清净无伪之交。" },
+      { id: 26, chapter: "卷二 · 执念与羁绊", text: "这段羁绊之所以让我疲惫，是因为边界感模糊，还是承诺未能落地？", hint: "节卦 · 节以制度，不伤财，不害民。人立边界，方得自如。" },
+      { id: 27, chapter: "卷二 · 执念与羁绊", text: "若有一天彼此渐行渐远，我能否心怀感激地与这段缘分体面告别？", hint: "解卦 · 雷雨作而百果草木皆甲拆。释怀解结，天道坦然。" },
+      { id: 28, chapter: "卷二 · 执念与羁绊", text: "在这段亲密关系中，我是否在不知不觉中复制了童年家庭的某种相处模式？", hint: "蛊卦 · 干父之蛊，意承考也。觉察宿因，重塑自我。" },
+      { id: 29, chapter: "卷二 · 执念与羁绊", text: "对方身上最让我感到抗拒的特质，是否正折射出我自身内在未接纳的阴影？", hint: "咸卦 · 柔上而刚下，二气感应以相与。心印自照。" },
+      { id: 30, chapter: "卷二 · 执念与羁绊", text: "我是否因为过度害怕孤独，而忍受了一段不断消耗自己光芒的相处？", hint: "明夷卦 · 利艰贞，晦其明也。自保明德，莫入暗室。" },
+      { id: 31, chapter: "卷二 · 执念与羁绊", text: "若真诚表达内心最柔软脆弱的一面，对方会理解，还是我会遭受伤害？", hint: "萃卦 · 王假有庙，聚以正也。志同道合，方成聚守。" },
+      { id: 32, chapter: "卷二 · 执念与羁绊", text: "我们之间最根本的默契究竟还在不在？若在，为何不能坐下秉烛夜谈？", hint: "鼎卦 · 圣人烹以享上帝，而大烹以养圣贤。凝神正位。" },
+      { id: 33, chapter: "卷二 · 执念与羁绊", text: "在合作与伴侣关系中，我是否给予了对方足够的信任与独立呼吸的余地？", hint: "丰卦 · 日中则昃，月盈则食。相敬如宾，不可盈极。" },
+      { id: 34, chapter: "卷二 · 执念与羁绊", text: "我是否总在等待对方先迈出一步道歉，从而陷入无休止的冷漠博弈？", hint: "旅卦 · 小亨，旅贞吉。过客之心，何苦耿耿于怀。" },
+      { id: 35, chapter: "卷二 · 执念与羁绊", text: "这段情感对于当下的我而言，是不可或缺的支撑，还是一种习惯性的依赖？", hint: "渐卦 · 鸿渐于磐，饮食衎衎。循序渐进，察己自立。" },
+      { id: 36, chapter: "卷二 · 执念与羁绊", text: "若不再要求对方按我的标准改变，我能否心平气和地欣赏其独特的本真？", hint: "归妹卦 · 征凶，无攸利。欲求不得，当顺天理。" },
+      { id: 37, chapter: "卷二 · 执念与羁绊", text: "我心底真正渴望的被爱的方式，曾清晰、温和地向所爱之人表达过吗？", hint: "兑卦 · 丽泽兑，君子以朋友讲习。悦以接人，言顺意达。" },
+      { id: 38, chapter: "卷二 · 执念与羁绊", text: "过去的伤痛是否依然在作祟，让我下意识把防备误认为了理智与成熟？", hint: "姤卦 · 后以施命诰四方。防微杜渐，勿因噎废食。" },
+      { id: 39, chapter: "卷二 · 执念与羁绊", text: "在这段关系里，我们是彼此成为更好的人，还是在相互妥协中日渐萎靡？", hint: "家人卦 · 利女贞，父父子子，兄兄弟弟。各安其位。" },
+      { id: 40, chapter: "卷二 · 执念与羁绊", text: "倘若原谅能够放下包袱，阻碍我真正宽恕的那道心结究竟因何而生？", hint: "涣卦 · 涣其群，元吉。涣散积怨，得大融通。" },
+      { id: 41, chapter: "卷二 · 执念与羁绊", text: "在众人簇拥的喧嚣背后，谁才是我能毫无戒备袒露伤口的灵魂挚友？", hint: "同人卦 · 君子以类族辨物。知己寥寥，重在心照。" },
+      { id: 42, chapter: "卷二 · 执念与羁绊", text: "我是否过度承担了本属于他人的责任，因而让彼此都感到喘不过气？", hint: "大过卦 · 栋桡，本末弱也。负重过甚，当求减负。" },
+      { id: 43, chapter: "卷二 · 执念与羁绊", text: "如果给彼此三个月的冷静与沉淀期，这段缘分会重燃生机还是归于平淡？", hint: "井卦 · 改邑不改井，往来井井。清泉自涌，何须强求。" },
+      { id: 44, chapter: "卷二 · 执念与羁绊", text: "在爱与被爱的命题里，我学会全然接纳并慈悲地对待不完美的自己了吗？", hint: "既济卦 · 亨小，利贞。初吉终乱，守正自爱。" },
+
+      // 卷三 · 心相与境遇 (45-66)
+      { id: 45, chapter: "卷三 · 心相与境遇", text: "当前萦绕心头的焦虑，究竟是源于现实的危机，还是源于对失控的恐惧？", hint: "未济卦 · 事未定也，故有变数。心无挂碍，方破虚妄。" },
+      { id: 46, chapter: "卷三 · 心相与境遇", text: "在夜深人静的一刻，我最难面对、最想逃避的那个念头究竟是什么？", hint: "艮卦 · 艮其背，不获其身。止于所止，直面幽微。" },
+      { id: 47, chapter: "卷三 · 心相与境遇", text: "我是否将自我的尊严与价值，过分绑定在了外在的名声、财富与成就之上？", hint: "大畜卦 · 日新其德，刚健笃实。内圣外王，富贵浮云。" },
+      { id: 48, chapter: "卷三 · 心相与境遇", text: "当下的疲劳是否是身体与潜意识发出的最后通牒：该按下暂停键休整了？", hint: "复卦 · 休复，吉。归根曰静，静曰复命。" },
+      { id: 49, chapter: "卷三 · 心相与境遇", text: "如果允许自己无所事事地放空三天，我心底会升起罪恶感还是释然？", hint: "豫卦 · 先王以作乐崇德，殷荐之上帝。调畅情志。" },
+      { id: 50, chapter: "卷三 · 心相与境遇", text: "我是否在不断向外部寻找认可，却唯独忘记了给自己一个由衷的赞许？", hint: "贲卦 · 白贲无咎，上得志也。返璞归真，素面相照。" },
+      { id: 51, chapter: "卷三 · 心相与境遇", text: "面对嫉妒或不平衡的情绪，我能否诚实地从中辨认出自己真正渴望的事物？", hint: "无妄卦 · 先王以茂对时，育万物。诚心正意，不起贪痴。" },
+      { id: 52, chapter: "卷三 · 心相与境遇", text: "什么事情即使没有任何回报与掌声，我也依然愿意倾注全部热忱去做？", hint: "乾卦 · 君子终日乾乾，夕惕若厉。自强不息，乐在其中。" },
+      { id: 53, chapter: "卷三 · 心相与境遇", text: "我是否常常将最糟糕的剧本提前预演，把当下的安宁白白葬送在忧虑中？", hint: "噬嗑卦 · 雷电噬嗑，先王以明罚敕法。决断疑心，勿陷心狱。" },
+      { id: 54, chapter: "卷三 · 心相与境遇", text: "若能放下对“别人会怎么看我”的担忧，我最想尝试的生活方式是怎样的？", hint: "遁卦 · 天下有山，遁。远小人而不恶，严君子以远遁。" },
+      { id: 55, chapter: "卷三 · 心相与境遇", text: "当痛苦来临时，我是试图用各种娱乐麻痹自己，还是敢于去体会它的讯息？", hint: "坎卦 · 常德行，习教事。艰难玉成，借痛开悟。" },
+      { id: 56, chapter: "卷三 · 心相与境遇", text: "在我的日常生活中，有哪些微小的习惯正日复一日地侵蚀着我的精气神？", hint: "姤卦 · 勿用取女，不可与长也。防于微芒，斩断私垢。" },
+      { id: 57, chapter: "卷三 · 心相与境遇", text: "若以十年前自己的眼光来看当下的我，他/她是会感到自豪还是感到遗憾？", hint: "临卦 · 至于八月有凶，消不久也。瞻前顾后，莫负少年心。" },
+      { id: 58, chapter: "卷三 · 心相与境遇", text: "我究竟是在生活，还是仅仅在履行一张被时间表塞满的日程单？", hint: "颐卦 · 舍尔灵龟，观我朵颐。食饮有节，起居有常。" },
+      { id: 59, chapter: "卷三 · 心相与境遇", text: "在这一生中，我真正不可妥协的底线与核心价值观到底是什么？", hint: "恒卦 · 不恒其德，或承之羞。守道不阿，金石不易。" },
+      { id: 60, chapter: "卷三 · 心相与境遇", text: "我最近一次由衷地感到纯粹的喜悦与宁静，是在什么时候、因为何事？", hint: "中孚卦 · 鹤鸣在阴，其子和之。天籁真纯，妙手偶得。" },
+      { id: 61, chapter: "卷三 · 心相与境遇", text: "倘若生活夺走了我赖以自豪的某项外在光环，我灵魂的核心还剩下什么？", hint: "小过卦 · 可小事，不可大事。飞鸟遗之音，不宜上宜下。" },
+      { id: 62, chapter: "卷三 · 心相与境遇", text: "我是否正在用一种看似正义的愤怒，来掩饰自己内心的无助与失落？", hint: "讼卦 · 作事谋始，无讼为上。平心静气，理直气和。" },
+      { id: 63, chapter: "卷三 · 心相与境遇", text: "我是否将过多精力耗费在无法改变的客观现实上，而怠慢了自己能作为的部分？", hint: "否卦 · 君子以俭德辟难，不可荣以禄。尽人事，听天命。" },
+      { id: 64, chapter: "卷三 · 心相与境遇", text: "在独处的时候，我能否安心与自己相处，而不感到空虚与慌张？", hint: "泰卦 · 天地交而万物通。内充实而外安泰。" },
+      { id: 65, chapter: "卷三 · 心相与境遇", text: "那些未曾实现的愿望，是否在无声地警醒我：命运可能为我预备了另一扇窗？", hint: "晋卦 · 康侯用锡马蕃庶，昼日三接。失之东隅，收之桑榆。" },
+      { id: 66, chapter: "卷三 · 心相与境遇", text: "若用一个词来概括我此刻的心灵气象，它是狂风、暴雨、晴空还是迷雾？", hint: "观卦 · 盥而不荐，有孚颙若。观心见性，清净如洗。" },
+
+      // 卷四 · 动静与时机 (67-88)
+      { id: 67, chapter: "卷四 · 动静与时机", text: "当下这一局，宜速战速决抓住转瞬即逝的窗口，还是宜深沟高垒静观其变？", hint: "师卦 · 能以众正，可以王矣。用兵之道，贵在审时。" },
+      { id: 68, chapter: "卷四 · 动静与时机", text: "我所期待的那个改变节点，需要主动去催化，还是必须等待外部因缘具足？", hint: "需卦 · 需，有孚，光亨，贞吉。利涉大川。耐得苦寒。" },
+      { id: 69, chapter: "卷四 · 动静与时机", text: "如果我现在强行推动一件阻力重重的事，会不会引发意料之外的连锁反噬？", hint: "大壮卦 · 羝羊触藩，赢其角。刚暴易折，莫逞匹夫之勇。" },
+      { id: 70, chapter: "卷四 · 动静与时机", text: "眼前的表象看似平静无波，深层是否正在悄然酝酿必须警惕的暗涌？", hint: "坤卦 · 履霜，坚冰至。见微知著，见月晕而知风。" },
+      { id: 71, chapter: "卷四 · 动静与时机", text: "这次机遇是否伴随着我不曾仔细查验的潜在代价或陷阱？", hint: "噬嗑卦 · 噬肤灭鼻，无咎。察微利析，防祸未然。" },
+      { id: 72, chapter: "卷四 · 动静与时机", text: "在关键的谈判或博弈中，我手中的底牌是否真的如我想象的那般坚固？", hint: "鼎卦 · 覆公餗，其形渥，凶。慎重守正，不可轻敌。" },
+      { id: 73, chapter: "卷四 · 动静与时机", text: "如果选择主动退后一步、割舍局部利益，能否换取全局的彻底盘活？", hint: "遁卦 · 嘉遁，贞吉。以退为进，藏巧于拙。" },
+      { id: 74, chapter: "卷四 · 动静与时机", text: "在当前的团队或合作阵营中，利益与人心的向背究竟偏向何方？", hint: "比卦 · 原筮，元永贞，无咎。不宁方来，后夫凶。" },
+      { id: 75, chapter: "卷四 · 动静与时机", text: "我一直在犹豫不决的关键抉择，最迟应当在什么时候必须一锤定音？", hint: "夬卦 · 扬于王庭，孚号有厉。果决除恶，当断不断必受其乱。" },
+      { id: 76, chapter: "卷四 · 动静与时机", text: "眼下如果贸然出手，胜算究竟有几分？我是否做好了承受最坏局面的准备？", hint: "渐卦 · 鸿渐于陆，夫征不复。戒急用忍，图定后动。" },
+      { id: 77, chapter: "卷四 · 动静与时机", text: "面对突如其来的变故，应当坚守原定方案，还是立即启动备选预案？", hint: "革卦 · 君子豹变，小人革面。顺变应势，不胶柱鼓瑟。" },
+      { id: 78, chapter: "卷四 · 动静与时机", text: "在这个充满不确定性的周期里，现金与资源的储备是否能支撑足够的安全边际？", hint: "节卦 · 安节，亨。承节之志，家给人足。" },
+      { id: 79, chapter: "卷四 · 动静与时机", text: "我所依赖的某种核心优势，是否正在随着外部环境的变化而逐渐钝化？", hint: "井卦 · 井泥不食，旧井无禽。革新工具，方保长青。" },
+      { id: 80, chapter: "卷四 · 动静与时机", text: "是否已经到了必须公开亮出态度、不再含糊其辞的关键时刻？", hint: "丰卦 · 丰其沛，日中见昧。当仁不让，雷厉风行。" },
+      { id: 81, chapter: "卷四 · 动静与时机", text: "对方当前的试探与施压，究竟是虚张声势，还是志在必得的决战信号？", hint: "坎卦 · 来之坎坎，险且枕。不动如山，以静制动。" },
+      { id: 82, chapter: "卷四 · 动静与时机", text: "我是否错将“运势的顺遂”归功于自己的精明，从而滋生了傲慢与轻率？", hint: "大有卦 · 公用亨于天子，小人弗克。自满招损，谦受益。" },
+      { id: 83, chapter: "卷四 · 动静与时机", text: "在眼前这场持久战中，如何才能在保存有生力量的前提下逐步建立优势？", hint: "萃卦 · 假庙之义，用大牲吉。积微成著，聚沙成塔。" },
+      { id: 84, chapter: "卷四 · 动静与时机", text: "当所有人都在狂热追逐某一风口时，我是应该跟进还是冷眼旁观？", hint: "剥卦 · 硕果不食，君子得舆。众人皆醉，独醒者安。" },
+      { id: 85, chapter: "卷四 · 动静与时机", text: "如果必须打破现有的僵局，那个最关键、最薄弱的破局切入点在哪里？", hint: "解卦 · 解悖释纷。解，险以动，动免乎险。" },
+      { id: 86, chapter: "卷四 · 动静与时机", text: "在眼下的困局中，哪一处看似不起眼的细节，实则是决定胜负的命门？", hint: "蛊卦 · 先甲三日，后甲三日。探究根源，慎始敬终。" },
+      { id: 87, chapter: "卷四 · 动静与时机", text: "我是否具备足够的定力，去抵御短期蝇头小利的诱惑以图谋长远大计？", hint: "大畜卦 · 不家食，吉。立大志者，不争一城一地之得失。" },
+      { id: 88, chapter: "卷四 · 动静与时机", text: "这一轮运势更迭之后，我将走向登堂入室的高峰，还是该提防由盛转衰的拐点？", hint: "乾卦 · 上九亢龙有悔，穷之灾也。高处不胜寒，知进更知退。" },
+
+      // 卷五 · 舍得与归途 (89-108)
+      { id: 89, chapter: "卷五 · 舍得与归途", text: "那些被我视为“不可割舍”的包袱，究竟有几件是真正关乎我生命核心的？", hint: "损卦 · 损其疾，使遄有喜。断舍离苦，轻装简从。" },
+      { id: 90, chapter: "卷五 · 舍得与归途", text: "财富与物质上的积累，究竟是在买来真正的自由，还是构建更精致的枷锁？", hint: "鼎卦 · 木上有火，鼎。革故鼎新，养贤惠民。" },
+      { id: 91, chapter: "卷五 · 舍得与归途", text: "若生命的沙漏只剩下最后的三年，我此刻手中忙碌的事项还有几分意义？", hint: "既济卦 · 终止则乱，慎终如始。观生死之大，明立命之根。" },
+      { id: 92, chapter: "卷五 · 舍得与归途", text: "我是否正在为了一个虚无缥缈的“以后”，而长期辜负眼下鲜活明亮的每一个“今天”？", hint: "恒卦 · 妇人贞吉，从一而终。把握当下，莫失今朝。" },
+      { id: 93, chapter: "卷五 · 舍得与归途", text: "面对父母、长辈或故人的期待，我是在活出他们未竟的遗憾，还是自己的人生？", hint: "蛊卦 · 治乱之道。父之不才，子不可不义。温和自立。" },
+      { id: 94, chapter: "卷五 · 舍得与归途", text: "如果放下所有防御机制，我最真实的脆弱需要怎样的拥抱与抚慰？", hint: "中孚卦 · 有孚挛如，无咎。心若赤子，天地同归。" },
+      { id: 95, chapter: "卷五 · 舍得与归途", text: "在我离开这个世界的那一天，我最希望被这个世界记住的特质是什么？", hint: "谦卦 · 地中有山，谦。藏光敛彩，德音孔昭。" },
+      { id: 96, chapter: "卷五 · 舍得与归途", text: "我一直在向命运索取解释，却是否想过命运可能也在等待我的答卷？", hint: "未济卦 · 濡其尾，吝。未竞之业，自问自答。" },
+      { id: 97, chapter: "卷五 · 舍得与归途", text: "那些曾经让我痛彻心扉的失去，如今是否早已化为守护我灵魂的坚硬铠甲？", hint: "复卦 · 天地之心。生生不息，因创得愈。" },
+      { id: 98, chapter: "卷五 · 舍得与归途", text: "在追求更高层次的精神觉醒途中，我是否陷入了某种自命不凡的心灵傲慢？", hint: "贲卦 · 贲其须，与上兴也。大巧若拙，大美不饰。" },
+      { id: 99, chapter: "卷五 · 舍得与归途", text: "如果宽恕某个人意味着拯救我自己的灵魂，我是否准备好放下最后的复仇欲？", hint: "解卦 · 君子以赦过宥罪。解冤释结，天地皆宽。" },
+      { id: 100, chapter: "卷五 · 舍得与归途", text: "我如何才能在纷乱复杂的人世间，为自己保留一片不染微尘的精神净土？", hint: "同人卦 · 唯君子为能通天下之志。出淤泥而不染。" },
+      { id: 101, chapter: "卷五 · 舍得与归途", text: "在面对不可抗拒的自然规律与生老病死时，我学会敬畏与泰然处之了吗？", hint: "坤卦 · 地道光也。生荣死哀，顺天乐道。" },
+      { id: 102, chapter: "卷五 · 舍得与归途", text: "是什么让我对“平凡”如此恐惧？若这一生注定普通，我能否依然热爱它？", hint: "遁卦 · 肥遁，无不利。安于素位，怡然自乐。" },
+      { id: 103, chapter: "卷五 · 舍得与归途", text: "在物欲横流的时代，何为我精神上真正赖以立足的“一瓢饮、一箪食”？", hint: "颐卦 · 君子以慎言语，节饮食。知足不辱，知止不殆。" },
+      { id: 104, chapter: "卷五 · 舍得与归途", text: "若我的一生是一本正在书写的书，当下的章节属于哪一段转折与伏笔？", hint: "蒙卦 · 初噬告，再三渎。生命长河，各有时节。" },
+      { id: 105, chapter: "卷五 · 舍得与归途", text: "我是否将太多的幸福感寄托在尚未发生的事情上，而忽略了掌心已拥有的温度？", hint: "大有卦 · 其德刚健而文明，应乎天而时行。惜福即是修福。" },
+      { id: 106, chapter: "卷五 · 舍得与归途", text: "当所有外在的名号被剥落，我是谁？我以何种姿态立于天地之间？", hint: "艮卦 · 艮其止，止其所也。独立不移，潜心向道。" },
+      { id: 107, chapter: "卷五 · 舍得与归途", text: "如果命运注定有一处残缺，我是否有勇气将它视作光芒照进生命的入口？", hint: "离卦 · 明两作，离。大人以继明照于四方。缺陷即是圆满。" },
+      { id: 108, chapter: "卷五 · 舍得与归途", text: "在这一切之后，我准备好怀着一颗感恩、澄澈且勇毅的心，重新出发了吗？", hint: "乾坤并济 · 元亨利贞。周而复始，万物回春。" }
+    ];
+
+    // 状态管理
+    let currentPromptIndex = 0; // 0-based
+    let selectedMode = 'tarot';
+
+    // DOM 元素引用
+    const bookChapterLabel = document.getElementById('bookChapterLabel');
+    const bookPageIndex = document.getElementById('bookPageIndex');
+    const promptTextDisplay = document.getElementById('promptTextDisplay');
+    const promptReflectionHint = document.getElementById('promptReflectionHint');
+    const btnNextPrompt = document.getElementById('btnNextPrompt');
+    const btnAdoptPrompt = document.getElementById('btnAdoptPrompt');
+    const btnToggleCustom = document.getElementById('btnToggleCustom');
+    const customInputDrawer = document.getElementById('customInputDrawer');
+    const customPromptInput = document.getElementById('customPromptInput');
+    const charCount = document.getElementById('charCount');
+    const primaryCastButton = document.getElementById('primaryCastButton');
+    const toastNotification = document.getElementById('toastNotification');
+    
+    // 弹窗元素
+    const ritualOverlay = document.getElementById('ritualOverlay');
+    const modalCloseBtn = document.getElementById('modalCloseBtn');
+    const btnModalClose = document.getElementById('btnModalClose');
+    const modalQuestionDisplay = document.getElementById('modalQuestionDisplay');
+    const modalSelectedModeLabel = document.getElementById('modalSelectedModeLabel');
+    const modalPromptIndexLabel = document.getElementById('modalPromptIndexLabel');
+    const btnModalConfirm = document.getElementById('btnModalConfirm');
+
+    // 模式切换
+    const modeButtons = document.querySelectorAll('.modeSegmentItem');
+    modeButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeButtons.forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-checked', 'false');
+        });
+        btn.classList.add('active');
+        btn.setAttribute('aria-checked', 'true');
+        selectedMode = btn.dataset.mode;
+        
+        const modeNames = { tarot: '塔罗牌阵', gua: '周易六爻', hybrid: '天人相参' };
+        showToast(`已切换至「${modeNames[selectedMode] || selectedMode}」法门`);
+      });
+    });
+
+    // 气泡提示
+    let toastTimer = null;
+    function showToast(msg) {
+      if (toastTimer) clearTimeout(toastTimer);
+      toastNotification.textContent = msg;
+      toastNotification.classList.add('is-visible');
+      toastTimer = setTimeout(() => {
+        toastNotification.classList.remove('is-visible');
+      }, 2200);
+    }
+
+    // 格式化当前题序号
+    function formatIndex(num) {
+      return '第 ' + String(num).padStart(3, '0') + ' 问';
+    }
+
+    // 切换问题（带有丝滑过渡动画并触发魔方转动）
+    function renderPrompt(index, triggerCube = true) {
+      const item = QUESTION_BOOK[index];
+      if (!item) return;
+
+      // 文本过渡渐变
+      promptTextDisplay.classList.add('is-transitioning');
+      promptReflectionHint.style.opacity = '0';
+
+      setTimeout(() => {
+        bookChapterLabel.textContent = item.chapter;
+        bookPageIndex.textContent = formatIndex(item.id);
+        promptTextDisplay.textContent = item.text;
+        promptReflectionHint.textContent = item.hint;
+        
+        promptTextDisplay.classList.remove('is-transitioning');
+        promptReflectionHint.style.opacity = '1';
+      }, 160);
+
+      // 若展开了自定义输入框且为空，则预填入
+      if (customPromptInput && !customPromptInput.value.trim()) {
+        customPromptInput.placeholder = `亦可在「${item.text}」基础上补充具体细节...`;
+      }
+
+      // 同步触发魔方转动一层
+      if (triggerCube && typeof triggerCubeSingleTurn === 'function') {
+        triggerCubeSingleTurn();
+      }
+
+      // 轻微触感反馈 (仅在用户主动触发且设备支持时)
+      if (triggerCube && typeof navigator !== 'undefined' && navigator.vibrate) {
+        try { navigator.vibrate(12); } catch (_) {}
+      }
+    }
+
+    // 卷册分类筛选逻辑
+    let activeChapter = 'all';
+    const chapterTabButtons = document.querySelectorAll('.chapterTabBtn');
+    chapterTabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        chapterTabButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeChapter = btn.dataset.chapter;
+
+        // 若筛选特定卷册，立即跳转到该卷的第一题
+        if (activeChapter !== 'all') {
+          const foundIdx = QUESTION_BOOK.findIndex(q => q.chapter === activeChapter);
+          if (foundIdx !== -1) {
+            currentPromptIndex = foundIdx;
+            renderPrompt(currentPromptIndex, true);
+          }
+        } else {
+          renderPrompt(currentPromptIndex, true);
+        }
+      });
+    });
+
+    // 下一个问题按钮（根据当前筛选卷册智能轮转）
+    btnNextPrompt.addEventListener('click', () => {
+      if (activeChapter === 'all') {
+        currentPromptIndex = (currentPromptIndex + 1) % QUESTION_BOOK.length;
+      } else {
+        const chapterIndices = QUESTION_BOOK
+          .map((q, idx) => q.chapter === activeChapter ? idx : -1)
+          .filter(idx => idx !== -1);
+        const curPos = chapterIndices.indexOf(currentPromptIndex);
+        const nextPos = (curPos + 1) % chapterIndices.length;
+        currentPromptIndex = chapterIndices[nextPos];
+      }
+      renderPrompt(currentPromptIndex, true);
+    });
+
+    // 键盘快捷翻题 (按空格或右方向键翻下一题，左方向键翻上一题)
+    window.addEventListener('keydown', (e) => {
+      if (document.activeElement?.tagName === 'TEXTAREA' || document.activeElement?.tagName === 'INPUT') return;
+      if (e.key === 'ArrowRight' || e.key === ' ') {
+        e.preventDefault();
+        btnNextPrompt.click();
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        if (activeChapter === 'all') {
+          currentPromptIndex = (currentPromptIndex - 1 + QUESTION_BOOK.length) % QUESTION_BOOK.length;
+        } else {
+          const chapterIndices = QUESTION_BOOK
+            .map((q, idx) => q.chapter === activeChapter ? idx : -1)
+            .filter(idx => idx !== -1);
+          const curPos = chapterIndices.indexOf(currentPromptIndex);
+          const prevPos = (curPos - 1 + chapterIndices.length) % chapterIndices.length;
+          currentPromptIndex = chapterIndices[prevPos];
+        }
+        renderPrompt(currentPromptIndex, true);
+      }
+    });
+
+    // 采纳问题按钮
+    btnAdoptPrompt.addEventListener('click', () => {
+      const item = QUESTION_BOOK[currentPromptIndex];
+      showToast(`已选定：${formatIndex(item.id)}，随时可启卷入境`);
+      
+      // 触发魔方连续转动增添仪式感
+      if (typeof triggerCubeSingleTurn === 'function') {
+        triggerCubeSingleTurn();
+      }
+    });
+
+    // 自主补充描述折叠/展开
+    btnToggleCustom.addEventListener('click', () => {
+      const isHidden = customInputDrawer.hasAttribute('hidden');
+      if (isHidden) {
+        customInputDrawer.removeAttribute('hidden');
+        btnToggleCustom.textContent = '收起补充描述';
+        customPromptInput.focus();
+      } else {
+        customInputDrawer.setAttribute('hidden', '');
+        btnToggleCustom.textContent = '自主补充描述';
+      }
+    });
+
+    // 字数统计
+    customPromptInput.addEventListener('input', (e) => {
+      charCount.textContent = e.target.value.length;
+    });
+
+    // 启卷入境主按钮点击 -> 弹出仪式感确认模态框
+    primaryCastButton.addEventListener('click', () => {
+      const activeItem = QUESTION_BOOK[currentPromptIndex];
+      const customText = customPromptInput.value.trim();
+      const finalText = customText ? `${activeItem.text} （补充：${customText}）` : activeItem.text;
+      
+      modalQuestionDisplay.textContent = finalText;
+      const modeNames = { tarot: '塔罗牌阵', gua: '周易六爻', hybrid: '天人相参' };
+      modalSelectedModeLabel.textContent = modeNames[selectedMode] || selectedMode;
+      modalPromptIndexLabel.textContent = formatIndex(activeItem.id);
+
+      // 将问题传递至经典原版的链接参数中
+      const encodedQ = encodeURIComponent(finalText);
+      const encodedMode = encodeURIComponent(selectedMode);
+      btnModalConfirm.href = `./tarot.html?q=${encodedQ}&mode=${encodedMode}`;
+
+      ritualOverlay.classList.add('is-open');
+    });
+
+    // 模态框关闭
+    function closeModal() {
+      ritualOverlay.classList.remove('is-open');
+    }
+    modalCloseBtn.addEventListener('click', closeModal);
+    btnModalClose.addEventListener('click', closeModal);
+    ritualOverlay.addEventListener('click', (e) => {
+      if (e.target === ritualOverlay) closeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && ritualOverlay.classList.contains('is-open')) {
+        closeModal();
+      }
+    });
+
+    // 随机初始题号
+    currentPromptIndex = Math.floor(Math.random() * QUESTION_BOOK.length);
+    renderPrompt(currentPromptIndex, false);
+
+
+    // ══════════════════════════════════════════════════════════════════
+    // 2. 运律天机 · 3D 魔方实现 (Three.js 27 块体真实层转 + 拖拽交互)
+    // ══════════════════════════════════════════════════════════════════
+    const canvas = document.getElementById('cubeCanvasRedesign');
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: true,
+      alpha: true,
+      powerPreference: 'high-performance'
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x000000, 0);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.25;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 80);
+    const cameraBaseDist = 9.2;
+    camera.position.set(4.8, 3.4, 7.6).normalize().multiplyScalar(cameraBaseDist);
+    camera.lookAt(0, 0, 0);
+
+    // 光照系统：温润金光与冷冽背光互映
+    scene.add(new THREE.AmbientLight(0xebe5da, 1.1));
+    const rimLight = new THREE.PointLight(0xc9ab79, 1.8, 20, 2);
+    rimLight.position.set(-5, 5, -5);
+    scene.add(rimLight);
+    const fillLight = new THREE.PointLight(0xecd5aa, 1.6, 16, 2);
+    fillLight.position.set(3, 2, 6);
+    scene.add(fillLight);
+
+    // 魔方根节点
+    const cubeRoot = new THREE.Group();
+    cubeRoot.rotation.set(0.18, -0.45, 0.05);
+    scene.add(cubeRoot);
+
+    const CUBIE_SIZE = 0.98;
+    const CUBE_SPACING = 1.05;
+    const cubieGeometry = new THREE.BoxGeometry(CUBIE_SIZE, CUBIE_SIZE, CUBIE_SIZE);
+    const cubieEdgeGeometry = new THREE.EdgesGeometry(cubieGeometry, 18);
+    const cubieEdgeMaterial = new THREE.LineBasicMaterial({
+      color: 0xc9ab79,
+      transparent: true,
+      opacity: 0.35,
+      depthTest: true,
+      depthWrite: false
+    });
+    const cubieBodyMaterial = new THREE.MeshPhysicalMaterial({
+      color: 0x14181d,
+      roughness: 0.52,
+      metalness: 0.12,
+      clearcoat: 0.28,
+      clearcoatRoughness: 0.32
+    });
+
+    // 圆角贴纸
+    const stickerSize = 0.8, stickerRadius = 0.065, stickerHalf = stickerSize / 2;
+    const stickerShape = new THREE.Shape();
+    stickerShape.moveTo(-stickerHalf + stickerRadius, -stickerHalf);
+    stickerShape.lineTo(stickerHalf - stickerRadius, -stickerHalf);
+    stickerShape.quadraticCurveTo(stickerHalf, -stickerHalf, stickerHalf, -stickerHalf + stickerRadius);
+    stickerShape.lineTo(stickerHalf, stickerHalf - stickerRadius);
+    stickerShape.quadraticCurveTo(stickerHalf, stickerHalf, stickerHalf - stickerRadius, stickerHalf);
+    stickerShape.lineTo(-stickerHalf + stickerRadius, stickerHalf);
+    stickerShape.quadraticCurveTo(-stickerHalf, stickerHalf, -stickerHalf, stickerHalf - stickerRadius);
+    stickerShape.lineTo(-stickerHalf, -stickerHalf + stickerRadius);
+    stickerShape.quadraticCurveTo(-stickerHalf, -stickerHalf, -stickerHalf + stickerRadius, -stickerHalf);
+    const stickerGeometry = new THREE.ShapeGeometry(stickerShape);
+
+    // 六面色系（黑曜红/朱砂/旧金/青玉/夜蓝/素锦象牙）
+    const STICKER_COLORS = [
+      0x9f493e, // +X 朱砂赤红
+      0xca8c42, // -X 暖琥珀橙
+      0xf0e7d5, // +Y 素锦象牙
+      0xc9ab79, // -Y 沉金古黄
+      0x4a8c75, // +Z 苍玉松青
+      0x48698f  // -Z 幽夜星蓝
+    ];
+    const stickerMaterials = STICKER_COLORS.map(color => new THREE.MeshPhysicalMaterial({
+      color,
+      roughness: 0.45,
+      metalness: 0.08,
+      clearcoat: 0.35,
+      clearcoatRoughness: 0.25,
+      emissive: color,
+      emissiveIntensity: 0.14,
+      side: THREE.DoubleSide
+    }));
+
+    // 构建 27 个块体
+    const cubeCubies = [];
+    for (let x = -1; x <= 1; x++) {
+      for (let y = -1; y <= 1; y++) {
+        for (let z = -1; z <= 1; z++) {
+          const cubie = new THREE.Group();
+          cubie.position.set(x * CUBE_SPACING, y * CUBE_SPACING, z * CUBE_SPACING);
+          cubie.userData.grid = { x, y, z };
+
+          const body = new THREE.Mesh(cubieGeometry, cubieBodyMaterial);
+          const edges = new THREE.LineSegments(cubieEdgeGeometry, cubieEdgeMaterial);
+          cubie.add(body, edges);
+
+          const offset = CUBIE_SIZE / 2 + 0.007;
+          const faces = [
+            [x === 1, 0, offset, 0, 0, Math.PI / 2, 0],
+            [x === -1, 1, -offset, 0, 0, -Math.PI / 2, 0],
+            [y === 1, 2, 0, offset, 0, 0, -Math.PI / 2],
+            [y === -1, 3, 0, -offset, 0, 0, Math.PI / 2],
+            [z === 1, 4, 0, 0, offset, 0, 0],
+            [z === -1, 5, 0, 0, -offset, Math.PI, 0]
+          ];
+          faces.forEach(([visible, matIdx, px, py, pz, ry, rx]) => {
+            if (!visible) return;
+            const sticker = new THREE.Mesh(stickerGeometry, stickerMaterials[matIdx]);
+            sticker.position.set(px, py, pz);
+            sticker.rotation.set(rx, ry, 0);
+            cubie.add(sticker);
+          });
+
+          cubeRoot.add(cubie);
+          cubeCubies.push(cubie);
+        }
+      }
+    }
+
+    // 转动控制组
+    const cubeTurnGroup = new THREE.Group();
+    cubeRoot.add(cubeTurnGroup);
+
+    let cubeTurn = {
+      phase: 'pause',
+      pauseUntil: 1.5,
+      startedAt: 0,
+      duration: 0.65,
+      axis: 'y',
+      layer: 0,
+      angle: 0,
+      selected: []
+    };
+    let cubeMotionTime = 0;
+
+    function easeInOutCubic(t) {
+      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    function snapCubie(cubie) {
+      cubie.position.x = Math.round(cubie.position.x / CUBE_SPACING) * CUBE_SPACING;
+      cubie.position.y = Math.round(cubie.position.y / CUBE_SPACING) * CUBE_SPACING;
+      cubie.position.z = Math.round(cubie.position.z / CUBE_SPACING) * CUBE_SPACING;
+      
+      const e = new THREE.Euler().setFromQuaternion(cubie.quaternion, 'XYZ');
+      const snapQuarter = (v) => Math.round(v / (Math.PI / 2)) * (Math.PI / 2);
+      cubie.rotation.set(snapQuarter(e.x), snapQuarter(e.y), snapQuarter(e.z));
+      cubie.quaternion.normalize();
+      
+      cubie.userData.grid = {
+        x: Math.round(cubie.position.x / CUBE_SPACING),
+        y: Math.round(cubie.position.y / CUBE_SPACING),
+        z: Math.round(cubie.position.z / CUBE_SPACING)
+      };
+    }
+
+    function startTurn(forceLayer = null, forceAxis = null) {
+      if (cubeTurn.phase === 'turn') return; // 当前正在转动中则排队或跳过
+
+      const axes = ['x', 'y', 'z'];
+      const axis = forceAxis || axes[Math.floor(Math.random() * axes.length)];
+      const layer = forceLayer !== null ? forceLayer : Math.floor(Math.random() * 3) - 1;
+      const direction = Math.random() < 0.5 ? 1 : -1;
+      const angle = direction * (Math.PI / 2);
+
+      const selected = cubeCubies.filter(c => c.userData.grid[axis] === layer);
+      if (selected.length !== 9) return;
+
+      cubeTurnGroup.rotation.set(0, 0, 0);
+      selected.forEach(c => cubeTurnGroup.attach(c));
+
+      cubeTurn.phase = 'turn';
+      cubeTurn.startedAt = cubeMotionTime;
+      cubeTurn.duration = 0.55;
+      cubeTurn.axis = axis;
+      cubeTurn.layer = layer;
+      cubeTurn.angle = angle;
+      cubeTurn.selected = selected;
+    }
+
+    function completeTurn() {
+      cubeTurnGroup.rotation[cubeTurn.axis] = cubeTurn.angle;
+      scene.updateMatrixWorld(true);
+      cubeTurn.selected.forEach(c => cubeRoot.attach(c));
+      cubeTurnGroup.rotation.set(0, 0, 0);
+      cubeTurn.selected.forEach(snapCubie);
+      
+      cubeTurn.selected = [];
+      cubeTurn.phase = 'pause';
+      // 随机静止 2.5 ~ 4.5 秒后下一次自动运转
+      cubeTurn.pauseUntil = cubeMotionTime + (2.5 + Math.random() * 2.0);
+    }
+
+    // 暴露给外层的单次显式转动方法（用于翻页时联动）
+    window.triggerCubeSingleTurn = function() {
+      if (cubeTurn.phase === 'turn') {
+        // 若正在转，立即完成上一段
+        completeTurn();
+      }
+      startTurn();
+    };
+
+    // ── 交互式视差拖拽控制 ──────────────────────────────────────
+    let isDragging = false;
+    let prevPointer = { x: 0, y: 0 };
+    let dragVelocity = { x: 0, y: 0 };
+
+    canvas.addEventListener('pointerdown', (e) => {
+      isDragging = true;
+      prevPointer = { x: e.clientX, y: e.clientY };
+      canvas.setPointerCapture(e.pointerId);
+    });
+
+    window.addEventListener('pointermove', (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - prevPointer.x;
+      const dy = e.clientY - prevPointer.y;
+      prevPointer = { x: e.clientX, y: e.clientY };
+
+      dragVelocity.x = dx * 0.006;
+      dragVelocity.y = dy * 0.006;
+
+      cubeRoot.rotation.y += dragVelocity.x;
+      cubeRoot.rotation.x += dragVelocity.y;
+    });
+
+    window.addEventListener('pointerup', (e) => {
+      if (!isDragging) return;
+      isDragging = false;
+      try { canvas.releasePointerCapture(e.pointerId); } catch (_) {}
+    });
+
+    // 自适应尺寸变化
+    function handleResize() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      const width = Math.max(1, rect.width);
+      const height = Math.max(1, rect.height);
+      
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height, false);
+    }
+    window.addEventListener('resize', handleResize);
+    handleResize();
+
+    // 渲染主循环
+    const clock = new THREE.Clock();
+    function animate() {
+      requestAnimationFrame(animate);
+      const dt = Math.min(clock.getDelta(), 0.05);
+      cubeMotionTime += dt;
+
+      // 阻尼回弹微漂移
+      if (!isDragging) {
+        dragVelocity.x *= 0.94;
+        dragVelocity.y *= 0.94;
+        cubeRoot.rotation.y += dragVelocity.x;
+        cubeRoot.rotation.x += dragVelocity.y;
+
+        // 宛如悬浮在星海中的微幅呼吸感
+        cubeRoot.rotation.x += Math.sin(cubeMotionTime * 0.6) * 0.0006;
+        cubeRoot.rotation.y += Math.cos(cubeMotionTime * 0.4) * 0.0008;
+      }
+
+      // 魔方层转动状态机
+      if (cubeTurn.phase === 'pause' && cubeMotionTime >= cubeTurn.pauseUntil) {
+        startTurn();
+      }
+      if (cubeTurn.phase === 'turn') {
+        const progress = Math.min(1, (cubeMotionTime - cubeTurn.startedAt) / cubeTurn.duration);
+        cubeTurnGroup.rotation[cubeTurn.axis] = cubeTurn.angle * easeInOutCubic(progress);
+        if (progress >= 1) {
+          completeTurn();
+        }
+      }
+
+      renderer.render(scene, camera);
+    }
+    animate();
+
+  </script>
+</body>
+</html>

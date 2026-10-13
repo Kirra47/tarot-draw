@@ -1,0 +1,765 @@
+/* ==========================================================================
+   星象塔罗 · 新版概念原型视觉系统 (redesign.css)
+   设计原则：静室观象 · 沉静玄境 · 质感微光 · Emil Kowalski 级微交互
+   ========================================================================== */
+
+:root {
+  --bg-space: #080a0d;
+  --bg-desk: #101418;
+  --bg-surface: #161a1f;
+  --bg-surface-raised: #1d2229;
+  
+  --line-gold: rgba(201, 171, 121, 0.22);
+  --line-gold-soft: rgba(201, 171, 121, 0.12);
+  --line-gold-bright: rgba(201, 171, 121, 0.45);
+  --line-dark: rgba(255, 255, 255, 0.06);
+  
+  --gold: #c9ab79;
+  --gold-light: #ecd5aa;
+  --gold-dim: #988057;
+  
+  --ink: #f4ecdf;
+  --ink-soft: #d3c7b5;
+  --ink-muted: #9e9282;
+  --ink-dark: #635b50;
+  
+  --cinnabar: #9f493e;
+  --cinnabar-hover: #b65447;
+  --cinnabar-glow: rgba(162, 75, 63, 0.32);
+  
+  --font-serif: "Songti SC", "STSong", "Noto Serif SC", SimSun, serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 999px;
+  
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: var(--bg-space);
+  background-image: 
+    radial-gradient(ellipse 60% 40% at 50% -10%, rgba(201, 171, 121, 0.08), transparent 70%),
+    radial-gradient(ellipse 50% 50% at 80% 50%, rgba(30, 40, 52, 0.3), transparent 70%),
+    radial-gradient(ellipse 40% 40% at 15% 85%, rgba(159, 73, 62, 0.06), transparent 60%);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* 顶部极简仪式感航头 */
+.sanctuaryNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 36px;
+  border-bottom: 1px solid var(--line-gold-soft);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.brandSign {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brandSign .sigil {
+  font-size: 16px;
+  color: var(--gold);
+  line-height: 1;
+  text-shadow: 0 0 12px rgba(201, 171, 121, 0.4);
+}
+
+.brandSign h1 {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  color: var(--ink);
+}
+
+.brandSign .tagline {
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: var(--ink-muted);
+  border-left: 1px solid var(--line-gold);
+  padding-left: 12px;
+  margin-left: 2px;
+  text-transform: uppercase;
+}
+
+.navControls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.badgePrototype {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--line-gold);
+  background: rgba(201, 171, 121, 0.08);
+  color: var(--gold);
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .badgePrototype {
+    display: none;
+  }
+}
+
+.returnProductionLink {
+  color: var(--ink-muted);
+  font-size: 12px;
+  text-decoration: none;
+  transition: color 150ms ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.returnProductionLink:hover {
+  color: var(--gold-light);
+}
+
+/* 主舞台双栏布局 (左舞台：问题之书 & 提问台；右舞台：运律天机 3D 魔方) */
+.stageContainer {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 48px 36px 80px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.85fr);
+  gap: 56px;
+  align-items: start;
+}
+
+/* ══════════════════════════════════════════════════════════
+   左侧：问题之书与观象台 (Inquiry Sanctuary)
+   ══════════════════════════════════════════════════════════ */
+.inquirySanctuary {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+/* 典雅眉标 */
+.inquiryHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.kickerRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--gold);
+  font-size: 12px;
+  letter-spacing: 2px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.kickerRow .ruleLine {
+  width: 32px;
+  height: 1px;
+  background: var(--gold);
+  opacity: 0.5;
+}
+
+.inquiryHeader h2 {
+  font-family: var(--font-serif);
+  font-size: clamp(32px, 3.4vw, 44px);
+  font-weight: 400;
+  line-height: 1.25;
+  color: var(--ink);
+  letter-spacing: 1px;
+}
+
+.inquiryHeader p {
+  color: var(--ink-soft);
+  font-size: 15px;
+  line-height: 1.6;
+  max-width: 580px;
+}
+
+/* 核心组件：问题之书 (The Question Book Card) */
+.questionBookCard {
+  position: relative;
+  border: 1px solid var(--line-gold);
+  border-radius: var(--radius-lg);
+  background: 
+    linear-gradient(135deg, rgba(29, 34, 41, 0.85) 0%, rgba(18, 22, 27, 0.95) 100%);
+  padding: 34px 38px 28px;
+  box-shadow: 
+    0 24px 64px -16px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  overflow: hidden;
+  transition: border-color 220ms ease, box-shadow 220ms ease;
+}
+
+.questionBookCard:hover {
+  border-color: var(--line-gold-bright);
+  box-shadow: 
+    0 28px 72px -16px rgba(0, 0, 0, 0.75),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 0 32px rgba(201, 171, 121, 0.08);
+}
+
+/* 顶部装饰线与章节指示 */
+.bookMetaHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line-gold-soft);
+}
+
+.bookChapterBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 1px;
+}
+
+.bookChapterBadge i {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 8px var(--gold);
+}
+
+.bookPageCounter {
+  font-family: var(--font-serif);
+  font-size: 12px;
+  color: var(--ink-muted);
+  letter-spacing: 1px;
+}
+
+/* 核心引述展示区 (带有柔和动效与呼吸感) */
+.bookPromptSurface {
+  padding: 32px 0 28px;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+}
+
+.promptQuotes {
+  font-family: var(--font-serif);
+  font-size: 48px;
+  line-height: 1;
+  color: var(--gold);
+  opacity: 0.35;
+  margin-bottom: -16px;
+}
+
+.promptText {
+  font-family: var(--font-serif);
+  font-size: clamp(21px, 2.2vw, 26px);
+  line-height: 1.55;
+  color: var(--ink);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  transition: opacity 220ms var(--ease-smooth), transform 220ms var(--ease-smooth);
+}
+
+.promptText.is-transitioning {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.promptReflectionHint {
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--gold-dim);
+  line-height: 1.6;
+  transition: opacity 200ms ease;
+}
+
+/* 翻页与采纳工具栏 (Emil Kowalski 风格轻量按钮) */
+.bookActionToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 22px;
+  border-top: 1px solid var(--line-gold-soft);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.leftActions, .rightActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 灵动翻页按钮：换一个问题 */
+.btnNextPrompt {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 18px;
+  background: rgba(201, 171, 121, 0.08);
+  border: 1px solid var(--line-gold);
+  border-radius: var(--radius-full);
+  color: var(--gold-light);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 180ms var(--ease-spring);
+  user-select: none;
+}
+
+.btnNextPrompt:hover {
+  background: rgba(201, 171, 121, 0.16);
+  border-color: var(--gold);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.btnNextPrompt:active {
+  transform: scale(0.97) translateY(0);
+}
+
+.btnNextPrompt .flipIcon {
+  display: inline-block;
+  font-size: 14px;
+  transition: transform 300ms var(--ease-spring);
+}
+
+.btnNextPrompt:hover .flipIcon {
+  transform: rotate(180deg);
+}
+
+/* 采纳与自由输入按钮 */
+.btnAdoptPrompt {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--bg-surface-raised);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-full);
+  color: var(--ink);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 160ms ease;
+}
+.btnAdoptPrompt:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--line-gold);
+  color: var(--gold-light);
+}
+
+.btnToggleCustom {
+  background: transparent;
+  border: none;
+  color: var(--ink-muted);
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  padding: 6px 8px;
+  transition: color 150ms ease;
+}
+.btnToggleCustom:hover {
+  color: var(--ink);
+}
+
+/* 自由自定义输入抽屉 (默认折叠) */
+.customInputDrawer {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--line-gold-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: fadeInDown 240ms var(--ease-spring);
+}
+.customInputDrawer[hidden] {
+  display: none;
+}
+
+.customTextarea {
+  width: 100%;
+  min-height: 84px;
+  background: rgba(13, 16, 20, 0.85);
+  border: 1px solid var(--line-gold);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+.customTextarea:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(201, 171, 121, 0.15);
+}
+
+/* ══════════════════════════════════════════════════════════
+   方式选择分段条与主仪式操作
+   ══════════════════════════════════════════════════════════ */
+.ritualController {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.modeSelectionBar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modeSelectionBar label {
+  color: var(--ink-muted);
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.modeSegmentedGroup {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 6px;
+  background: var(--bg-surface);
+  border: 1px solid var(--line-dark);
+  border-radius: var(--radius-md);
+}
+
+.modeSegmentItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 14px 12px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition: all 180ms ease;
+  user-select: none;
+}
+
+.modeSegmentItem:hover {
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.modeSegmentItem.active {
+  background: var(--bg-surface-raised);
+  border-color: var(--line-gold);
+  color: var(--gold-light);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+}
+
+.modeSegmentItem strong {
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.modeSegmentItem span {
+  font-size: 11px;
+  opacity: 0.75;
+}
+
+/* 核心朱砂主按钮：启卷入境 */
+.primaryCastButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  height: 60px;
+  background: linear-gradient(180deg, var(--cinnabar-hover) 0%, var(--cinnabar) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-md);
+  color: #fff6ed;
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  cursor: pointer;
+  box-shadow: 
+    0 16px 36px -10px var(--cinnabar-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: all 180ms var(--ease-spring);
+  user-select: none;
+}
+
+.primaryCastButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 22px 48px -10px rgba(162, 75, 63, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  filter: brightness(1.06);
+}
+
+.primaryCastButton:active {
+  transform: scale(0.985) translateY(0);
+}
+
+.primaryCastButton .arrowMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  font-size: 14px;
+  transition: transform 200ms ease;
+}
+
+.primaryCastButton:hover .arrowMark {
+  transform: translateX(3px);
+}
+
+/* ══════════════════════════════════════════════════════════
+   右侧：运律天机 3D 魔方舞台 (The Permutation Altar)
+   ══════════════════════════════════════════════════════════ */
+.cubeAltarStage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+.cubeCanvasWrapper {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-width: 520px;
+  background: 
+    radial-gradient(circle at 50% 50%, rgba(201, 171, 121, 0.05) 0%, transparent 68%),
+    linear-gradient(180deg, rgba(22, 26, 31, 0.6) 0%, rgba(12, 15, 19, 0.8) 100%);
+  border: 1px solid var(--line-gold-soft);
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 32px 80px -20px rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#cubeCanvasRedesign {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+}
+#cubeCanvasRedesign:active {
+  cursor: grabbing;
+}
+
+/* 围绕魔方的悬浮微标 */
+.cubeHeaderBadge {
+  position: absolute;
+  top: 20px;
+  left: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--gold);
+  letter-spacing: 1px;
+  background: rgba(10, 13, 17, 0.7);
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--line-gold-soft);
+  backdrop-filter: blur(8px);
+}
+
+.cubePulseDot {
+  width: 6px;
+  height: 6px;
+  background: #4b9177;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #4b9177;
+  animation: pulse 2s infinite ease-in-out;
+}
+
+.cubeFooterHint {
+  position: absolute;
+  bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 11px;
+  color: var(--ink-muted);
+  background: rgba(10, 13, 17, 0.65);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--line-dark);
+  backdrop-filter: blur(8px);
+}
+
+.cubeFooterHint span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* 魔方下方的象意哲思卡 */
+.altarPhilosophyCard {
+  width: 100%;
+  max-width: 520px;
+  border: 1px solid var(--line-gold-soft);
+  border-radius: var(--radius-md);
+  background: rgba(22, 26, 31, 0.4);
+  padding: 18px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.altarPhilosophyCard strong {
+  font-family: var(--font-serif);
+  font-size: 14px;
+  color: var(--gold-light);
+  letter-spacing: 1px;
+}
+
+.altarPhilosophyCard p {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--ink-muted);
+}
+
+/* 卷册快捷标签栏 */
+.chapterTabsRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  margin-top: 4px;
+  scrollbar-width: none;
+}
+.chapterTabsRow::-webkit-scrollbar {
+  display: none;
+}
+.chapterTabBtn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line-gold-soft);
+  color: var(--ink-muted);
+  border-radius: var(--radius-full);
+  padding: 5px 12px;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 160ms ease;
+  user-select: none;
+}
+.chapterTabBtn:hover {
+  border-color: var(--line-gold);
+  color: var(--ink);
+}
+.chapterTabBtn.active {
+  background: rgba(201, 171, 121, 0.14);
+  border-color: var(--gold);
+  color: var(--gold-light);
+  font-weight: 500;
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+@media (max-width: 1040px) {
+  .stageContainer {
+    grid-template-columns: 1fr;
+    gap: 36px;
+    padding: 24px 18px 60px;
+  }
+  
+  .cubeAltarStage {
+    order: 2; /* 移动端让问题之书居前，魔方作为呼应舞台居后 */
+  }
+  
+  .cubeCanvasWrapper {
+    aspect-ratio: 16 / 12;
+    max-height: 320px;
+  }
+}
+
+@media (max-width: 640px) {
+  .sanctuaryNav {
+    padding: 14px 16px;
+    gap: 8px;
+  }
+  .brandSign h1 {
+    font-size: 16px;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+  .brandSign .sigil {
+    font-size: 14px;
+  }
+  .brandSign .tagline {
+    display: none;
+  }
+  .navControls {
+    gap: 8px;
+  }
+  .badgePrototype {
+    font-size: 10px;
+    padding: 2px 7px;
+  }
+  .returnProductionLink {
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .questionBookCard {
+    padding: 22px 18px 18px;
+  }
+  .promptText {
+    font-size: 19px;
+    line-height: 1.5;
+  }
+  .modeSegmentedGroup {
+    grid-template-columns: 1fr;
+  }
+}
