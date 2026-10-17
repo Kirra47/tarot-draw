@@ -8,31 +8,29 @@
      星象塔罗 · 优化色彩系统 (Astral Midnight & Starlight Gold)
      深邃星夜绀蓝 + 琉璃星辉金 + 皇家朱砂红 + 珍珠文墨，彻底消除灰浊暗沉感
      ======================================================================== */
-  --bg-space: #070b16;
-  --bg-desk: #0e1528;
-  --bg-surface: #131c35;
-  --bg-surface-raised: #1b2646;
+  --bg-space: #090b0d;
+  --bg-desk: #101316;
+  --bg-surface: #171a1e;
+  --bg-surface-raised: #22262b;
   
-  --line-gold: rgba(234, 197, 126, 0.32);
-  --line-gold-soft: rgba(234, 197, 126, 0.16);
-  --line-gold-bright: rgba(234, 197, 126, 0.65);
+  --line-gold: rgba(207, 173, 114, 0.38);
+  --line-gold-soft: rgba(207, 173, 114, 0.18);
+  --line-gold-bright: rgba(224, 191, 134, 0.7);
   --line-dark: rgba(255, 255, 255, 0.08);
   --line-cyan: rgba(56, 189, 248, 0.28);
   
-  --gold: #ecc87a;
-  --gold-light: #fbe5ad;
-  --gold-dim: #b89349;
-  --gold-glow: rgba(236, 200, 122, 0.35);
+  --gold: #cfad72;
+  --gold-light: #ead5aa;
+  --gold-dim: #b4935c;
   
-  --ink: #f8fafc;
-  --ink-soft: #e2e8f0;
-  --ink-muted: #94a3b8;
-  --ink-dark: #64748b;
+  --ink: #f1ede5;
+  --ink-soft: #d6d0c7;
+  --ink-muted: #aaa198;
+  --ink-dark: #8b837a;
   
   /* 皇家朱砂主色：鲜活厚重、内蕴光华 */
-  --cinnabar: #c43e37;
-  --cinnabar-hover: #dc4a42;
-  --cinnabar-glow: rgba(196, 62, 55, 0.45);
+  --cinnabar: #a14f43;
+  --cinnabar-hover: #b35d50;
   
   --font-serif: "Songti SC", "STSong", "Noto Serif SC", SimSun, serif;
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
@@ -54,7 +52,6 @@
   --bg-surface-raised: #251949;
   --cinnabar: #9d3dc7;
   --cinnabar-hover: #b44ae3;
-  --cinnabar-glow: rgba(157, 61, 199, 0.45);
 }
 
 [data-theme="obsidian"] {
@@ -76,10 +73,7 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   background-color: var(--bg-space);
-  background-image: 
-    radial-gradient(ellipse 65% 50% at 50% -10%, rgba(99, 102, 241, 0.14), transparent 70%),
-    radial-gradient(ellipse 55% 55% at 85% 40%, rgba(56, 189, 248, 0.10), transparent 70%),
-    radial-gradient(ellipse 45% 45% at 15% 85%, rgba(234, 197, 126, 0.08), transparent 60%);
+  background-image: none;
   color: var(--ink);
   font-family: var(--font-sans);
   overflow-x: hidden;
@@ -90,8 +84,10 @@ body {
 /* 顶部极简仪式感航头 */
 .sanctuaryNav {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
+  gap: 14px 24px;
   padding: 22px 36px;
   border-bottom: 1px solid var(--line-gold-soft);
   backdrop-filter: blur(12px);
@@ -102,15 +98,19 @@ body {
 
 .brandSign {
   display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
   align-items: center;
   gap: 12px;
 }
 
 .brandSign .sigil {
-  font-size: 16px;
+  width: 18px;
+  height: 18px;
   color: var(--gold);
-  line-height: 1;
-  text-shadow: 0 0 12px rgba(201, 171, 121, 0.4);
+  stroke: currentColor;
+  stroke-width: 1.35;
+  stroke-linejoin: round;
 }
 
 .brandSign h1 {
@@ -159,6 +159,10 @@ body {
 }
 
 .themeBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
   background: transparent;
   border: none;
   color: var(--ink-muted);
@@ -166,17 +170,23 @@ body {
   padding: 3px 8px;
   border-radius: var(--radius-full);
   cursor: pointer;
-  transition: all 160ms ease;
+  transition: background-color 160ms ease, color 160ms ease;
   user-select: none;
-}
-.themeBtn:hover {
-  color: var(--ink);
 }
 .themeBtn.active {
   background: rgba(234, 197, 126, 0.2);
   color: var(--gold-light);
   font-weight: 500;
 }
+.themeSwatch {
+  width: 9px;
+  height: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  background: #172444;
+}
+.themeSwatchAmethyst { background: #5d357a; }
+.themeSwatchObsidian { background: #17191e; }
 
 @media (max-width: 480px) {
   .badgePrototype {
@@ -193,35 +203,35 @@ body {
   align-items: center;
   gap: 4px;
 }
-.returnProductionLink:hover {
-  color: var(--gold-light);
-}
-
-/* 主舞台双栏布局 (左舞台：问题之书 & 提问台；右舞台：运律天机 3D 魔方) */
+/* 上下布局：魔方居中置顶，问题与操作沿同一阅读轴展开。 */
 .stageContainer {
-  max-width: 1360px;
+  max-width: 1080px;
   margin: 0 auto;
-  padding: 48px 36px 80px;
+  padding: 32px 36px 80px;
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.85fr);
-  gap: 56px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 48px;
   align-items: start;
 }
+.stageContainer > * { min-width: 0; }
 
 /* ══════════════════════════════════════════════════════════
-   左侧：问题之书与观象台 (Inquiry Sanctuary)
+   下方：问题之书与观象台 (Inquiry Sanctuary)
    ══════════════════════════════════════════════════════════ */
 .inquirySanctuary {
+  width: 100%;
+  max-width: 800px;
+  justify-self: center;
   display: flex;
   flex-direction: column;
-  gap: 36px;
+  gap: 28px;
 }
 
 /* 典雅眉标 */
 .inquiryHeader {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .kickerRow {
@@ -244,7 +254,7 @@ body {
 
 .inquiryHeader h2 {
   font-family: var(--font-serif);
-  font-size: clamp(32px, 3.4vw, 44px);
+  font-size: clamp(30px, 3.2vw, 42px);
   font-weight: 400;
   line-height: 1.25;
   color: var(--ink);
@@ -255,37 +265,30 @@ body {
   color: var(--ink-soft);
   font-size: 15px;
   line-height: 1.6;
-  max-width: 580px;
+  max-width: 40rem;
 }
 
 /* 核心组件：问题之书 (The Question Book Card) */
 .questionBookCard {
   position: relative;
   border: 1px solid var(--line-gold);
-  border-radius: var(--radius-lg);
-  background: 
-    linear-gradient(145deg, rgba(19, 27, 50, 0.88) 0%, rgba(10, 16, 32, 0.95) 100%);
-  padding: 34px 38px 28px;
-  box-shadow: 
-    0 24px 64px -16px rgba(0, 0, 0, 0.75),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    0 0 32px rgba(99, 102, 241, 0.08);
-  backdrop-filter: blur(16px);
+  border-radius: 14px;
+  background: var(--bg-surface);
+  padding: 28px 30px 24px;
+  box-shadow: none;
   overflow: hidden;
-  transition: border-color 220ms ease, box-shadow 220ms ease;
+  transition: border-color 180ms ease;
 }
 
-.questionBookCard:hover {
-  border-color: var(--line-gold-bright);
-  box-shadow: 
-    0 28px 72px -16px rgba(0, 0, 0, 0.85),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16),
-    0 0 36px rgba(234, 197, 126, 0.15);
+@media (hover: hover) {
+  .questionBookCard:hover { border-color: var(--line-gold-bright); }
 }
 
 /* 顶部装饰线与章节指示 */
 .bookMetaHeader {
   display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
   align-items: center;
   justify-content: space-between;
   padding-bottom: 20px;
@@ -308,7 +311,6 @@ body {
   height: 6px;
   border-radius: 50%;
   background: var(--gold);
-  box-shadow: 0 0 8px var(--gold);
 }
 
 .bookPageCounter {
@@ -344,12 +346,6 @@ body {
   color: var(--ink);
   font-weight: 500;
   letter-spacing: 0.5px;
-  transition: opacity 220ms var(--ease-smooth), transform 220ms var(--ease-smooth);
-}
-
-.promptText.is-transitioning {
-  opacity: 0;
-  transform: translateY(8px);
 }
 
 .promptReflectionHint {
@@ -357,7 +353,6 @@ body {
   font-size: 13px;
   color: var(--gold-dim);
   line-height: 1.6;
-  transition: opacity 200ms ease;
 }
 
 /* 翻页与采纳工具栏 (Emil Kowalski 风格轻量按钮) */
@@ -373,6 +368,7 @@ body {
 
 .leftActions, .rightActions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 12px;
 }
@@ -390,29 +386,24 @@ body {
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 180ms var(--ease-spring);
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms var(--ease-spring);
   user-select: none;
 }
 
-.btnNextPrompt:hover {
-  background: rgba(201, 171, 121, 0.16);
-  border-color: var(--gold);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-}
-
 .btnNextPrompt:active {
-  transform: scale(0.97) translateY(0);
+  transform: scale(0.96);
 }
 
 .btnNextPrompt .flipIcon {
   display: inline-block;
   font-size: 14px;
-  transition: transform 300ms var(--ease-spring);
-}
-
-.btnNextPrompt:hover .flipIcon {
-  transform: rotate(180deg);
+  width: 17px;
+  height: 17px;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 180ms var(--ease-spring);
 }
 
 /* 采纳与自由输入按钮 */
@@ -427,42 +418,11 @@ body {
   color: var(--ink);
   font-size: 13px;
   cursor: pointer;
-  transition: all 160ms ease;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms var(--ease-spring);
 }
-.btnAdoptPrompt:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: var(--line-gold);
-  color: var(--gold-light);
-}
-
-.btnToggleCustom {
-  background: transparent;
-  border: none;
-  color: var(--ink-muted);
-  font-size: 12px;
-  cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 4px;
-  padding: 6px 8px;
-  transition: color 150ms ease;
-}
-.btnToggleCustom:hover {
-  color: var(--ink);
-}
-
-/* 自由自定义输入抽屉 (默认折叠) */
-.customInputDrawer {
-  margin-top: 18px;
-  padding-top: 18px;
-  border-top: 1px dashed var(--line-gold-soft);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  animation: fadeInDown 240ms var(--ease-spring);
-}
-.customInputDrawer[hidden] {
-  display: none;
-}
+.btnAdoptPrompt svg { width: 17px; height: 17px; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.btnAdoptPrompt.is-adopted { background: rgba(234, 197, 126, 0.14); border-color: var(--gold); color: var(--gold-light); }
+.btnAdoptPrompt:active { transform: scale(0.96); }
 
 .customTextarea {
   width: 100%;
@@ -473,10 +433,10 @@ body {
   padding: 14px 16px;
   color: var(--ink);
   font-family: var(--font-sans);
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.6;
   resize: vertical;
-  outline: none;
+  caret-color: var(--gold-light);
   transition: border-color 160ms ease, box-shadow 160ms ease;
 }
 .customTextarea:focus {
@@ -528,20 +488,15 @@ body {
   border-radius: var(--radius-sm);
   color: var(--ink-muted);
   cursor: pointer;
-  transition: all 180ms ease;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms var(--ease-spring);
   user-select: none;
-}
-
-.modeSegmentItem:hover {
-  color: var(--ink);
-  background: rgba(255, 255, 255, 0.02);
 }
 
 .modeSegmentItem.active {
   background: var(--bg-surface-raised);
   border-color: var(--line-gold);
   color: var(--gold-light);
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .modeSegmentItem strong {
@@ -551,8 +506,8 @@ body {
 }
 
 .modeSegmentItem span {
-  font-size: 11px;
-  opacity: 0.75;
+  font-size: 12px;
+  color: var(--ink-soft);
 }
 
 /* 核心朱砂主按钮：启卷入境 */
@@ -563,7 +518,7 @@ body {
   gap: 14px;
   width: 100%;
   height: 60px;
-  background: linear-gradient(180deg, var(--cinnabar-hover) 0%, var(--cinnabar) 100%);
+  background: var(--cinnabar);
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: var(--radius-md);
   color: #fff6ed;
@@ -572,23 +527,13 @@ body {
   font-weight: 500;
   letter-spacing: 2px;
   cursor: pointer;
-  box-shadow: 
-    0 16px 36px -10px var(--cinnabar-glow),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  transition: all 180ms var(--ease-spring);
+  box-shadow: 0 12px 24px -16px rgba(0, 0, 0, 0.72), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transition: background-color 160ms ease, transform 160ms var(--ease-spring), box-shadow 160ms ease;
   user-select: none;
 }
 
-.primaryCastButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 
-    0 22px 48px -10px rgba(162, 75, 63, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.35);
-  filter: brightness(1.06);
-}
-
 .primaryCastButton:active {
-  transform: scale(0.985) translateY(0);
+  transform: scale(0.96);
 }
 
 .primaryCastButton .arrowMark {
@@ -602,13 +547,10 @@ body {
   font-size: 14px;
   transition: transform 200ms ease;
 }
-
-.primaryCastButton:hover .arrowMark {
-  transform: translateX(3px);
-}
+.primaryCastButton .arrowMark svg { width: 15px; height: 15px; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
 /* ══════════════════════════════════════════════════════════
-   右侧：运律天机 3D 魔方舞台 (The Permutation Altar)
+   顶部：运律天机 3D 魔方舞台 (The Permutation Altar)
    ══════════════════════════════════════════════════════════ */
 .cubeAltarStage {
   position: relative;
@@ -619,137 +561,32 @@ body {
   width: 100%;
 }
 
-/* 专属单独框体：手势隔离的魔方控制台 */
+/* 观赏舞台：不再围成控制台，保留大魔方与少量留白。 */
 .cubeDedicatedFrame {
   width: 100%;
-  max-width: 520px;
-  background: linear-gradient(165deg, rgba(19, 27, 48, 0.9) 0%, rgba(10, 15, 29, 0.96) 100%);
-  border: 1px solid var(--line-gold);
-  border-radius: var(--radius-lg);
-  padding: 18px 20px 16px;
+  max-width: 880px;
+  background: transparent;
+  padding: 0 20px;
   position: relative;
-  box-shadow: 
-    0 24px 64px -16px rgba(0, 0, 0, 0.8),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    0 0 32px rgba(99, 102, 241, 0.08);
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  touch-action: none !important; /* 关键：阻止框体内任何默认手势向上传递 */
-  overscroll-behavior: none !important;
+  gap: 8px;
+  touch-action: pan-y;
   user-select: none;
   -webkit-user-select: none;
-  transition: border-color 200ms ease, box-shadow 200ms ease;
 }
 
-/* 四角仪式刻度装饰 Corner Reticles */
-.cubeDedicatedFrame::before, .cubeDedicatedFrame::after {
-  content: "";
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  border-color: var(--gold);
-  border-style: solid;
-  pointer-events: none;
-  opacity: 0.65;
-  transition: opacity 200ms ease, border-color 200ms ease;
-}
-.cubeDedicatedFrame::before {
-  top: 8px; left: 8px;
-  border-width: 2px 0 0 2px;
-}
-.cubeDedicatedFrame::after {
-  bottom: 8px; right: 8px;
-  border-width: 0 2px 2px 0;
-}
-
-/* 触碰旋转活跃状态反馈 */
-.cubeDedicatedFrame.is-touching {
-  border-color: var(--gold-bright);
-  box-shadow: 
-    0 28px 72px -16px rgba(0, 0, 0, 0.9),
-    0 0 36px var(--gold-glow);
-}
-.cubeDedicatedFrame.is-touching::before, .cubeDedicatedFrame.is-touching::after {
-  opacity: 1;
-  border-color: var(--gold-light);
-}
-
-.cubeDedicatedHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--line-gold-soft);
-  gap: 10px;
-}
-
-.cubeDeckTitle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-serif);
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--gold-light);
-  letter-spacing: 1px;
-}
-
-.cubeDeckTitle .sigil {
-  color: var(--gold);
-  font-size: 13px;
-}
-
-.cubeLockIndicator {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  color: #38bdf8;
-  background: rgba(56, 189, 248, 0.12);
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  padding: 3px 10px;
-  border-radius: var(--radius-full);
-  letter-spacing: 0.5px;
-  transition: all 180ms ease;
-}
-
-.cubeDedicatedFrame.is-touching .cubeLockIndicator {
-  background: rgba(236, 200, 122, 0.2);
-  border-color: var(--gold);
-  color: var(--gold-light);
-}
-
-.lockDot {
-  width: 6px;
-  height: 6px;
-  background: #38bdf8;
-  border-radius: 50%;
-  box-shadow: 0 0 8px #38bdf8;
-}
-
-.cubeDedicatedFrame.is-touching .lockDot {
-  background: var(--gold);
-  box-shadow: 0 0 8px var(--gold);
-}
-
-/* 3D 魔方画布容器（全隔离触控区） */
+/* 纵向滑动仍属于网页，横向拖动只改变观看角度。 */
 .cubeCanvasWrapper {
   width: 100%;
-  aspect-ratio: 1 / 1;
-  background: 
-    radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 68%),
-    linear-gradient(180deg, rgba(13, 18, 34, 0.7) 0%, rgba(7, 10, 20, 0.85) 100%);
-  border: 1px solid var(--line-gold-soft);
-  border-radius: var(--radius-md);
+  aspect-ratio: 16 / 9;
+  max-height: 460px;
   position: relative;
   overflow: hidden;
-  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
-  touch-action: none !important; /* 关键：强制阻止浏览器原生上下滑动 */
-  overscroll-behavior: none !important;
+  touch-action: pan-y;
 }
 
 #cubeCanvasRedesign {
@@ -757,76 +594,38 @@ body {
   height: 100%;
   display: block;
   cursor: grab;
-  touch-action: none !important;
+  touch-action: pan-y;
 }
 #cubeCanvasRedesign:active {
   cursor: grabbing;
 }
 
-/* 四角指引小刻度 */
-.cubeCornerGuide {
-  position: absolute;
-  color: var(--gold);
-  opacity: 0.35;
-  font-size: 12px;
-  pointer-events: none;
-  line-height: 1;
-}
-.cubeCornerGuide.tl { top: 8px; left: 8px; }
-.cubeCornerGuide.tr { top: 8px; right: 8px; }
-.cubeCornerGuide.bl { bottom: 8px; left: 8px; }
-.cubeCornerGuide.br { bottom: 8px; right: 8px; }
-
-/* 控台底部快捷操作与触控提示栏 */
-.cubeDeckFooter {
+/* 播放控制与版本标记不参与魔方操作。 */
+.cubeDisplayMeta {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 10px;
-  border-top: 1px solid var(--line-gold-soft);
   gap: 8px;
-  flex-wrap: wrap;
 }
-
-.cubeGestureTip {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11px;
+.cubeMotionToggle {
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 0;
+  background: transparent;
   color: var(--ink-muted);
-  letter-spacing: 0.5px;
-}
-
-.cubeAuxButtons {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.btnCubeAux {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--line-gold-soft);
-  color: var(--ink-soft);
-  padding: 5px 10px;
-  border-radius: var(--radius-sm);
-  font-size: 11px;
+  font: 12px/1.5 var(--font-sans);
   cursor: pointer;
-  transition: all 160ms ease;
-  user-select: none;
 }
-.btnCubeAux:hover {
-  background: rgba(236, 200, 122, 0.14);
-  border-color: var(--gold);
-  color: var(--gold-light);
+.cubeMotionToggle:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
 }
-.btnCubeAux:active {
-  transform: scale(0.96);
-}
+.cubeMotionToggle:disabled { cursor: default; }
 
 /* 魔方下方的象意哲思卡 */
 .altarPhilosophyCard {
   width: 100%;
-  max-width: 520px;
+  max-width: 880px;
   border: 1px solid var(--line-gold-soft);
   border-radius: var(--radius-md);
   background: rgba(19, 27, 48, 0.45);
@@ -843,6 +642,12 @@ body {
   color: var(--gold-light);
   letter-spacing: 1px;
 }
+.prototypeBuildLabel {
+  color: var(--ink-muted);
+  font-size: 11px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
 
 .altarPhilosophyCard p {
   font-size: 12px;
@@ -853,6 +658,8 @@ body {
 /* 卷册快捷标签栏 */
 .chapterTabsRow {
   display: flex;
+  min-width: 0;
+  max-width: 100%;
   align-items: center;
   gap: 8px;
   overflow-x: auto;
@@ -872,18 +679,177 @@ body {
   font-size: 12px;
   white-space: nowrap;
   cursor: pointer;
-  transition: all 160ms ease;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
   user-select: none;
-}
-.chapterTabBtn:hover {
-  border-color: var(--line-gold);
-  color: var(--ink);
 }
 .chapterTabBtn.active {
   background: rgba(201, 171, 121, 0.14);
   border-color: var(--gold);
   color: var(--gold-light);
   font-weight: 500;
+}
+
+/* v5：问题优先的入口流程。题库退居为灵感工具，不再挡住主要任务。 */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.skipLink {
+  position: fixed;
+  z-index: 1000;
+  top: 10px;
+  left: 10px;
+  padding: 10px 14px;
+  border: 1px solid var(--gold);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface-raised);
+  color: var(--ink);
+  transform: translateY(-160%);
+  transition: transform 120ms ease;
+}
+.skipLink:focus-visible { transform: translateY(0); outline: 2px solid var(--gold); outline-offset: 2px; }
+#mainContent { scroll-margin-top: 88px; }
+#mainContent:focus-visible { outline: 2px solid var(--gold); outline-offset: 4px; }
+
+::selection { background: rgba(234, 197, 126, 0.28); color: var(--ink); }
+html { scrollbar-color: var(--line-gold) var(--bg-space); }
+
+.questionComposer {
+  padding: 24px;
+  border: 1px solid var(--line-gold);
+  border-radius: 14px;
+  background: var(--bg-surface);
+  box-shadow: none;
+}
+.composerHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 14px;
+}
+.composerHeading h3,
+.modeSelectionBar h3 {
+  margin: 0;
+  color: var(--ink);
+  font: 500 18px/1.45 var(--font-serif);
+  letter-spacing: 0.04em;
+}
+.composerHeading p {
+  max-width: 38rem;
+  margin-top: 4px;
+  color: var(--ink-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.characterCount {
+  flex: 0 0 auto;
+  padding-top: 3px;
+  color: var(--ink-muted);
+  font: 11px/1.5 var(--font-sans);
+  font-variant-numeric: tabular-nums;
+}
+.customTextarea {
+  min-height: 116px;
+  background: var(--bg-space);
+  border-color: var(--line-dark);
+}
+.customTextarea::placeholder { color: var(--ink-dark); }
+.customTextarea:focus-visible {
+  border-color: var(--gold);
+  outline: 2px solid rgba(236, 200, 122, 0.55);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+.questionLibrary {
+  border-top: 1px solid var(--line-gold-soft);
+  border-bottom: 1px solid var(--line-gold-soft);
+}
+.questionLibrary > summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 22px;
+  align-items: center;
+  gap: 12px;
+  min-height: 60px;
+  color: var(--ink);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+.questionLibrary > summary::-webkit-details-marker { display: none; }
+.questionLibrary > summary span { font: 500 15px/1.5 var(--font-sans); }
+.questionLibrary > summary small { color: var(--ink-muted); font-size: 12px; }
+.questionLibrary > summary svg {
+  width: 20px;
+  height: 20px;
+  stroke: var(--gold);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 180ms var(--ease-spring);
+}
+.questionLibrary[open] > summary svg { transform: rotate(180deg); }
+.questionLibraryBody { padding: 4px 0 24px; }
+.questionLibraryBody .chapterTabsRow { margin: 0 0 14px; }
+.questionLibraryBody .questionBookCard { box-shadow: none; }
+
+.bookPromptSurface { min-height: 138px; padding: 26px 0 22px; }
+.bookActionToolbar { justify-content: flex-start; }
+.btnNextPrompt,
+.btnAdoptPrompt { min-height: 44px; }
+.chapterTabBtn { min-height: 44px; }
+
+.modeSelectionBar label { display: none; }
+.modeSelectionBar { gap: 10px; }
+.modeSegmentedGroup { padding: 5px; }
+.modeSegmentItem { min-height: 68px; }
+.modeSegmentItem:active { transform: scale(0.96); }
+.cubeMotionToggle { min-height: 44px; }
+
+.themeBtn:focus-visible,
+.returnProductionLink:focus-visible,
+.cubeMotionToggle:focus-visible,
+.questionLibrary > summary:focus-visible,
+.chapterTabBtn:focus-visible,
+.btnNextPrompt:focus-visible,
+.btnAdoptPrompt:focus-visible,
+.modeSegmentItem:focus-visible,
+.primaryCastButton:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+@media (hover: hover) {
+  .themeBtn:hover { color: var(--ink); }
+  .returnProductionLink:hover { color: var(--gold-light); }
+  .btnNextPrompt:hover { background: rgba(201, 171, 121, 0.16); border-color: var(--gold); }
+  .btnNextPrompt:hover .flipIcon { transform: rotate(90deg); }
+  .btnAdoptPrompt:hover { background: rgba(255, 255, 255, 0.08); border-color: var(--line-gold); color: var(--gold-light); }
+  .modeSegmentItem:hover { color: var(--ink); background: rgba(255, 255, 255, 0.025); }
+  .primaryCastButton:hover { background: var(--cinnabar-hover); box-shadow: 0 14px 24px -16px rgba(0, 0, 0, 0.78), inset 0 1px 0 rgba(255, 255, 255, 0.2); }
+  .primaryCastButton:hover .arrowMark { transform: translateX(3px); }
+  .chapterTabBtn:hover { border-color: var(--line-gold); color: var(--ink); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; }
+  .questionLibrary > summary svg,
+  .btnNextPrompt .flipIcon,
+  .primaryCastButton .arrowMark { transition: color 120ms ease, opacity 120ms ease; transform: none !important; }
+  .themeBtn,
+  .btnNextPrompt,
+  .btnAdoptPrompt,
+  .modeSegmentItem,
+  .primaryCastButton,
+  .chapterTabBtn { transition-duration: 120ms; }
 }
 
 @keyframes fadeInDown {
@@ -898,25 +864,17 @@ body {
 
 @media (max-width: 1040px) {
   .stageContainer {
-    grid-template-columns: 1fr;
     gap: 36px;
     padding: 24px 18px 60px;
-  }
-  
-  .cubeAltarStage {
-    order: 2; /* 移动端让问题之书居前，魔方作为呼应舞台居后 */
-  }
-  
-  .cubeCanvasWrapper {
-    aspect-ratio: 16 / 12;
-    max-height: 320px;
   }
 }
 
 @media (max-width: 640px) {
   .sanctuaryNav {
+    position: static;
+    align-items: flex-start;
     padding: 14px 16px;
-    gap: 8px;
+    gap: 10px;
   }
   .brandSign h1 {
     font-size: 16px;
@@ -930,10 +888,12 @@ body {
     display: none;
   }
   .navControls {
+    width: 100%;
+    justify-content: space-between;
     gap: 8px;
   }
   .badgePrototype {
-    font-size: 10px;
+    font-size: 11px;
     padding: 2px 7px;
   }
   .returnProductionLink {
@@ -943,41 +903,51 @@ body {
   .questionBookCard {
     padding: 22px 18px 18px;
   }
+  .inquirySanctuary { gap: 22px; }
+  .inquiryHeader h2 { font-size: 30px; }
+  .inquiryHeader p { font-size: 14px; }
+  .questionComposer { padding: 18px; }
+  .composerHeading { gap: 10px; }
+  .composerHeading h3 { font-size: 17px; }
+  .composerHeading p { font-size: 12px; }
+  .customTextarea { min-height: 104px; padding: 13px 14px; }
+  .questionLibrary > summary { min-height: 56px; grid-template-columns: minmax(0, 1fr) auto 20px; gap: 8px; }
+  .questionLibrary > summary small { font-size: 11px; }
   .promptText {
     font-size: 19px;
     line-height: 1.5;
   }
   .modeSegmentedGroup {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
   }
+  .modeSegmentItem { min-height: 62px; padding: 9px 5px; }
+  .modeSegmentItem strong { font-size: 14px; letter-spacing: 0; }
+  .modeSegmentItem span { font-size: 11px; white-space: nowrap; }
+  .primaryCastButton { height: 56px; font-size: 17px; letter-spacing: 0.08em; }
   
   .themeSwitchGroup {
     padding: 2px;
   }
-  .themeBtn .themeLabel {
-    display: none;
-  }
+  .themeBtn .themeLabel { display: inline; }
   .themeBtn {
-    padding: 3px 6px;
-    font-size: 12px;
+    min-height: 44px;
+    padding: 3px 7px;
+    font-size: 11px;
   }
   
   .cubeDedicatedFrame {
-    padding: 14px 14px 12px;
+    padding: 0;
   }
-  .cubeDeckFooter {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
+  .cubeCanvasWrapper {
+    aspect-ratio: 1 / 1;
+    max-height: 320px;
   }
-  .cubeAuxButtons {
-    justify-content: space-between;
-    width: 100%;
-  }
-  .btnCubeAux {
-    flex: 1;
-    text-align: center;
-    padding: 7px 4px;
-    font-size: 11px;
-  }
+  .cubeMotionToggle { min-height: 44px; }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .stageContainer { padding-top: 16px; gap: 28px; }
+  .cubeCanvasWrapper { aspect-ratio: 16 / 7; max-height: 250px; }
+  .altarPhilosophyCard { display: none; }
 }

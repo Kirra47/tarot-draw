@@ -1,4 +1,4 @@
-﻿const CACHE_VERSION = "astral-tarot-v89-static-hexagram-20261013";
+const CACHE_VERSION = "astral-tarot-v90-entry-flow-20261015";
 const CORE_CACHE = `${CACHE_VERSION}-core`;
 const ASSET_CACHE = `${CACHE_VERSION}-assets`;
 

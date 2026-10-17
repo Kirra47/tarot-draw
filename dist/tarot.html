@@ -38,7 +38,7 @@
 // every .readingModeOption ships aria-checked="false" and the app flips one to
 // "true" — so this needs no cooperation from the module.
 (function(){
-  var BUILD='v89-static-hexagram';
+  var BUILD='v90-entry-flow';
   var shown=false;
   var noticeTimer=0;
   var observer=null;
@@ -696,7 +696,7 @@ body::after{
   .qCard .qSub{grid-column:1/-1;max-width:none;margin-top:19px;font-size:11px;line-height:1.7;}
   .ritualLegend{display:none;}
   .qForm{padding-top:22px;}
-  #questionInput{min-height:88px;margin-bottom:18px;padding:13px 14px;font-size:13px;}
+  #questionInput{min-height:88px;margin-bottom:18px;padding:13px 14px;font-size:16px;}
   .spreadPicker{gap:7px;margin-bottom:16px;}
   .spreadOption{padding:9px 11px;grid-template-columns:36px 1fr;}
   #questionConfirm{padding:13px 15px;}
@@ -779,7 +779,7 @@ body::after{
   .qIntro>.qSub{top:135px;margin:0;font-size:12px;line-height:1.5}
   .qIntro>.ritualLegend{display:none}
   .qForm{padding:18px 19px calc(26px + env(safe-area-inset-bottom))}
-  #questionInput{min-height:82px;margin-bottom:15px;padding:12px 14px;font-size:15px;line-height:1.6}
+  #questionInput{min-height:82px;margin-bottom:15px;padding:12px 14px;font-size:16px;line-height:1.6}
   .readingModeHeading{margin-bottom:7px}.readingModeHeading h3{font-size:14px}.readingModeHeading>span{font-size:11px}
   .readingModePicker{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:4px}
   .readingModeOption{min-height:48px;padding:7px 5px}.readingModeOption strong{font-size:14px}
@@ -1425,24 +1425,51 @@ const PREFERENCE_PARAM_CHOICES=Object.freeze({
   cast:['auto','time','three','sound','count','text','coin'],
   layer:['meihua','qimen','bazhai','all'],
 });
+const ENTRY_HANDOFF_KEY='tarot-entry-handoff-v1';
+const ENTRY_DRAFT_KEY='tarot-redesign-draft-v1';
+const normalizeEntryMode=value=>value==='hybrid'?'combo':value;
+function readEntryHandoff(){
+  let handoff=null;
+  try{
+    const parsed=JSON.parse(sessionStorage.getItem(ENTRY_HANDOFF_KEY)||'null');
+    const fresh=parsed&&typeof parsed==='object'&&!Array.isArray(parsed)&&Number.isFinite(parsed.createdAt)&&Date.now()-parsed.createdAt<15*60*1000;
+    if(fresh)handoff=parsed;
+  }catch{}
+  const params=new URLSearchParams(location.search||'');
+  const sessionQuestion=typeof handoff?.question==='string'?handoff.question.trim():'';
+  const queryQuestion=(params.get('q')||'').trim();
+  const question=(sessionQuestion||queryQuestion).slice(0,240);
+  const mode=normalizeEntryMode(handoff?.mode||params.get('mode')||'');
+  if(handoff){
+    try{sessionStorage.removeItem(ENTRY_HANDOFF_KEY);sessionStorage.removeItem(ENTRY_DRAFT_KEY);}catch{}
+  }
+  return {question,mode:['tarot','gua','combo'].includes(mode)?mode:''};
+}
 function readPreferenceParams(search){
   const params=new URLSearchParams(search||'');
   const picked={};
   for(const name of Object.keys(PREFERENCE_PARAMS)){
-    const value=params.get(name);
+    let value=params.get(name);
+    if(name==='mode')value=normalizeEntryMode(value);
     if(value===null||!PREFERENCE_PARAM_CHOICES[name].includes(value))continue;
     picked[PREFERENCE_PARAMS[name]]=name==='draws'?Number(value):value;
   }
   return picked;
 }
-const sharedPreferences=readPreferenceParams(location.search);
+const entryHandoff=readEntryHandoff();
+const sharedPreferences={
+  ...readPreferenceParams(location.search),
+  ...(entryHandoff.mode?{readingMode:entryHandoff.mode}:{}),
+};
 if(Object.keys(sharedPreferences).length){
   savedPreferences={...savedPreferences,...sharedPreferences};
   try{localStorage.setItem(PREFERENCE_KEY,JSON.stringify(savedPreferences));}catch{}
-  const clean=new URL(location.href);
-  Object.keys(PREFERENCE_PARAMS).forEach(name=>clean.searchParams.delete(name));
-  history.replaceState(null,'',`${clean.pathname}${clean.search}${clean.hash}`);
 }
+const cleanEntryUrl=new URL(location.href);
+Object.keys(PREFERENCE_PARAMS).forEach(name=>cleanEntryUrl.searchParams.delete(name));
+cleanEntryUrl.searchParams.delete('q');
+cleanEntryUrl.searchParams.delete('from');
+if(cleanEntryUrl.href!==location.href)history.replaceState(null,'',`${cleanEntryUrl.pathname}${cleanEntryUrl.search}${cleanEntryUrl.hash}`);
 const allowedPreference=(value,choices,fallback)=>choices.includes(value)?value:fallback;
 function savePreferences(){
   const values={
@@ -1464,7 +1491,7 @@ let drawStyle=allowedPreference(savedPreferences.drawStyle,['quick','manual'],DE
 // answer. It must be bumped with every release — it read v69-coin-default while
 // the code had moved on, so the stamp told visitors they were stale when they
 // were not. verify-coin-ui.cjs now fails if it drifts from CACHE_VERSION.
-const APP_BUILD='v89-static-hexagram · 2026-10-13';
+const APP_BUILD='v90-entry-flow · 2026-10-15';
 // Rebuild the shareable setup link from the live controls rather than from
 // savedPreferences, so a link copied from the open sheet already reflects the
 // pending choices.
@@ -1509,6 +1536,10 @@ const CAST_METHOD_SHORT=Object.freeze({auto:'自动',time:'按时间',three:'三
 const POSITION_LABELS=['过去 / 根源','现在 / 核心','未来 / 方向','建议 / 行动','潜意识 / 隐藏'];
 let sessionDraws=[]; // {card, reversed} for current reading session
 let userQuestion='';
+if(entryHandoff.question){
+  const entryQuestionInput=document.getElementById('questionInput');
+  if(entryQuestionInput)entryQuestionInput.value=entryHandoff.question;
+}
 let currentReadingSaved=false;
 let currentReadingHistoryId=null;
 let meihuaSession=null;
